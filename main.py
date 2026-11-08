@@ -360,12 +360,13 @@ class ThinkingBlockWidget(QFrame):
         self.body.setText(text[:3000])
         self._notify_parent()
 
-    def finish(self, text: str):
-        elapsed = (time.monotonic() - self._t0) if self._t0 else 0
-        trace(f"ThinkingBlockWidget.finish elapsed={elapsed:.3f} text_len={len(text or '')}")
-        self.dots.stop(elapsed)
+    def finish(self, text: str, secs: float | None = None):
+        if secs is None:
+            secs = (time.monotonic() - self._t0) if self._t0 else 0.0
+        trace(f"ThinkingBlockWidget.finish secs={secs:.3f} text_len={len(text or '')}")
+        self.dots.stop(secs)
         # Cinturón: si no hay pensamiento real, ocultar el bloque por completo
-        if not text.strip() or elapsed == 0:
+        if not text or not text.strip() or secs <= 0.5:
             self.hide()
             self._notify_parent()
             return
