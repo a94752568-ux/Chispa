@@ -1,0 +1,32 @@
+🔍 Buscando tools en: [PosixPath('/home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools')]
+✓ Tool cargado: listen desde /home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools/stt_tool.py
+✓ Tool cargado: get_current_time desde /home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools/time_tool.py
+✓ Tool cargado: mi_tool desde /home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools/template_new_tool.py
+✓ Tool cargado: web_search desde /home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools/search.py
+✓ Tool cargado: read_file desde /home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools/file_reader_tool.py
+✓ Tool cargado: system_info desde /home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools/system_tool.py
+✓ Tool cargado: get_weather desde /home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools/weather_tool.py
+✓ Tool cargado: speak desde /home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools/tts_tool.py
+✓ Tool cargado: calculator desde /home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools/calculator_tool.py
+Tools cargados: ['listen', 'get_current_time', 'mi_tool', 'web_search', 'read_file', 'system_info', 'get_weather', 'speak', 'calculator']
+[15:15:01]   MainThread | MessageBubble.__init__ role=assistant enable_think=True images=0
+[15:15:17]   MainThread | MessageBubble.__init__ role=user enable_think=True images=0
+[15:15:17]   MainThread | MessageBubble.__init__ role=assistant enable_think=True images=0
+[15:15:17]   MainThread | MessageBubble.__init__ role=assistant enable_think=True images=0
+[15:15:56]   MainThread | ToolBlockWidget.add_call name=web_search args={'num_results': 5, 'query': 'qué está pasando en Irán hoy noticias 2026'}
+[15:15:58]   MainThread | ToolBlockWidget.add_result name=web_search result_len=1303 preview='**Últimas noticias de Irán hoy: imágenes, videos y reportaje'
+[15:17:19]   MainThread | ThinkingBlockWidget.start t0=117073.746
+[15:18:20]   MainThread | on_final_answer answer_len=1015 thinking_len=0
+[15:18:20]   MainThread | ThinkingBlockWidget.finish elapsed=61.502 text_len=0
+[15:18:20]   MainThread | ToolBlockWidget.finish entries=1 done=1
+[15:19:19]   MainThread | MessageBubble.__init__ role=user enable_think=True images=0
+[15:19:19]   MainThread | MessageBubble.__init__ role=assistant enable_think=True images=0
+[15:19:19]   MainThread | MessageBubble.__init__ role=assistant enable_think=True images=0
+[15:19:38]   MainThread | ToolBlockWidget.add_call name=web_search args={'num_results': 5, 'query': 'cómo hacer una versión para podcast o cómo grabar podcast desde casa'}
+[15:19:43]   MainThread | ToolBlockWidget.add_result name=web_search result_len=165 preview="Busqueda 'cómo hacer una versión para podcast o cómo grabar "
+[15:19:55]   MainThread | ToolBlockWidget.add_call name=web_search args={'num_results': 5, 'query': 'guía completa crear podcast grabar editar publicar 2025'}
+[15:19:58]   MainThread | ToolBlockWidget.add_result name=web_search result_len=1495 preview='**Cómo crear un podcast desde cero: guía completa ... - iVoo'
+[15:21:55]   MainThread | ThinkingBlockWidget.start t0=117350.689
+[15:22:58]   MainThread | on_final_answer answer_len=1347 thinking_len=0
+[15:22:58]   MainThread | ThinkingBlockWidget.finish elapsed=62.796 text_len=0
+[15:22:58]   MainThread | ToolBlockWidget.finish entries=2 done=2

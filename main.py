@@ -233,12 +233,14 @@ class OllamaWorker(QThread):
                     continue
 
                 raw_accum += delta
-
                 new_part = raw_accum[self._emitted_len:]
-                if not new_part:
-                    continue
+                trace(f"WORKER_FASE2 accum_len={len(raw_accum)} emitted_len={self._emitted_len} new_part_len={len(new_part)} new_part={new_part[:40]!r}")
                 self._emitted_len = len(raw_accum)
-                delta = new_part
+                if new_part:
+                    trace(f"WORKER_FASE2 EMIT len={len(new_part)}")
+                    self.chunk_received.emit(new_part)
+                else:
+                    trace("WORKER_FASE2 SKIP_EMIT empty_new_part")
 
                 if "<<thinking>>" in raw_accum and not has_think:
                     has_think = True

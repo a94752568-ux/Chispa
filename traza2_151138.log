@@ -1,0 +1,16 @@
+🔍 Buscando tools en: [PosixPath('/home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools')]
+✓ Tool cargado: listen desde /home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools/stt_tool.py
+✓ Tool cargado: get_current_time desde /home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools/time_tool.py
+✓ Tool cargado: mi_tool desde /home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools/template_new_tool.py
+✓ Tool cargado: web_search desde /home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools/search.py
+✓ Tool cargado: read_file desde /home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools/file_reader_tool.py
+✓ Tool cargado: system_info desde /home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools/system_tool.py
+✓ Tool cargado: get_weather desde /home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools/weather_tool.py
+✓ Tool cargado: speak desde /home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools/tts_tool.py
+✓ Tool cargado: calculator desde /home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools/calculator_tool.py
+Tools cargados: ['listen', 'get_current_time', 'mi_tool', 'web_search', 'read_file', 'system_info', 'get_weather', 'speak', 'calculator']
+[15:11:38]   MainThread | MessageBubble.__init__ role=assistant enable_think=True images=0
+[15:12:00]   MainThread | MessageBubble.__init__ role=user enable_think=True images=0
+[15:12:00]   MainThread | MessageBubble.__init__ role=assistant enable_think=True images=0
+[15:12:00]   MainThread | MessageBubble.__init__ role=assistant enable_think=True images=0
+QThread: Destroyed while thread '' is still running
