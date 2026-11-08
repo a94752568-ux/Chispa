@@ -1,0 +1,2409 @@
+🔍 Buscando tools en: [PosixPath('/home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools')]
+✓ Tool cargado: listen desde /home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools/stt_tool.py
+✓ Tool cargado: get_current_time desde /home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools/time_tool.py
+✓ Tool cargado: mi_tool desde /home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools/template_new_tool.py
+✓ Tool cargado: web_search desde /home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools/search.py
+✓ Tool cargado: read_file desde /home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools/file_reader_tool.py
+✓ Tool cargado: system_info desde /home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools/system_tool.py
+✓ Tool cargado: get_weather desde /home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools/weather_tool.py
+✓ Tool cargado: speak desde /home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools/tts_tool.py
+✓ Tool cargado: calculator desde /home/aegis2/GUI_Nativa_Lubuntu_Ollama/tools/calculator_tool.py
+Tools cargados: ['listen', 'get_current_time', 'mi_tool', 'web_search', 'read_file', 'system_info', 'get_weather', 'speak', 'calculator']
+[16:00:56]   MainThread | MessageBubble.__init__ role=assistant enable_think=True images=0
+[16:01:17]   MainThread | MessageBubble.__init__ role=user enable_think=True images=0
+[16:01:17]   MainThread | MessageBubble.__init__ role=assistant enable_think=True images=0
+[16:01:45]   MainThread | MessageBubble.__init__ role=user enable_think=True images=0
+[16:01:45]   MainThread | MessageBubble.__init__ role=assistant enable_think=True images=0
+[16:02:20]   MainThread | ToolBlockWidget.add_call name=web_search args={'num_results': 5, 'query': 'versión actual LMMS 2026'}
+[16:02:22]   MainThread | ToolBlockWidget.add_result name=web_search result_len=2073 preview='**Download - LMMS**\nIf your Linux distribution does not prov'
+[16:03:42]   MainThread | ThinkingBlockWidget.start t0=119857.393
+[16:04:19]   MainThread | WORKER_CHUNK len=2 preview='La'
+[16:04:19]   MainThread | appendAnswer before len=0 delta='La'
+[16:04:19]   MainThread | appendAnswer after len=2
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:19]   MainThread | WORKER_CHUNK len=8 preview=' versión'
+[16:04:19]   MainThread | appendAnswer before len=2 delta=' versión'
+[16:04:19]   MainThread | appendAnswer after len=10
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:19]   MainThread | WORKER_CHUNK len=4 preview=' más'
+[16:04:19]   MainThread | appendAnswer before len=10 delta=' más'
+[16:04:19]   MainThread | appendAnswer after len=14
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:19]   MainThread | WORKER_CHUNK len=9 preview=' reciente'
+[16:04:19]   MainThread | appendAnswer before len=14 delta=' reciente'
+[16:04:19]   MainThread | appendAnswer after len=23
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:19]   MainThread | WORKER_CHUNK len=11 preview=' disponible'
+[16:04:19]   MainThread | appendAnswer before len=23 delta=' disponible'
+[16:04:19]   MainThread | appendAnswer after len=34
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:20]   MainThread | WORKER_CHUNK len=3 preview=' es'
+[16:04:20]   MainThread | appendAnswer before len=34 delta=' es'
+[16:04:20]   MainThread | appendAnswer after len=37
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:20]   MainThread | WORKER_CHUNK len=3 preview=' **'
+[16:04:20]   MainThread | appendAnswer before len=37 delta=' **'
+[16:04:20]   MainThread | appendAnswer after len=40
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:20]   MainThread | WORKER_CHUNK len=2 preview='LM'
+[16:04:20]   MainThread | appendAnswer before len=40 delta='LM'
+[16:04:20]   MainThread | appendAnswer after len=42
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:20]   MainThread | WORKER_CHUNK len=2 preview='MS'
+[16:04:20]   MainThread | appendAnswer before len=42 delta='MS'
+[16:04:20]   MainThread | appendAnswer after len=44
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:21]   MainThread | WORKER_CHUNK len=2 preview=' 1'
+[16:04:21]   MainThread | appendAnswer before len=44 delta=' 1'
+[16:04:21]   MainThread | appendAnswer after len=46
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:21]   MainThread | WORKER_CHUNK len=1 preview='.'
+[16:04:21]   MainThread | appendAnswer before len=46 delta='.'
+[16:04:21]   MainThread | appendAnswer after len=47
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:21]   MainThread | WORKER_CHUNK len=1 preview='3'
+[16:04:21]   MainThread | appendAnswer before len=47 delta='3'
+[16:04:21]   MainThread | appendAnswer after len=48
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:21]   MainThread | WORKER_CHUNK len=1 preview='.'
+[16:04:21]   MainThread | appendAnswer before len=48 delta='.'
+[16:04:21]   MainThread | appendAnswer after len=49
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:21]   MainThread | WORKER_CHUNK len=1 preview='0'
+[16:04:21]   MainThread | appendAnswer before len=49 delta='0'
+[16:04:21]   MainThread | appendAnswer after len=50
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:22]   MainThread | WORKER_CHUNK len=6 preview=' Alpha'
+[16:04:22]   MainThread | appendAnswer before len=50 delta=' Alpha'
+[16:04:22]   MainThread | appendAnswer after len=56
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:22]   MainThread | WORKER_CHUNK len=2 preview='**'
+[16:04:22]   MainThread | appendAnswer before len=56 delta='**'
+[16:04:22]   MainThread | appendAnswer after len=58
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:22]   MainThread | WORKER_CHUNK len=2 preview=' ('
+[16:04:22]   MainThread | appendAnswer before len=58 delta=' ('
+[16:04:22]   MainThread | appendAnswer after len=60
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:22]   MainThread | WORKER_CHUNK len=4 preview='sept'
+[16:04:22]   MainThread | appendAnswer before len=60 delta='sept'
+[16:04:22]   MainThread | appendAnswer after len=64
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:22]   MainThread | WORKER_CHUNK len=6 preview='iembre'
+[16:04:22]   MainThread | appendAnswer before len=64 delta='iembre'
+[16:04:22]   MainThread | appendAnswer after len=70
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:23]   MainThread | WORKER_CHUNK len=2 preview=' 2'
+[16:04:23]   MainThread | appendAnswer before len=70 delta=' 2'
+[16:04:23]   MainThread | appendAnswer after len=72
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:23]   MainThread | WORKER_CHUNK len=1 preview='0'
+[16:04:23]   MainThread | appendAnswer before len=72 delta='0'
+[16:04:23]   MainThread | appendAnswer after len=73
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:23]   MainThread | WORKER_CHUNK len=1 preview='2'
+[16:04:23]   MainThread | appendAnswer before len=73 delta='2'
+[16:04:23]   MainThread | appendAnswer after len=74
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:23]   MainThread | WORKER_CHUNK len=1 preview='6'
+[16:04:23]   MainThread | appendAnswer before len=74 delta='6'
+[16:04:23]   MainThread | appendAnswer after len=75
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:23]   MainThread | WORKER_CHUNK len=2 preview='),'
+[16:04:23]   MainThread | appendAnswer before len=75 delta='),'
+[16:04:23]   MainThread | appendAnswer after len=77
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:24]   MainThread | WORKER_CHUNK len=4 preview=' una'
+[16:04:24]   MainThread | appendAnswer before len=77 delta=' una'
+[16:04:24]   MainThread | appendAnswer after len=81
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:24]   MainThread | WORKER_CHUNK len=6 preview=' etapa'
+[16:04:24]   MainThread | appendAnswer before len=81 delta=' etapa'
+[16:04:24]   MainThread | appendAnswer after len=87
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:24]   MainThread | WORKER_CHUNK len=4 preview=' pre'
+[16:04:24]   MainThread | appendAnswer before len=87 delta=' pre'
+[16:04:24]   MainThread | appendAnswer after len=91
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:24]   MainThread | WORKER_CHUNK len=3 preview='est'
+[16:04:24]   MainThread | appendAnswer before len=91 delta='est'
+[16:04:24]   MainThread | appendAnswer after len=94
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:24]   MainThread | WORKER_CHUNK len=4 preview='able'
+[16:04:24]   MainThread | appendAnswer before len=94 delta='able'
+[16:04:24]   MainThread | appendAnswer after len=98
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:25]   MainThread | WORKER_CHUNK len=5 preview=' para'
+[16:04:25]   MainThread | appendAnswer before len=98 delta=' para'
+[16:04:25]   MainThread | appendAnswer after len=103
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:25]   MainThread | WORKER_CHUNK len=8 preview=' pruebas'
+[16:04:25]   MainThread | appendAnswer before len=103 delta=' pruebas'
+[16:04:25]   MainThread | appendAnswer after len=111
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:25]   MainThread | WORKER_CHUNK len=2 preview=' y'
+[16:04:25]   MainThread | appendAnswer before len=111 delta=' y'
+[16:04:25]   MainThread | appendAnswer after len=113
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:25]   MainThread | WORKER_CHUNK len=11 preview=' desarrollo'
+[16:04:25]   MainThread | appendAnswer before len=113 delta=' desarrollo'
+[16:04:25]   MainThread | appendAnswer after len=124
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:25]   MainThread | WORKER_CHUNK len=7 preview=' activo'
+[16:04:25]   MainThread | appendAnswer before len=124 delta=' activo'
+[16:04:25]   MainThread | appendAnswer after len=131
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:26]   MainThread | WORKER_CHUNK len=3 preview=' en'
+[16:04:26]   MainThread | appendAnswer before len=131 delta=' en'
+[16:04:26]   MainThread | appendAnswer after len=134
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:26]   MainThread | WORKER_CHUNK len=6 preview=' lugar'
+[16:04:26]   MainThread | appendAnswer before len=134 delta=' lugar'
+[16:04:26]   MainThread | appendAnswer after len=140
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:26]   MainThread | WORKER_CHUNK len=3 preview=' de'
+[16:04:26]   MainThread | appendAnswer before len=140 delta=' de'
+[16:04:26]   MainThread | appendAnswer after len=143
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:26]   MainThread | WORKER_CHUNK len=3 preview=' un'
+[16:04:26]   MainThread | appendAnswer before len=143 delta=' un'
+[16:04:26]   MainThread | appendAnswer after len=146
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:26]   MainThread | WORKER_CHUNK len=12 preview=' lanzamiento'
+[16:04:26]   MainThread | appendAnswer before len=146 delta=' lanzamiento'
+[16:04:26]   MainThread | appendAnswer after len=158
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:27]   MainThread | WORKER_CHUNK len=6 preview=' final'
+[16:04:27]   MainThread | appendAnswer before len=158 delta=' final'
+[16:04:27]   MainThread | appendAnswer after len=164
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:27]   MainThread | WORKER_CHUNK len=1 preview='.'
+[16:04:27]   MainThread | appendAnswer before len=164 delta='.'
+[16:04:27]   MainThread | appendAnswer after len=165
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:27]   MainThread | WORKER_CHUNK len=3 preview='\n\n-'
+[16:04:27]   MainThread | appendAnswer before len=165 delta='\n\n-'
+[16:04:27]   MainThread | appendAnswer after len=168
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:27]   MainThread | WORKER_CHUNK len=3 preview=' LM'
+[16:04:27]   MainThread | appendAnswer before len=168 delta=' LM'
+[16:04:27]   MainThread | appendAnswer after len=171
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:27]   MainThread | WORKER_CHUNK len=2 preview='MS'
+[16:04:27]   MainThread | appendAnswer before len=171 delta='MS'
+[16:04:27]   MainThread | appendAnswer after len=173
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:28]   MainThread | WORKER_CHUNK len=2 preview=' 1'
+[16:04:28]   MainThread | appendAnswer before len=173 delta=' 1'
+[16:04:28]   MainThread | appendAnswer after len=175
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:28]   MainThread | WORKER_CHUNK len=1 preview='.'
+[16:04:28]   MainThread | appendAnswer before len=175 delta='.'
+[16:04:28]   MainThread | appendAnswer after len=176
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:28]   MainThread | WORKER_CHUNK len=1 preview='3'
+[16:04:28]   MainThread | appendAnswer before len=176 delta='3'
+[16:04:28]   MainThread | appendAnswer after len=177
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:28]   MainThread | WORKER_CHUNK len=1 preview='.'
+[16:04:28]   MainThread | appendAnswer before len=177 delta='.'
+[16:04:28]   MainThread | appendAnswer after len=178
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:29]   MainThread | WORKER_CHUNK len=1 preview='0'
+[16:04:29]   MainThread | appendAnswer before len=178 delta='0'
+[16:04:29]   MainThread | appendAnswer after len=179
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:29]   MainThread | WORKER_CHUNK len=6 preview=' Alpha'
+[16:04:29]   MainThread | appendAnswer before len=179 delta=' Alpha'
+[16:04:29]   MainThread | appendAnswer after len=185
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:29]   MainThread | WORKER_CHUNK len=5 preview=' está'
+[16:04:29]   MainThread | appendAnswer before len=185 delta=' está'
+[16:04:29]   MainThread | appendAnswer after len=190
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:29]   MainThread | WORKER_CHUNK len=9 preview=' clasific'
+[16:04:29]   MainThread | appendAnswer before len=190 delta=' clasific'
+[16:04:29]   MainThread | appendAnswer after len=199
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:29]   MainThread | WORKER_CHUNK len=3 preview='ada'
+[16:04:29]   MainThread | appendAnswer before len=199 delta='ada'
+[16:04:29]   MainThread | appendAnswer after len=202
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:30]   MainThread | WORKER_CHUNK len=5 preview=' como'
+[16:04:30]   MainThread | appendAnswer before len=202 delta=' como'
+[16:04:30]   MainThread | appendAnswer after len=207
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:30]   MainThread | WORKER_CHUNK len=3 preview=' un'
+[16:04:30]   MainThread | appendAnswer before len=207 delta=' un'
+[16:04:30]   MainThread | appendAnswer after len=210
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:30]   MainThread | WORKER_CHUNK len=2 preview=' *'
+[16:04:30]   MainThread | appendAnswer before len=210 delta=' *'
+[16:04:30]   MainThread | appendAnswer after len=212
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:30]   MainThread | WORKER_CHUNK len=2 preview='pr'
+[16:04:30]   MainThread | appendAnswer before len=212 delta='pr'
+[16:04:30]   MainThread | appendAnswer after len=214
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:30]   MainThread | WORKER_CHUNK len=3 preview='ere'
+[16:04:30]   MainThread | appendAnswer before len=214 delta='ere'
+[16:04:30]   MainThread | appendAnswer after len=217
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:30]   MainThread | WORKER_CHUNK len=5 preview='lease'
+[16:04:30]   MainThread | appendAnswer before len=217 delta='lease'
+[16:04:30]   MainThread | appendAnswer after len=222
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:31]   MainThread | WORKER_CHUNK len=1 preview='*'
+[16:04:31]   MainThread | appendAnswer before len=222 delta='*'
+[16:04:31]   MainThread | appendAnswer after len=223
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:31]   MainThread | WORKER_CHUNK len=4 preview=' con'
+[16:04:31]   MainThread | appendAnswer before len=223 delta=' con'
+[16:04:31]   MainThread | appendAnswer after len=227
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:31]   MainThread | WORKER_CHUNK len=10 preview=' potencial'
+[16:04:31]   MainThread | appendAnswer before len=227 delta=' potencial'
+[16:04:31]   MainThread | appendAnswer after len=237
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:31]   MainThread | WORKER_CHUNK len=5 preview=' para'
+[16:04:31]   MainThread | appendAnswer before len=237 delta=' para'
+[16:04:31]   MainThread | appendAnswer after len=242
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:31]   MainThread | WORKER_CHUNK len=8 preview=' cambios'
+[16:04:31]   MainThread | appendAnswer before len=242 delta=' cambios'
+[16:04:31]   MainThread | appendAnswer after len=250
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:32]   MainThread | WORKER_CHUNK len=6 preview=' antes'
+[16:04:32]   MainThread | appendAnswer before len=250 delta=' antes'
+[16:04:32]   MainThread | appendAnswer after len=256
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:32]   MainThread | WORKER_CHUNK len=4 preview=' del'
+[16:04:32]   MainThread | appendAnswer before len=256 delta=' del'
+[16:04:32]   MainThread | appendAnswer after len=260
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:32]   MainThread | WORKER_CHUNK len=8 preview=' próximo'
+[16:04:32]   MainThread | appendAnswer before len=260 delta=' próximo'
+[16:04:32]   MainThread | appendAnswer after len=268
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:32]   MainThread | WORKER_CHUNK len=12 preview=' lanzamiento'
+[16:04:32]   MainThread | appendAnswer before len=268 delta=' lanzamiento'
+[16:04:32]   MainThread | appendAnswer after len=280
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:32]   MainThread | WORKER_CHUNK len=8 preview=' estable'
+[16:04:32]   MainThread | appendAnswer before len=280 delta=' estable'
+[16:04:32]   MainThread | appendAnswer after len=288
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:32]   MainThread | WORKER_CHUNK len=1 preview='.'
+[16:04:32]   MainThread | appendAnswer before len=288 delta='.'
+[16:04:32]   MainThread | appendAnswer after len=289
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:33]   MainThread | WORKER_CHUNK len=2 preview='\n-'
+[16:04:33]   MainThread | appendAnswer before len=289 delta='\n-'
+[16:04:33]   MainThread | appendAnswer after len=291
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:33]   MainThread | WORKER_CHUNK len=4 preview=' Los'
+[16:04:33]   MainThread | appendAnswer before len=291 delta=' Los'
+[16:04:33]   MainThread | appendAnswer after len=295
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:33]   MainThread | WORKER_CHUNK len=10 preview=' proyectos'
+[16:04:33]   MainThread | appendAnswer before len=295 delta=' proyectos'
+[16:04:33]   MainThread | appendAnswer after len=305
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:33]   MainThread | WORKER_CHUNK len=6 preview=' cread'
+[16:04:33]   MainThread | appendAnswer before len=305 delta=' cread'
+[16:04:33]   MainThread | appendAnswer after len=311
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:34]   MainThread | WORKER_CHUNK len=2 preview='os'
+[16:04:34]   MainThread | appendAnswer before len=311 delta='os'
+[16:04:34]   MainThread | appendAnswer after len=313
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:34]   MainThread | WORKER_CHUNK len=3 preview=' en'
+[16:04:34]   MainThread | appendAnswer before len=313 delta=' en'
+[16:04:34]   MainThread | appendAnswer after len=316
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:34]   MainThread | WORKER_CHUNK len=3 preview=' al'
+[16:04:34]   MainThread | appendAnswer before len=316 delta=' al'
+[16:04:34]   MainThread | appendAnswer after len=319
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:34]   MainThread | WORKER_CHUNK len=3 preview='fas'
+[16:04:34]   MainThread | appendAnswer before len=319 delta='fas'
+[16:04:34]   MainThread | appendAnswer after len=322
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:34]   MainThread | WORKER_CHUNK len=7 preview=' pueden'
+[16:04:34]   MainThread | appendAnswer before len=322 delta=' pueden'
+[16:04:34]   MainThread | appendAnswer after len=329
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:35]   MainThread | WORKER_CHUNK len=3 preview=' no'
+[16:04:35]   MainThread | appendAnswer before len=329 delta=' no'
+[16:04:35]   MainThread | appendAnswer after len=332
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:35]   MainThread | WORKER_CHUNK len=4 preview=' ser'
+[16:04:35]   MainThread | appendAnswer before len=332 delta=' ser'
+[16:04:35]   MainThread | appendAnswer after len=336
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:35]   MainThread | WORKER_CHUNK len=12 preview=' compatibles'
+[16:04:35]   MainThread | appendAnswer before len=336 delta=' compatibles'
+[16:04:35]   MainThread | appendAnswer after len=348
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:35]   MainThread | WORKER_CHUNK len=4 preview=' con'
+[16:04:35]   MainThread | appendAnswer before len=348 delta=' con'
+[16:04:35]   MainThread | appendAnswer after len=352
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:35]   MainThread | WORKER_CHUNK len=10 preview=' versiones'
+[16:04:35]   MainThread | appendAnswer before len=352 delta=' versiones'
+[16:04:35]   MainThread | appendAnswer after len=362
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:36]   MainThread | WORKER_CHUNK len=8 preview=' futuras'
+[16:04:36]   MainThread | appendAnswer before len=362 delta=' futuras'
+[16:04:36]   MainThread | appendAnswer after len=370
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:36]   MainThread | WORKER_CHUNK len=7 preview=' debido'
+[16:04:36]   MainThread | appendAnswer before len=370 delta=' debido'
+[16:04:36]   MainThread | appendAnswer after len=377
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:36]   MainThread | WORKER_CHUNK len=2 preview=' a'
+[16:04:36]   MainThread | appendAnswer before len=377 delta=' a'
+[16:04:36]   MainThread | appendAnswer after len=379
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:36]   MainThread | WORKER_CHUNK len=15 preview=' modificaciones'
+[16:04:36]   MainThread | appendAnswer before len=379 delta=' modificaciones'
+[16:04:36]   MainThread | appendAnswer after len=394
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:36]   MainThread | WORKER_CHUNK len=4 preview=' pot'
+[16:04:36]   MainThread | appendAnswer before len=394 delta=' pot'
+[16:04:36]   MainThread | appendAnswer after len=398
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:37]   MainThread | WORKER_CHUNK len=8 preview='enciales'
+[16:04:37]   MainThread | appendAnswer before len=398 delta='enciales'
+[16:04:37]   MainThread | appendAnswer after len=406
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:37]   MainThread | WORKER_CHUNK len=1 preview='.'
+[16:04:37]   MainThread | appendAnswer before len=406 delta='.'
+[16:04:37]   MainThread | appendAnswer after len=407
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:37]   MainThread | WORKER_CHUNK len=2 preview='\n-'
+[16:04:37]   MainThread | appendAnswer before len=407 delta='\n-'
+[16:04:37]   MainThread | appendAnswer after len=409
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:37]   MainThread | WORKER_CHUNK len=3 preview=' LM'
+[16:04:37]   MainThread | appendAnswer before len=409 delta=' LM'
+[16:04:37]   MainThread | appendAnswer after len=412
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:38]   MainThread | WORKER_CHUNK len=2 preview='MS'
+[16:04:38]   MainThread | appendAnswer before len=412 delta='MS'
+[16:04:38]   MainThread | appendAnswer after len=414
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:38]   MainThread | WORKER_CHUNK len=3 preview=' es'
+[16:04:38]   MainThread | appendAnswer before len=414 delta=' es'
+[16:04:38]   MainThread | appendAnswer after len=417
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:38]   MainThread | WORKER_CHUNK len=4 preview=' una'
+[16:04:38]   MainThread | appendAnswer before len=417 delta=' una'
+[16:04:38]   MainThread | appendAnswer after len=421
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:38]   MainThread | WORKER_CHUNK len=9 preview=' estación'
+[16:04:38]   MainThread | appendAnswer before len=421 delta=' estación'
+[16:04:38]   MainThread | appendAnswer after len=430
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:38]   MainThread | WORKER_CHUNK len=3 preview=' de'
+[16:04:38]   MainThread | appendAnswer before len=430 delta=' de'
+[16:04:38]   MainThread | appendAnswer after len=433
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:39]   MainThread | WORKER_CHUNK len=8 preview=' trabajo'
+[16:04:39]   MainThread | appendAnswer before len=433 delta=' trabajo'
+[16:04:39]   MainThread | appendAnswer after len=441
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:39]   MainThread | WORKER_CHUNK len=8 preview=' digital'
+[16:04:39]   MainThread | appendAnswer before len=441 delta=' digital'
+[16:04:39]   MainThread | appendAnswer after len=449
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:39]   MainThread | WORKER_CHUNK len=6 preview=' multi'
+[16:04:39]   MainThread | appendAnswer before len=449 delta=' multi'
+[16:04:39]   MainThread | appendAnswer after len=455
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:39]   MainThread | WORKER_CHUNK len=2 preview='pl'
+[16:04:39]   MainThread | appendAnswer before len=455 delta='pl'
+[16:04:39]   MainThread | appendAnswer after len=457
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:39]   MainThread | WORKER_CHUNK len=3 preview='ata'
+[16:04:39]   MainThread | appendAnswer before len=457 delta='ata'
+[16:04:39]   MainThread | appendAnswer after len=460
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:39]   MainThread | WORKER_CHUNK len=5 preview='forma'
+[16:04:39]   MainThread | appendAnswer before len=460 delta='forma'
+[16:04:39]   MainThread | appendAnswer after len=465
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:40]   MainThread | WORKER_CHUNK len=3 preview=' de'
+[16:04:40]   MainThread | appendAnswer before len=465 delta=' de'
+[16:04:40]   MainThread | appendAnswer after len=468
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:40]   MainThread | WORKER_CHUNK len=7 preview=' código'
+[16:04:40]   MainThread | appendAnswer before len=468 delta=' código'
+[16:04:40]   MainThread | appendAnswer after len=475
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:40]   MainThread | WORKER_CHUNK len=8 preview=' abierto'
+[16:04:40]   MainThread | appendAnswer before len=475 delta=' abierto'
+[16:04:40]   MainThread | appendAnswer after len=483
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:40]   MainThread | WORKER_CHUNK len=1 preview=','
+[16:04:40]   MainThread | appendAnswer before len=483 delta=','
+[16:04:40]   MainThread | appendAnswer after len=484
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:40]   MainThread | WORKER_CHUNK len=6 preview=' enfoc'
+[16:04:40]   MainThread | appendAnswer before len=484 delta=' enfoc'
+[16:04:40]   MainThread | appendAnswer after len=490
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:40]   MainThread | WORKER_CHUNK len=3 preview='ada'
+[16:04:40]   MainThread | appendAnswer before len=490 delta='ada'
+[16:04:40]   MainThread | appendAnswer after len=493
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:41]   MainThread | WORKER_CHUNK len=3 preview=' en'
+[16:04:41]   MainThread | appendAnswer before len=493 delta=' en'
+[16:04:41]   MainThread | appendAnswer after len=496
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:41]   MainThread | WORKER_CHUNK len=11 preview=' producción'
+[16:04:41]   MainThread | appendAnswer before len=496 delta=' producción'
+[16:04:41]   MainThread | appendAnswer after len=507
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:41]   MainThread | WORKER_CHUNK len=8 preview=' musical'
+[16:04:41]   MainThread | appendAnswer before len=507 delta=' musical'
+[16:04:41]   MainThread | appendAnswer after len=515
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:41]   MainThread | WORKER_CHUNK len=4 preview=' con'
+[16:04:41]   MainThread | appendAnswer before len=515 delta=' con'
+[16:04:41]   MainThread | appendAnswer after len=519
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:41]   MainThread | WORKER_CHUNK len=6 preview=' Piano'
+[16:04:41]   MainThread | appendAnswer before len=519 delta=' Piano'
+[16:04:41]   MainThread | appendAnswer after len=525
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:42]   MainThread | WORKER_CHUNK len=5 preview=' Roll'
+[16:04:42]   MainThread | appendAnswer before len=525 delta=' Roll'
+[16:04:42]   MainThread | appendAnswer after len=530
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:42]   MainThread | WORKER_CHUNK len=9 preview=' avanzado'
+[16:04:42]   MainThread | appendAnswer before len=530 delta=' avanzado'
+[16:04:42]   MainThread | appendAnswer after len=539
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:42]   MainThread | WORKER_CHUNK len=2 preview=' y'
+[16:04:42]   MainThread | appendAnswer before len=539 delta=' y'
+[16:04:42]   MainThread | appendAnswer after len=541
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:42]   MainThread | WORKER_CHUNK len=5 preview=' Beat'
+[16:04:42]   MainThread | appendAnswer before len=541 delta=' Beat'
+[16:04:42]   MainThread | appendAnswer after len=546
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:42]   MainThread | WORKER_CHUNK len=5 preview=' Sequ'
+[16:04:42]   MainThread | appendAnswer before len=546 delta=' Sequ'
+[16:04:42]   MainThread | appendAnswer after len=551
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:43]   MainThread | WORKER_CHUNK len=5 preview='encer'
+[16:04:43]   MainThread | appendAnswer before len=551 delta='encer'
+[16:04:43]   MainThread | appendAnswer after len=556
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:43]   MainThread | WORKER_CHUNK len=1 preview='.'
+[16:04:43]   MainThread | appendAnswer before len=556 delta='.'
+[16:04:43]   MainThread | appendAnswer after len=557
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:43]   MainThread | WORKER_CHUNK len=2 preview='\n-'
+[16:04:43]   MainThread | appendAnswer before len=557 delta='\n-'
+[16:04:43]   MainThread | appendAnswer after len=559
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:43]   MainThread | WORKER_CHUNK len=7 preview=' GitHub'
+[16:04:43]   MainThread | appendAnswer before len=559 delta=' GitHub'
+[16:04:43]   MainThread | appendAnswer after len=566
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:44]   MainThread | WORKER_CHUNK len=4 preview=' alo'
+[16:04:44]   MainThread | appendAnswer before len=566 delta=' alo'
+[16:04:44]   MainThread | appendAnswer after len=570
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:44]   MainThread | WORKER_CHUNK len=2 preview='ja'
+[16:04:44]   MainThread | appendAnswer before len=570 delta='ja'
+[16:04:44]   MainThread | appendAnswer after len=572
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:44]   MainThread | WORKER_CHUNK len=4 preview=' los'
+[16:04:44]   MainThread | appendAnswer before len=572 delta=' los'
+[16:04:44]   MainThread | appendAnswer after len=576
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:44]   MainThread | WORKER_CHUNK len=9 preview=' releases'
+[16:04:44]   MainThread | appendAnswer before len=576 delta=' releases'
+[16:04:44]   MainThread | appendAnswer after len=585
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:44]   MainThread | WORKER_CHUNK len=10 preview=' oficiales'
+[16:04:44]   MainThread | appendAnswer before len=585 delta=' oficiales'
+[16:04:44]   MainThread | appendAnswer after len=595
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:44]   MainThread | WORKER_CHUNK len=1 preview=','
+[16:04:44]   MainThread | appendAnswer before len=595 delta=','
+[16:04:44]   MainThread | appendAnswer after len=596
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:45]   MainThread | WORKER_CHUNK len=6 preview=' donde'
+[16:04:45]   MainThread | appendAnswer before len=596 delta=' donde'
+[16:04:45]   MainThread | appendAnswer after len=602
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:45]   MainThread | WORKER_CHUNK len=3 preview=' se'
+[16:04:45]   MainThread | appendAnswer before len=602 delta=' se'
+[16:04:45]   MainThread | appendAnswer after len=605
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:45]   MainThread | WORKER_CHUNK len=6 preview=' puede'
+[16:04:45]   MainThread | appendAnswer before len=605 delta=' puede'
+[16:04:45]   MainThread | appendAnswer after len=611
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:45]   MainThread | WORKER_CHUNK len=10 preview=' consultar'
+[16:04:45]   MainThread | appendAnswer before len=611 delta=' consultar'
+[16:04:45]   MainThread | appendAnswer after len=621
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:45]   MainThread | WORKER_CHUNK len=7 preview=' histor'
+[16:04:45]   MainThread | appendAnswer before len=621 delta=' histor'
+[16:04:45]   MainThread | appendAnswer after len=628
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:46]   MainThread | WORKER_CHUNK len=3 preview='ial'
+[16:04:46]   MainThread | appendAnswer before len=628 delta='ial'
+[16:04:46]   MainThread | appendAnswer after len=631
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:46]   MainThread | WORKER_CHUNK len=9 preview=' completo'
+[16:04:46]   MainThread | appendAnswer before len=631 delta=' completo'
+[16:04:46]   MainThread | appendAnswer after len=640
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:46]   MainThread | WORKER_CHUNK len=5 preview=' para'
+[16:04:46]   MainThread | appendAnswer before len=640 delta=' para'
+[16:04:46]   MainThread | appendAnswer after len=645
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:46]   MainThread | WORKER_CHUNK len=4 preview=' ver'
+[16:04:46]   MainThread | appendAnswer before len=645 delta=' ver'
+[16:04:46]   MainThread | appendAnswer after len=649
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:46]   MainThread | WORKER_CHUNK len=7 preview=' nuevas'
+[16:04:46]   MainThread | appendAnswer before len=649 delta=' nuevas'
+[16:04:46]   MainThread | appendAnswer after len=656
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:46]   MainThread | WORKER_CHUNK len=16 preview=' características'
+[16:04:46]   MainThread | appendAnswer before len=656 delta=' características'
+[16:04:46]   MainThread | appendAnswer after len=672
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:47]   MainThread | WORKER_CHUNK len=2 preview=' y'
+[16:04:47]   MainThread | appendAnswer before len=672 delta=' y'
+[16:04:47]   MainThread | appendAnswer after len=674
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:47]   MainThread | WORKER_CHUNK len=10 preview=' versiones'
+[16:04:47]   MainThread | appendAnswer before len=674 delta=' versiones'
+[16:04:47]   MainThread | appendAnswer after len=684
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:47]   MainThread | WORKER_CHUNK len=1 preview='.'
+[16:04:47]   MainThread | appendAnswer before len=684 delta='.'
+[16:04:47]   MainThread | appendAnswer after len=685
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:47]   MainThread | WORKER_CHUNK len=2 preview='\n-'
+[16:04:47]   MainThread | appendAnswer before len=685 delta='\n-'
+[16:04:47]   MainThread | appendAnswer after len=687
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:47]   MainThread | WORKER_CHUNK len=3 preview=' El'
+[16:04:47]   MainThread | appendAnswer before len=687 delta=' El'
+[16:04:47]   MainThread | appendAnswer after len=690
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:48]   MainThread | WORKER_CHUNK len=9 preview=' proyecto'
+[16:04:48]   MainThread | appendAnswer before len=690 delta=' proyecto'
+[16:04:48]   MainThread | appendAnswer after len=699
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:48]   MainThread | WORKER_CHUNK len=5 preview=' está'
+[16:04:48]   MainThread | appendAnswer before len=699 delta=' está'
+[16:04:48]   MainThread | appendAnswer after len=704
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:48]   MainThread | WORKER_CHUNK len=5 preview=' aloj'
+[16:04:48]   MainThread | appendAnswer before len=704 delta=' aloj'
+[16:04:48]   MainThread | appendAnswer after len=709
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:48]   MainThread | WORKER_CHUNK len=3 preview='ado'
+[16:04:48]   MainThread | appendAnswer before len=709 delta='ado'
+[16:04:48]   MainThread | appendAnswer after len=712
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:48]   MainThread | WORKER_CHUNK len=5 preview=' bajo'
+[16:04:48]   MainThread | appendAnswer before len=712 delta=' bajo'
+[16:04:48]   MainThread | appendAnswer after len=717
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:49]   MainThread | WORKER_CHUNK len=3 preview=' un'
+[16:04:49]   MainThread | appendAnswer before len=717 delta=' un'
+[16:04:49]   MainThread | appendAnswer after len=720
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:49]   MainThread | WORKER_CHUNK len=7 preview=' modelo'
+[16:04:49]   MainThread | appendAnswer before len=720 delta=' modelo'
+[16:04:49]   MainThread | appendAnswer after len=727
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:49]   MainThread | WORKER_CHUNK len=2 preview=' *'
+[16:04:49]   MainThread | appendAnswer before len=727 delta=' *'
+[16:04:49]   MainThread | appendAnswer after len=729
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:49]   MainThread | WORKER_CHUNK len=5 preview='comun'
+[16:04:49]   MainThread | appendAnswer before len=729 delta='comun'
+[16:04:49]   MainThread | appendAnswer after len=734
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:49]   MainThread | WORKER_CHUNK len=6 preview='idades'
+[16:04:49]   MainThread | appendAnswer before len=734 delta='idades'
+[16:04:49]   MainThread | appendAnswer after len=740
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:49]   MainThread | WORKER_CHUNK len=7 preview='-driven'
+[16:04:49]   MainThread | appendAnswer before len=740 delta='-driven'
+[16:04:49]   MainThread | appendAnswer after len=747
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:50]   MainThread | WORKER_CHUNK len=2 preview='*,'
+[16:04:50]   MainThread | appendAnswer before len=747 delta='*,'
+[16:04:50]   MainThread | appendAnswer after len=749
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:50]   MainThread | WORKER_CHUNK len=11 preview=' totalmente'
+[16:04:50]   MainThread | appendAnswer before len=749 delta=' totalmente'
+[16:04:50]   MainThread | appendAnswer after len=760
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:50]   MainThread | WORKER_CHUNK len=9 preview=' gratuito'
+[16:04:50]   MainThread | appendAnswer before len=760 delta=' gratuito'
+[16:04:50]   MainThread | appendAnswer after len=769
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:50]   MainThread | WORKER_CHUNK len=2 preview=' y'
+[16:04:50]   MainThread | appendAnswer before len=769 delta=' y'
+[16:04:50]   MainThread | appendAnswer after len=771
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:50]   MainThread | WORKER_CHUNK len=4 preview=' sin'
+[16:04:50]   MainThread | appendAnswer before len=771 delta=' sin'
+[16:04:50]   MainThread | appendAnswer after len=775
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:51]   MainThread | WORKER_CHUNK len=6 preview=' ánimo'
+[16:04:51]   MainThread | appendAnswer before len=775 delta=' ánimo'
+[16:04:51]   MainThread | appendAnswer after len=781
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:51]   MainThread | WORKER_CHUNK len=3 preview=' de'
+[16:04:51]   MainThread | appendAnswer before len=781 delta=' de'
+[16:04:51]   MainThread | appendAnswer after len=784
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:51]   MainThread | WORKER_CHUNK len=6 preview=' lucro'
+[16:04:51]   MainThread | appendAnswer before len=784 delta=' lucro'
+[16:04:51]   MainThread | appendAnswer after len=790
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:51]   MainThread | WORKER_CHUNK len=1 preview='.'
+[16:04:51]   MainThread | appendAnswer before len=790 delta='.'
+[16:04:51]   MainThread | appendAnswer after len=791
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:52]   MainThread | WORKER_CHUNK len=2 preview='\n-'
+[16:04:52]   MainThread | appendAnswer before len=791 delta='\n-'
+[16:04:52]   MainThread | appendAnswer after len=793
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:52]   MainThread | WORKER_CHUNK len=3 preview=' Si'
+[16:04:52]   MainThread | appendAnswer before len=793 delta=' Si'
+[16:04:52]   MainThread | appendAnswer after len=796
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:52]   MainThread | WORKER_CHUNK len=3 preview=' no'
+[16:04:52]   MainThread | appendAnswer before len=796 delta=' no'
+[16:04:52]   MainThread | appendAnswer after len=799
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:52]   MainThread | WORKER_CHUNK len=4 preview=' hay'
+[16:04:52]   MainThread | appendAnswer before len=799 delta=' hay'
+[16:04:52]   MainThread | appendAnswer after len=803
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:52]   MainThread | WORKER_CHUNK len=9 preview=' paquetes'
+[16:04:52]   MainThread | appendAnswer before len=803 delta=' paquetes'
+[16:04:52]   MainThread | appendAnswer after len=812
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:52]   MainThread | WORKER_CHUNK len=7 preview=' actual'
+[16:04:52]   MainThread | appendAnswer before len=812 delta=' actual'
+[16:04:52]   MainThread | appendAnswer after len=819
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:53]   MainThread | WORKER_CHUNK len=6 preview='izados'
+[16:04:53]   MainThread | appendAnswer before len=819 delta='izados'
+[16:04:53]   MainThread | appendAnswer after len=825
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:53]   MainThread | WORKER_CHUNK len=3 preview=' en'
+[16:04:53]   MainThread | appendAnswer before len=825 delta=' en'
+[16:04:53]   MainThread | appendAnswer after len=828
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:53]   MainThread | WORKER_CHUNK len=3 preview=' tu'
+[16:04:53]   MainThread | appendAnswer before len=828 delta=' tu'
+[16:04:53]   MainThread | appendAnswer after len=831
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:53]   MainThread | WORKER_CHUNK len=13 preview=' distribución'
+[16:04:53]   MainThread | appendAnswer before len=831 delta=' distribución'
+[16:04:53]   MainThread | appendAnswer after len=844
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:53]   MainThread | WORKER_CHUNK len=6 preview=' Linux'
+[16:04:53]   MainThread | appendAnswer before len=844 delta=' Linux'
+[16:04:53]   MainThread | appendAnswer after len=850
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:54]   MainThread | WORKER_CHUNK len=1 preview=','
+[16:04:54]   MainThread | appendAnswer before len=850 delta=','
+[16:04:54]   MainThread | appendAnswer after len=851
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:54]   MainThread | WORKER_CHUNK len=3 preview=' se'
+[16:04:54]   MainThread | appendAnswer before len=851 delta=' se'
+[16:04:54]   MainThread | appendAnswer after len=854
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:54]   MainThread | WORKER_CHUNK len=11 preview=' recomienda'
+[16:04:54]   MainThread | appendAnswer before len=854 delta=' recomienda'
+[16:04:54]   MainThread | appendAnswer after len=865
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:54]   MainThread | WORKER_CHUNK len=5 preview=' comp'
+[16:04:54]   MainThread | appendAnswer before len=865 delta=' comp'
+[16:04:54]   MainThread | appendAnswer after len=870
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:54]   MainThread | WORKER_CHUNK len=4 preview='ilar'
+[16:04:54]   MainThread | appendAnswer before len=870 delta='ilar'
+[16:04:54]   MainThread | appendAnswer after len=874
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:54]   MainThread | WORKER_CHUNK len=6 preview=' desde'
+[16:04:54]   MainThread | appendAnswer before len=874 delta=' desde'
+[16:04:54]   MainThread | appendAnswer after len=880
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:55]   MainThread | WORKER_CHUNK len=3 preview=' el'
+[16:04:55]   MainThread | appendAnswer before len=880 delta=' el'
+[16:04:55]   MainThread | appendAnswer after len=883
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:55]   MainThread | WORKER_CHUNK len=6 preview=' repos'
+[16:04:55]   MainThread | appendAnswer before len=883 delta=' repos'
+[16:04:55]   MainThread | appendAnswer after len=889
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:55]   MainThread | WORKER_CHUNK len=6 preview='itorio'
+[16:04:55]   MainThread | appendAnswer before len=889 delta='itorio'
+[16:04:55]   MainThread | appendAnswer after len=895
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:55]   MainThread | WORKER_CHUNK len=4 preview=' del'
+[16:04:55]   MainThread | appendAnswer before len=895 delta=' del'
+[16:04:55]   MainThread | appendAnswer after len=899
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:55]   MainThread | WORKER_CHUNK len=10 preview=' desarroll'
+[16:04:55]   MainThread | appendAnswer before len=899 delta=' desarroll'
+[16:04:55]   MainThread | appendAnswer after len=909
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:56]   MainThread | WORKER_CHUNK len=4 preview='ador'
+[16:04:56]   MainThread | appendAnswer before len=909 delta='ador'
+[16:04:56]   MainThread | appendAnswer after len=913
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:56]   MainThread | WORKER_CHUNK len=1 preview='.'
+[16:04:56]   MainThread | appendAnswer before len=913 delta='.'
+[16:04:56]   MainThread | appendAnswer after len=914
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:56]   MainThread | WORKER_CHUNK len=4 preview='\n\nEl'
+[16:04:56]   MainThread | appendAnswer before len=914 delta='\n\nEl'
+[16:04:56]   MainThread | appendAnswer after len=918
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:56]   MainThread | WORKER_CHUNK len=11 preview=' desarrollo'
+[16:04:56]   MainThread | appendAnswer before len=918 delta=' desarrollo'
+[16:04:56]   MainThread | appendAnswer after len=929
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:57]   MainThread | WORKER_CHUNK len=6 preview=' sigue'
+[16:04:57]   MainThread | appendAnswer before len=929 delta=' sigue'
+[16:04:57]   MainThread | appendAnswer after len=935
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:57]   MainThread | WORKER_CHUNK len=7 preview=' activo'
+[16:04:57]   MainThread | appendAnswer before len=935 delta=' activo'
+[16:04:57]   MainThread | appendAnswer after len=942
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:57]   MainThread | WORKER_CHUNK len=2 preview=' y'
+[16:04:57]   MainThread | appendAnswer before len=942 delta=' y'
+[16:04:57]   MainThread | appendAnswer after len=944
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:57]   MainThread | WORKER_CHUNK len=4 preview=' las'
+[16:04:57]   MainThread | appendAnswer before len=944 delta=' las'
+[16:04:57]   MainThread | appendAnswer after len=948
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:58]   MainThread | WORKER_CHUNK len=10 preview=' versiones'
+[16:04:58]   MainThread | appendAnswer before len=948 delta=' versiones'
+[16:04:58]   MainThread | appendAnswer after len=958
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:58]   MainThread | WORKER_CHUNK len=4 preview=' est'
+[16:04:58]   MainThread | appendAnswer before len=958 delta=' est'
+[16:04:58]   MainThread | appendAnswer after len=962
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:58]   MainThread | WORKER_CHUNK len=5 preview='ables'
+[16:04:58]   MainThread | appendAnswer before len=962 delta='ables'
+[16:04:58]   MainThread | appendAnswer after len=967
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:58]   MainThread | WORKER_CHUNK len=7 preview=' suelen'
+[16:04:58]   MainThread | appendAnswer before len=967 delta=' suelen'
+[16:04:58]   MainThread | appendAnswer after len=974
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:59]   MainThread | WORKER_CHUNK len=7 preview=' preced'
+[16:04:59]   MainThread | appendAnswer before len=974 delta=' preced'
+[16:04:59]   MainThread | appendAnswer after len=981
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:59]   MainThread | WORKER_CHUNK len=2 preview='er'
+[16:04:59]   MainThread | appendAnswer before len=981 delta='er'
+[16:04:59]   MainThread | appendAnswer after len=983
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:59]   MainThread | WORKER_CHUNK len=2 preview=' a'
+[16:04:59]   MainThread | appendAnswer before len=983 delta=' a'
+[16:04:59]   MainThread | appendAnswer after len=985
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:59]   MainThread | WORKER_CHUNK len=3 preview=' al'
+[16:04:59]   MainThread | appendAnswer before len=985 delta=' al'
+[16:04:59]   MainThread | appendAnswer after len=988
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:04:59]   MainThread | WORKER_CHUNK len=4 preview='phas'
+[16:04:59]   MainThread | appendAnswer before len=988 delta='phas'
+[16:04:59]   MainThread | appendAnswer after len=992
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:05:00]   MainThread | WORKER_CHUNK len=2 preview=' o'
+[16:05:00]   MainThread | appendAnswer before len=992 delta=' o'
+[16:05:00]   MainThread | appendAnswer after len=994
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:05:00]   MainThread | WORKER_CHUNK len=4 preview=' bet'
+[16:05:00]   MainThread | appendAnswer before len=994 delta=' bet'
+[16:05:00]   MainThread | appendAnswer after len=998
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:05:00]   MainThread | WORKER_CHUNK len=2 preview='as'
+[16:05:00]   MainThread | appendAnswer before len=998 delta='as'
+[16:05:00]   MainThread | appendAnswer after len=1000
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:05:00]   MainThread | WORKER_CHUNK len=5 preview=' para'
+[16:05:00]   MainThread | appendAnswer before len=1000 delta=' para'
+[16:05:00]   MainThread | appendAnswer after len=1005
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:05:00]   MainThread | WORKER_CHUNK len=9 preview=' permitir'
+[16:05:00]   MainThread | appendAnswer before len=1005 delta=' permitir'
+[16:05:00]   MainThread | appendAnswer after len=1014
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:05:01]   MainThread | WORKER_CHUNK len=8 preview=' cambios'
+[16:05:01]   MainThread | appendAnswer before len=1014 delta=' cambios'
+[16:05:01]   MainThread | appendAnswer after len=1022
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:05:01]   MainThread | WORKER_CHUNK len=6 preview=' antes'
+[16:05:01]   MainThread | appendAnswer before len=1022 delta=' antes'
+[16:05:01]   MainThread | appendAnswer after len=1028
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:05:01]   MainThread | WORKER_CHUNK len=4 preview=' del'
+[16:05:01]   MainThread | appendAnswer before len=1028 delta=' del'
+[16:05:01]   MainThread | appendAnswer after len=1032
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:05:01]   MainThread | WORKER_CHUNK len=12 preview=' lanzamiento'
+[16:05:01]   MainThread | appendAnswer before len=1032 delta=' lanzamiento'
+[16:05:01]   MainThread | appendAnswer after len=1044
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:05:01]   MainThread | WORKER_CHUNK len=6 preview=' final'
+[16:05:01]   MainThread | appendAnswer before len=1044 delta=' final'
+[16:05:01]   MainThread | appendAnswer after len=1050
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:05:02]   MainThread | WORKER_CHUNK len=8 preview=' oficial'
+[16:05:02]   MainThread | appendAnswer before len=1050 delta=' oficial'
+[16:05:02]   MainThread | appendAnswer after len=1058
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:05:02]   MainThread | WORKER_CHUNK len=1 preview='.'
+[16:05:02]   MainThread | appendAnswer before len=1058 delta='.'
+[16:05:02]   MainThread | appendAnswer after len=1059
+Traceback (most recent call last):
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 1937, in on_chunk
+    self.current_assistant_widget.appendAnswer(delta)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/aegis2/GUI_Nativa_Lubuntu_Ollama/main.py", line 912, in appendAnswer
+    if self.bubble.isHidden():
+       ^^^^^^^^^^^
+AttributeError: 'MessageBubble' object has no attribute 'bubble'
+[16:05:02]   MainThread | on_final_answer answer_len=1059 thinking_len=0
+[16:05:02]   MainThread | ThinkingBlockWidget.finish secs=79.876 text_len=0
+[16:05:02]   MainThread | ToolBlockWidget.finish entries=1 done=1

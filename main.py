@@ -909,7 +909,7 @@ class MessageBubble(QFrame):
         else:
             self.full_text += delta
         trace(f"appendAnswer after len={len(self.full_text)}")
-        if self.bubble.isHidden():
+        if self.role == "user" and hasattr(self, 'bubble') and self.bubble.isHidden():
             self.bubble.show()
         self.text_browser.setMarkdown(self.full_text + " ▍")
         self._reflow()
