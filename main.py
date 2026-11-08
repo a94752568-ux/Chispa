@@ -200,6 +200,7 @@ class OllamaWorker(QThread):
             # FASE 2: Streaming final con deteccion de think
             self.status_update.emit("Generando respuesta...")
             raw_accum = ""
+            self._emitted_len = 0  # origen: solo emitimos lo nuevo desde la última emisión
             thinking_content = ""
             answer_content = ""
             has_think = False
@@ -232,6 +233,12 @@ class OllamaWorker(QThread):
                     continue
 
                 raw_accum += delta
+
+                new_part = raw_accum[self._emitted_len:]
+                if not new_part:
+                    continue
+                self._emitted_len = len(raw_accum)
+                delta = new_part
 
                 if "<<thinking>>" in raw_accum and not has_think:
                     has_think = True
