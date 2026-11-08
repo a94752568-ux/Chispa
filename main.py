@@ -1855,6 +1855,7 @@ class MainWindow(QMainWindow):
 
     def send_message(self):
         text = self.input_edit.toPlainText().strip()
+        trace(f"send_message ENTER text_len={len(text)} attached={len(self.attached_images)}")
         if not text and not self.attached_images:
             return
         if self.worker and self.worker.isRunning():
@@ -1896,6 +1897,7 @@ class MainWindow(QMainWindow):
 
         assistant_widget = MessageBubble("assistant", "", [], enable_think=enable_think)
         self.chat_container_widget.add_message_widget(assistant_widget)
+        trace(f"NEW_ASSISTANT_BUBBLE role=assistant enable_think={enable_think}")
         self.current_assistant_widget = assistant_widget
         self.scroll_to_bottom()
 
@@ -1939,7 +1941,7 @@ class MainWindow(QMainWindow):
 
     @Slot(str)
     def on_chunk(self, delta: str):
-        trace(f"on_chunk len={len(delta)} preview={delta[:40]!r}")
+        trace(f"WORKER_CHUNK len={len(delta)} preview={delta[:40]!r}")
         if hasattr(self, 'current_assistant_widget'):
             self._answer_buffer += delta
             self.current_assistant_widget.appendAnswer(delta)
