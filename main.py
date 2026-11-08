@@ -234,13 +234,9 @@ class OllamaWorker(QThread):
 
                 raw_accum += delta
                 new_part = raw_accum[self._emitted_len:]
-                trace(f"WORKER_FASE2 accum_len={len(raw_accum)} emitted_len={self._emitted_len} new_part_len={len(new_part)} new_part={new_part[:40]!r}")
                 self._emitted_len = len(raw_accum)
                 if new_part:
-                    trace(f"WORKER_FASE2 EMIT len={len(new_part)}")
                     self.chunk_received.emit(new_part)
-                else:
-                    trace("WORKER_FASE2 SKIP_EMIT empty_new_part")
 
                 if "<<thinking>>" in raw_accum and not has_think:
                     has_think = True
@@ -1856,7 +1852,6 @@ class MainWindow(QMainWindow):
 
     def send_message(self):
         text = self.input_edit.toPlainText().strip()
-        trace(f"send_message ENTER text_len={len(text)} attached={len(self.attached_images)}")
         if not text and not self.attached_images:
             return
         if self.worker and self.worker.isRunning():
@@ -1893,7 +1888,6 @@ class MainWindow(QMainWindow):
 
         assistant_widget = MessageBubble("assistant", "", [], enable_think=enable_think)
         self.chat_container_widget.add_message_widget(assistant_widget)
-        trace(f"NEW_ASSISTANT_BUBBLE role=assistant enable_think={enable_think}")
         self.current_assistant_widget = assistant_widget
         self.scroll_to_bottom()
 
