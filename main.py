@@ -1882,11 +1882,6 @@ class MainWindow(QMainWindow):
         self.attached_images = []
         self.update_attached_label()
 
-        assistant_widget = MessageBubble("assistant", "", [])
-        self.chat_container_widget.add_message_widget(assistant_widget)
-        self.current_assistant_widget = assistant_widget
-        self.scroll_to_bottom()
-
         enable_tools = self.tools_check.isChecked()
         enable_think = self.think_check.isChecked() and self.modelo_piensa(self.current_model)
 
