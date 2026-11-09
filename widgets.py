@@ -378,6 +378,9 @@ class ToolBlockWidget(QFrame):
                 entry["status_icon"].stop(False)
                 self._has_error = True
         self._set_header_state()
+        app = QApplication.instance()
+        if app:
+            retint_widget_styles(app, app.property("nova_theme") or "dark")
         animate_height(self.body_widget, True, ms=140)
         self._notify_parent()
 
