@@ -809,7 +809,13 @@ class MainWindow(QMainWindow):
             self.model_combo.clear()
             self.model_combo.addItems(models)
             if models:
-                self.current_model = models[0]
+                # Preferir un modelo de chat: los embeddings no conversan
+                chat_models = [m for m in models if "embed" not in m.lower()]
+                self.current_model = (chat_models or models)[0]
+                # Sincronizar el combo con el modelo elegido por defecto
+                idx = self.model_combo.findText(self.current_model)
+                if idx >= 0:
+                    self.model_combo.setCurrentIndex(idx)
                 v = "👁 Vision" if is_vision_model(self.current_model) else "💬 Texto"
                 self.model_status.setText(f"{v} | {len(models)} modelos")
         except Exception as e:
