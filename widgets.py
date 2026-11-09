@@ -573,6 +573,7 @@ class MessageBubble(QFrame):
             retry_btn = QPushButton("♻")
             retry_btn.setFixedSize(24, 24)
             retry_btn.setToolTip("Regenerar respuesta")
+            self.retry_btn = retry_btn
             retry_btn.setStyleSheet(f"""
                 QPushButton {{
                     background: transparent;

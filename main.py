@@ -1167,12 +1167,7 @@ class MainWindow(QMainWindow):
         """Redibuja la conversación activa desde el historial persistido."""
         self._clear_chat_view()
         if not self.chat_history:
-            welcome = MessageBubble("assistant", "¡Hola! **Ollama GUI para Lubuntu**\n\n- 🌐 Web search automático\n- 🧠 Pensamiento visible\n- 👁 Vision drag & drop\n- 🔧 Sistema de plugins en carpeta tools/\n\nPrueba arrastrar una imagen o preguntar: *¿qué pasó hoy en México?*", [], enable_think=False)
-            welcome.tool_block.hide()
-            if welcome.thinking_block is not None:
-                welcome.thinking_block.hide()
-            welcome.icon_container.hide()
-            self.chat_container_widget.add_message_widget(welcome)
+            self.chat_container_widget.add_message_widget(self._build_empty_state())
         else:
             for m in self.chat_history:
                 role = m.get("role", "assistant")
@@ -1183,8 +1178,108 @@ class MainWindow(QMainWindow):
                     w.tool_block.hide()
                     if w.thinking_block is not None:
                         w.thinking_block.hide()
+                    self._wire_assistant_actions(w)
                 self.chat_container_widget.add_message_widget(w)
         self.scroll_to_bottom(force=True)
+
+    def _build_empty_state(self):
+        """Estado vacío estilo Vibe: logo, saludo y chips de sugerencias."""
+        wrap = QWidget()
+        vl = QVBoxLayout(wrap)
+        vl.setContentsMargins(24, 40, 24, 40)
+        vl.setSpacing(0)
+
+        logo_row = QHBoxLayout()
+        logo_row.addStretch()
+        logo = QLabel("✦")
+        logo.setFixedSize(56, 56)
+        logo.setAlignment(Qt.AlignCenter)
+        logo.setStyleSheet(f"""
+            QLabel {{
+                background: {theme.ACCENT};
+                color: {theme.TEXT_ON_ACCENT};
+                border-radius: 28px;
+                font-size: 26px;
+                font-weight: bold;
+            }}
+        """)
+        logo_row.addWidget(logo)
+        logo_row.addStretch()
+        vl.addLayout(logo_row)
+
+        vl.addSpacing(20)
+        title = QLabel("¿En qué te ayudo hoy?")
+        title.setAlignment(Qt.AlignCenter)
+        title.setStyleSheet(f"color: {theme.TEXT}; font-size: 22px; font-weight: bold;")
+        vl.addWidget(title)
+
+        sub = QLabel("Escribe, arrastra una imagen o toca una sugerencia")
+        sub.setAlignment(Qt.AlignCenter)
+        sub.setStyleSheet(f"color: {theme.TEXT_SECOND}; font-size: 13px;")
+        vl.addSpacing(6)
+        vl.addWidget(sub)
+
+        vl.addSpacing(24)
+        sugerencias = [
+            "🌤️ ¿Qué clima hace en La Paz?",
+            "🔎 Noticias de hoy en México",
+            "🧮 Propina del 15% de $350",
+            "💻 Estado de mi sistema",
+        ]
+        for sug in sugerencias:
+            row = QHBoxLayout()
+            row.addStretch()
+            chip = QPushButton(sug)
+            chip.setCursor(Qt.PointingHandCursor)
+            chip.setStyleSheet(f"""
+                QPushButton {{
+                    background: {theme.BG_ELEVATED};
+                    color: {theme.TEXT_SECOND};
+                    border: 1px solid {theme.BORDER};
+                    border-radius: 16px;
+                    padding: 8px 14px;
+                    font-size: 12px;
+                }}
+                QPushButton:hover {{ border-color: {theme.ACCENT}; color: {theme.TEXT}; }}
+            """)
+            chip.clicked.connect(lambda _=False, t=sug: self._use_suggestion(t))
+            row.addWidget(chip)
+            row.addStretch()
+            vl.addLayout(row)
+            vl.addSpacing(6)
+
+        vl.addStretch(2)
+        return wrap
+
+    def _use_suggestion(self, text: str):
+        """Rellena el composer con una sugerencia y le da foco."""
+        self.input_edit.setPlainText(text)
+        self.input_edit.setFocus()
+
+    def _wire_assistant_actions(self, w):
+        """Conecta las acciones de una burbuja de asistente (regenerar)."""
+        btn = getattr(w, "retry_btn", None)
+        if btn is not None:
+            btn.clicked.connect(lambda _=False: self._regenerate_response())
+
+    def _regenerate_response(self):
+        """Regenerar: descarta la(s) respuesta(s) tras el último mensaje y repite el turno."""
+        if self.worker and self.worker.isRunning():
+            self.status_label.setText("Espera a que termine el turno para regenerar")
+            return
+        last_user_idx = -1
+        for i in range(len(self.chat_history) - 1, -1, -1):
+            if self.chat_history[i].get("role") == "user":
+                last_user_idx = i
+                break
+        if last_user_idx < 0:
+            return
+        text = self.chat_history[last_user_idx].get("content", "")
+        # Descartar las respuestas tras el último mensaje del usuario
+        self.chat_history = self.chat_history[:last_user_idx + 1]
+        self._save_memory()
+        self._render_chat()
+        self._start_turn(text)
 
     def send_message(self):
         text = self.input_edit.toPlainText().strip()
@@ -1221,6 +1316,10 @@ class MainWindow(QMainWindow):
         self.attached_images = []
         self.update_attached_label()
 
+        self._start_turn(text)
+
+    def _start_turn(self, text: str):
+        """Inicia el turno del asistente para el último mensaje del historial."""
         enable_tools = self.tools_check.isChecked()
         enable_think = self.think_check.isChecked() and self.modelo_piensa(self.current_model)
 
@@ -1251,6 +1350,7 @@ class MainWindow(QMainWindow):
         assistant_widget = MessageBubble("assistant", "", [], enable_think=enable_think)
         self.chat_container_widget.add_message_widget(assistant_widget)
         self.current_assistant_widget = assistant_widget
+        self._wire_assistant_actions(assistant_widget)
         self.scroll_to_bottom()
 
         # Limpieza de huérfanos del turno anterior (E1: widgets congelados)
@@ -1432,6 +1532,7 @@ class MainWindow(QMainWindow):
         widget = MessageBubble("assistant", texto, [], enable_think=enable_think)
         self.chat_container_widget.add_message_widget(widget)
         self.current_assistant_widget = widget
+        self._wire_assistant_actions(widget)
         self.chat_history.append({"role": "assistant", "content": texto})
         self._save_memory()
         self.scroll_to_bottom()
