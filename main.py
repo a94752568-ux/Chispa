@@ -133,17 +133,7 @@ Cuando uses herramientas, sintetiza, nunca transcribas:
 2) 3-6 bullets con ideas principales y datos concretos.
 3) Un párrafo breve de matices o contexto.
 4) Fuentes como enlaces markdown al final.
-Prohibido volcar resultados crudos o listar URLs sin interpretarlas.
-
---- AGENTE DE ESCRITORIO ---
-Cuando el usuario pida guardar, crear, exportar u organizar algo en su carpeta personal, NO lo hagas tú: responde ÚNICAMENTE con un JSON válido de este formato, sin texto alrededor:
-{"objetivo": "...", "pasos": [{"tool": "nombre", "args": {...}}, ...]}
-Reglas del plan:
-1. Usa SOLO estas tools: web_search, rag_search, read_file, system_monitor, full_recon, analyze_security, ocr_tool, metadata_tool, sentiment_tool, write_desktop, organize_files, db_writer.
-2. Para referir el resultado de un paso anterior en args, usa {paso_N} (ej: {paso_1}).
-3. write_desktop/organize_files/db_writer son MUTACIONES: el sistema pedirá autorización al usuario antes de ejecutarlas. Tú solo las propones.
-4. Máximo 5 pasos. Si la tarea es simple (solo leer), responde normal sin JSON.
-5. NUNCA propongas borrar archivos ni escribir en .ssh, .gnupg o venv."""
+Prohibido volcar resultados crudos o listar URLs sin interpretarlas."""
 
 def is_vision_model(name: str) -> bool:
     low = name.lower()
