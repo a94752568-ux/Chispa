@@ -132,7 +132,9 @@ class MainWindow(QMainWindow):
         )
 
         self.chat_history: List[Dict] = []
-        self._load_memory()
+        self.chat_id: str = ""
+        self._chat_title: str = "Nuevo chat"
+        self.chats: List[Dict] = []
         self.current_model = "llama3.1"
         self.models: List[str] = []
         self.attached_images: List[str] = []
@@ -233,6 +235,41 @@ class MainWindow(QMainWindow):
         """)
         self.new_chat_btn.clicked.connect(self.new_chat)
         sidebar_layout.addWidget(self.new_chat_btn)
+
+        # Conversaciones (multi-chat persistente)
+        chats_label = QLabel("CONVERSACIONES")
+        chats_label.setStyleSheet(f"color: {theme.TEXT_SECOND}; font-weight: 700; font-size: 11px;")
+        sidebar_layout.addWidget(chats_label)
+
+        self.chats_list = QListWidget()
+        self.chats_list.setMinimumHeight(96)
+        self.chats_list.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.chats_list.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.chats_list.setStyleSheet(f"""
+            QListWidget {{
+                background: transparent;
+                border: none;
+                color: {theme.TEXT};
+                font-size: 12px;
+                outline: none;
+            }}
+            QListWidget::item {{
+                padding: 8px 10px;
+                border-radius: 8px;
+                margin: 1px 4px 1px 0px;
+            }}
+            QListWidget::item:hover {{
+                background: {theme.BG_ELEVATED};
+            }}
+            QListWidget::item:selected {{
+                background: {theme.ACCENT_TINT};
+                color: {theme.TEXT};
+            }}
+        """)
+        self.chats_list.itemClicked.connect(self._switch_chat)
+        self.chats_list.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.chats_list.customContextMenuRequested.connect(self._chat_context_menu)
+        sidebar_layout.addWidget(self.chats_list)
 
         # Selector de modelo
         model_group = QFrame()
@@ -640,12 +677,8 @@ class MainWindow(QMainWindow):
         # Cargar modelos al inicio
         self.load_models()
 
-        # Mensaje bienvenida
-        welcome = MessageBubble("assistant", "¡Hola! **Ollama GUI para Lubuntu**\n\n- 🌐 Web search automático\n- 🧠 Pensamiento visible\n- 👁 Vision drag & drop\n- 🔧 Sistema de plugins en carpeta tools/\n\nPrueba arrastrar una imagen o preguntar: *¿qué pasó hoy en México?*", [])
-        welcome.thinking_block.hide()
-        welcome.tool_block.hide()
-        welcome.icon_container.hide()
-        self.chat_container_widget.add_message_widget(welcome)
+        # Cargar conversaciones persistentes y renderizar la activa
+        self._init_chats()
 
         # Verificar disponibilidad de STT (después de crear la UI)
         self.stt_available = False
@@ -819,13 +852,21 @@ class MainWindow(QMainWindow):
         self.status_label.setText("Imágenes limpiadas")
 
     def new_chat(self):
-        self.chat_history = []
-        while self.chat_container_widget.layout.count() > 1:
-            item = self.chat_container_widget.layout.takeAt(0)
-            w = item.widget()
-            if w:
-                w.deleteLater()
+        """Crea una conversación nueva (si la activa ya está vacía, solo enfoca)."""
+        if self.worker and self.worker.isRunning():
+            self.status_label.setText("Espera a que termine el turno para crear otra conversación")
+            return
+        if not self.chat_history and self._chat_title == "Nuevo chat":
+            self.input_edit.setFocus()
+            return
+        cid = memoria.crear_chat()
+        self.chats.insert(0, {"id": cid, "title": "Nuevo chat", "updated": ""})
+        self.chats_list.blockSignals(True)
+        self.chats_list.insertItem(0, QListWidgetItem("Nuevo chat"))
+        self.chats_list.blockSignals(False)
+        self._select_chat(0)
         self.status_label.setText("Nuevo chat")
+        self.input_edit.setFocus()
 
     def open_tools_folder(self):
         import subprocess
@@ -951,16 +992,143 @@ class MainWindow(QMainWindow):
         except Exception as e:
             QMessageBox.warning(self, "Error TTS", str(e))
 
-    def _load_memory(self):
-        """Carga el historial de chat desde disco si existe."""
-        data = memoria.cargar()
-        if data:
-            print(f"Memoria cargada: {len(data)} mensajes desde {memoria.MEMORY_FILE}")
-        self.chat_history = data
-
     def _save_memory(self):
-        """Guarda el historial de chat en disco."""
-        memoria.guardar(self.chat_history)
+        """Guarda la conversación activa en disco."""
+        if self.chat_id:
+            memoria.guardar_chat(self.chat_id, self._chat_title, self.chat_history)
+            self._refresh_chat_entry()
+
+    def _init_chats(self):
+        """Carga la lista de conversaciones persistentes y selecciona la activa."""
+        self.chats = memoria.listar_chats()
+        if not self.chats:
+            memoria.crear_chat()
+            self.chats = memoria.listar_chats()
+        self.chats_list.blockSignals(True)
+        self.chats_list.clear()
+        for c in self.chats:
+            item = QListWidgetItem(c["title"])
+            item.setToolTip(c["title"])
+            self.chats_list.addItem(item)
+        self.chats_list.blockSignals(False)
+        self._select_chat(0)
+
+    def _select_chat(self, row: int):
+        """Carga la conversación de la fila dada y la renderiza."""
+        if row < 0 or row >= len(self.chats):
+            return
+        meta = self.chats[row]
+        self.chat_id = meta["id"]
+        self._chat_title = meta["title"]
+        self.chat_history = memoria.cargar_chat(self.chat_id)
+        self.chats_list.setCurrentRow(row)
+        self.chat_title_label.setText(self._chat_title)
+        self._render_chat()
+
+    def _current_row(self) -> int:
+        return self.chats_list.currentRow()
+
+    def _refresh_chat_entry(self):
+        """Refresca título y posición de la conversación activa en la lista."""
+        row = self._current_row()
+        if row < 0 or row >= len(self.chats):
+            return
+        self.chats[row]["title"] = self._chat_title
+        item = self.chats_list.item(row)
+        if item:
+            item.setText(self._chat_title)
+        # Burbujear la conversación activa al tope de la lista
+        if row > 0:
+            meta = self.chats.pop(row)
+            self.chats.insert(0, meta)
+            self.chats_list.blockSignals(True)
+            item = self.chats_list.takeItem(row)
+            self.chats_list.insertItem(0, item)
+            self.chats_list.setCurrentRow(0)
+            self.chats_list.blockSignals(False)
+
+    def _switch_chat(self, item):
+        """Cambia de conversación, con guard: no interrumpir un turno en curso."""
+        if self.worker and self.worker.isRunning():
+            self.status_label.setText("Espera a que termine el turno para cambiar de conversación")
+            for i, c in enumerate(self.chats):
+                if c["id"] == self.chat_id:
+                    self.chats_list.blockSignals(True)
+                    self.chats_list.setCurrentRow(i)
+                    self.chats_list.blockSignals(False)
+                    break
+            return
+        self._select_chat(self.chats_list.row(item))
+
+    def _delete_chat_at(self, row: int):
+        """Elimina la conversación de la fila dada, con confirmación."""
+        if row < 0 or row >= len(self.chats):
+            return
+        meta = self.chats[row]
+        btn = QMessageBox.question(
+            self, "Eliminar conversación",
+            f"¿Eliminar «{meta['title']}»? Su historial se borrará definitivamente.",
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No,
+        )
+        if btn != QMessageBox.Yes:
+            return
+        memoria.eliminar_chat(meta["id"])
+        del self.chats[row]
+        self.chats_list.blockSignals(True)
+        self.chats_list.takeItem(row)
+        self.chats_list.blockSignals(False)
+        if not self.chats:
+            memoria.crear_chat()
+            self.chats = memoria.listar_chats()
+            self.chats_list.blockSignals(True)
+            self.chats_list.clear()
+            for c in self.chats:
+                self.chats_list.addItem(QListWidgetItem(c["title"]))
+            self.chats_list.blockSignals(False)
+        self._select_chat(min(row, self.chats_list.count() - 1))
+
+    def _chat_context_menu(self, pos):
+        """Menú contextual sobre la lista de conversaciones."""
+        from PySide6.QtWidgets import QMenu
+        item = self.chats_list.itemAt(pos)
+        if item is None:
+            return
+        menu = QMenu(self)
+        act = menu.addAction("🗑️ Eliminar conversación")
+        chosen = menu.exec(self.chats_list.mapToGlobal(pos))
+        if chosen is act:
+            self._delete_chat_at(self.chats_list.row(item))
+
+    def _clear_chat_view(self):
+        """Vacía la vista del chat (los widgets se destruyen)."""
+        while self.chat_container_widget.layout.count() > 0:
+            item = self.chat_container_widget.layout.takeAt(0)
+            w = item.widget()
+            if w:
+                w.deleteLater()
+
+    def _render_chat(self):
+        """Redibuja la conversación activa desde el historial persistido."""
+        self._clear_chat_view()
+        if not self.chat_history:
+            welcome = MessageBubble("assistant", "¡Hola! **Ollama GUI para Lubuntu**\n\n- 🌐 Web search automático\n- 🧠 Pensamiento visible\n- 👁 Vision drag & drop\n- 🔧 Sistema de plugins en carpeta tools/\n\nPrueba arrastrar una imagen o preguntar: *¿qué pasó hoy en México?*", [], enable_think=False)
+            welcome.tool_block.hide()
+            if welcome.thinking_block is not None:
+                welcome.thinking_block.hide()
+            welcome.icon_container.hide()
+            self.chat_container_widget.add_message_widget(welcome)
+        else:
+            for m in self.chat_history:
+                role = m.get("role", "assistant")
+                if role == "system":
+                    continue
+                w = MessageBubble(role, m.get("content", ""), [], enable_think=False)
+                if role == "assistant":
+                    w.tool_block.hide()
+                    if w.thinking_block is not None:
+                        w.thinking_block.hide()
+                self.chat_container_widget.add_message_widget(w)
+        self.scroll_to_bottom(force=True)
 
     def send_message(self):
         text = self.input_edit.toPlainText().strip()
@@ -984,6 +1152,10 @@ class MainWindow(QMainWindow):
                 user_dict["images"] = b64_list
 
         self.chat_history.append(user_dict)
+        # Auto-título de la conversación con el primer mensaje del usuario
+        if text and self._chat_title == "Nuevo chat":
+            self._chat_title = memoria.titulo(text)
+            self.chat_title_label.setText(self._chat_title)
         # Mantener el historial acotado: lo mismo que se envía al modelo.
         if len(self.chat_history) > memoria.MAX_MEMORY_MESSAGES:
             self.chat_history = self.chat_history[-memoria.MAX_MEMORY_MESSAGES:]
