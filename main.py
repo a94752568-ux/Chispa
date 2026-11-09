@@ -141,6 +141,7 @@ class MainWindow(QMainWindow):
         self.worker: Optional[OllamaWorker] = None
         self.settings_dialog = None
         self._answer_buffer: str = ""
+        self._stop_requested: bool = False
         self._think_caps: Dict[str, bool] = {}
 
         # Cargar tools
@@ -473,7 +474,7 @@ class MainWindow(QMainWindow):
                 color: {theme.TEXT_MUTED};
             }}
         """)
-        self.send_btn.clicked.connect(self.send_message)
+        self.send_btn.clicked.connect(self._on_send_clicked)
         bottom_row.addWidget(self.send_btn)
 
         composer_layout.addLayout(bottom_row)
@@ -1292,7 +1293,7 @@ class MainWindow(QMainWindow):
         if not text and not self.attached_images:
             return
         if self.worker and self.worker.isRunning():
-            QMessageBox.warning(self, "Espera", "Ya estoy generando respuesta")
+            self.status_label.setText("Generando… usa el botón ⏹ para detener")
             return
 
         user_widget = MessageBubble("user", text or "(solo imagen)", self.attached_images.copy())
@@ -1381,7 +1382,7 @@ class MainWindow(QMainWindow):
         self.worker.final_answer.connect(self.on_final_answer)
         self.worker.error_occurred.connect(self.on_error)
         self.worker.status_update.connect(self._on_worker_status)
-        self.worker.finished.connect(lambda: self.send_btn.setEnabled(True))
+        self.worker.finished.connect(lambda: self._set_send_mode("send"))
 
         # Ruta de tools + cronómetro del turno en el status bar
         self._turn_start = time.time()
@@ -1391,8 +1392,55 @@ class MainWindow(QMainWindow):
             else:
                 ruta_desc = f"{len(route_defs)}/{len(self.tools_def)} tools (pre-router)"
             self.status_label.setText(f"Consultando... · {ruta_desc}")
-        self.send_btn.setEnabled(False)
+        self._stop_requested = False
+        self._set_send_mode("stop")
         self.worker.start()
+
+    def _on_send_clicked(self):
+        """El botón envía o detiene según el estado del turno."""
+        if self.worker and self.worker.isRunning():
+            self._stop_generation()
+        else:
+            self.send_message()
+
+    def _stop_generation(self):
+        """Detiene el turno en curso conservando lo generado hasta ahora."""
+        if self.worker and self.worker.isRunning():
+            self._stop_requested = True
+            self.worker.stop()
+            self.status_label.setText("Deteniendo…")
+
+    def _set_send_mode(self, mode: str):
+        """Alterna el botón enviar/detener según el estado del turno."""
+        if mode == "stop":
+            self.send_btn.setText("⏹")
+            self.send_btn.setToolTip("Detener generación")
+            self.send_btn.setStyleSheet(f"""
+                QPushButton {{
+                    background: {theme.ERROR};
+                    color: #ffffff;
+                    border: none;
+                    border-radius: 18px;
+                    font-size: 14px;
+                    font-weight: bold;
+                }}
+                QPushButton:hover {{ background: #ff7f7f; }}
+            """)
+        else:
+            self.send_btn.setText("➤")
+            self.send_btn.setToolTip("Enviar (Enter)")
+            self.send_btn.setStyleSheet(f"""
+                QPushButton {{
+                    background: {theme.ACCENT};
+                    color: {theme.TEXT_ON_ACCENT};
+                    border: none;
+                    border-radius: 18px;
+                    font-size: 16px;
+                    font-weight: bold;
+                }}
+                QPushButton:hover {{ background: {theme.ACCENT_HOVER}; }}
+                QPushButton:pressed {{ background: {theme.ACCENT_ACTIVE}; }}
+            """)
 
     @Slot(str)
     def _on_worker_status(self, s: str):
@@ -1476,8 +1524,10 @@ class MainWindow(QMainWindow):
                 pass
         # Modelo primero: historial siempre se guarda, pase lo que pase en la vista
         if hasattr(self, 'current_assistant_widget'):
-            self.chat_history.append({"role": "assistant", "content": answer})
-            self._save_memory()
+            # Si se detuvo la generación sin texto, no guardar una respuesta vacía
+            if answer.strip() or not getattr(self, "_stop_requested", False):
+                self.chat_history.append({"role": "assistant", "content": answer})
+                self._save_memory()
             try:
                 self.current_assistant_widget.finishAnswer(answer, thinking)
                 self.current_assistant_widget.showTTS()
@@ -1486,14 +1536,14 @@ class MainWindow(QMainWindow):
                 traceback.print_exc()
                 self.status_label.setText("Error al renderizar respuesta")
         # Vista nunca bloquea el turno: el botón siempre se habilita
-        self.send_btn.setEnabled(True)
+        self._set_send_mode("send")
         self.status_label.setText("Listo")
         self.scroll_to_bottom()
 
     @Slot(str)
     def on_error(self, err: str):
         QMessageBox.critical(self, "Error Ollama", f"{err}\n\nVerifica que 'ollama serve' esté corriendo y el modelo exista.\nollama pull {self.current_model}")
-        self.send_btn.setEnabled(True)
+        self._set_send_mode("send")
         self.status_label.setText(f"Error: {err[:50]}")
 
     # ---------- Orquestador: gate de autorización ----------
@@ -1518,7 +1568,7 @@ class MainWindow(QMainWindow):
         self.chat_history.append({"role": "assistant", "content": informe})
         self._save_memory()
         self.scroll_to_bottom()
-        self.send_btn.setEnabled(True)
+        self._set_send_mode("send")
         self.status_label.setText("Agente: plan completado")
 
     @Slot(int, str)
@@ -1530,7 +1580,7 @@ class MainWindow(QMainWindow):
         self.chat_history.append({"role": "assistant", "content": f"Error en paso {idx + 1}: {motivo}"})
         self._save_memory()
         self.scroll_to_bottom()
-        self.send_btn.setEnabled(True)
+        self._set_send_mode("send")
         self.status_label.setText("Agente: error")
 
     # ---------- Ayuda: añadir burbuja de asistente desde cualquier contexto ----------

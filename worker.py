@@ -85,6 +85,8 @@ class OllamaWorker(QThread):
 
                 if tool_calls:
                     for tc in tool_calls:
+                        if self._stop:
+                            break
                         func = tc.get('function', {})
                         name = func.get('name','')
                         args = func.get('arguments', {})
@@ -130,6 +132,11 @@ class OllamaWorker(QThread):
                     continue
                 else:
                     break
+
+            if self._stop:
+                # Detenido durante la fase de tools: no abrir un stream nuevo.
+                self.final_answer.emit("", "")
+                return
 
             # FASE 2: Streaming final con deteccion de think
             self.status_update.emit("Generando respuesta...")
