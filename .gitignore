@@ -26,6 +26,11 @@ secrets/
 *.swp
 *.swo
 
+# ===== Respaldos temporales =====
+*.bak
+*.orig
+*~
+
 # ===== Sistema operativo =====
 .DS_Store
 Thumbs.db
