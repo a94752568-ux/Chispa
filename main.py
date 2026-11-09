@@ -898,7 +898,7 @@ class MessageBubble(QFrame):
                 }
                 QPushButton:hover { background: #1f2126; color: #ffffff; }
             """)
-            tts_btn.clicked.connect(lambda: self.speak_response(self.full_text))
+            tts_btn.clicked.connect(lambda: self.window().speak_response(self.full_text))
 
             icon_row.addWidget(copy_btn)
             icon_row.addWidget(retry_btn)
