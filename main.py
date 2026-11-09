@@ -14,6 +14,27 @@ from typing import List, Dict, Optional
 SCRIPT_DIR = Path(__file__).parent.resolve()
 sys.path.insert(0, str(SCRIPT_DIR))
 
+# E3 dedup debug flags
+DEDUP_ENABLED = os.getenv("OLLAMA_GUI_DEDUP", "1").lower() not in {
+    "0",
+    "false",
+    "no",
+    "off",
+}
+
+DEBUG_DEDUP = os.getenv("OLLAMA_GUI_DEBUG_DEDUP", "0").lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
+
+DEDUP_LOG_PATH = os.getenv("OLLAMA_GUI_DEDUP_LOG", "")
+
+# Asegurar que el directorio del script esté en sys.path para encontrar tools/
+SCRIPT_DIR = Path(__file__).parent.resolve()
+sys.path.insert(0, str(SCRIPT_DIR))
+
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QScrollArea, QTextEdit, QPushButton, QLabel, QComboBox, QCheckBox,
@@ -233,10 +254,6 @@ class OllamaWorker(QThread):
                     continue
 
                 raw_accum += delta
-                new_part = raw_accum[self._emitted_len:]
-                self._emitted_len = len(raw_accum)
-                if new_part:
-                    self.chunk_received.emit(new_part)
 
                 if "<<thinking>>" in raw_accum and not has_think:
                     has_think = True
@@ -259,6 +276,10 @@ class OllamaWorker(QThread):
                             answer_content = parts[1] if len(parts) > 1 else ""
                             if answer_content.strip():
                                 self.chunk_received.emit(answer_content)
+                        
+                        # IMPORTANTE: después de procesar thinking y emitir answer_content,
+                        # saltar la emisión posterior de delta para evitar duplicación
+                        continue
                     else:
                         think_part = raw_accum.split("<<thinking>>")[-1]
                         self.thinking_chunk.emit(think_part[:2000])
@@ -651,6 +672,14 @@ class MessageBubble(QFrame):
         self.full_text = content or ""
         self.images = images or []
         self.enable_think = enable_think and (role == "assistant")
+        self._answer_started = False
+        self._last_emit = ""  # Track last emitted delta for deduplication
+        self._duplicate_consecutive_count = 0
+        self._duplicate_fulltext_count = 0
+        self._accepted_delta_count = 0
+        self._raw_delta_count = 0
+        self._empty_delta_count = 0
+        self._dedup_enabled = DEDUP_ENABLED  # E3 dedup control
         trace(f"MessageBubble.__init__ role={role} enable_think={enable_think} images={len(self.images or [])}")
 
         self.setObjectName("messageBubble")
@@ -897,39 +926,258 @@ class MessageBubble(QFrame):
     def setAnswer(self, text: str):
         self.full_text = text
         self.text_browser.setMarkdown(text)
+        self._last_emit = ""  # Reset last_emit when answer is set directly
+        self._duplicate_consecutive_count = 0
+        self._duplicate_fulltext_count = 0
+        self._accepted_delta_count = 0
+        self._raw_delta_count = 0
+        self._empty_delta_count = 0
 
     def appendAnswer(self, delta: str):
-        trace(f"appendAnswer before len={len(self.full_text)} delta={delta[:40]!r}")
-        if not delta:
+        """
+        Append answer delta with deduplication and metrics tracking.
+        
+        Thread Safety: This method should only be called from the main thread
+        via Qt signal/slot mechanisms. It is not thread-safe and may cause
+        segfaults if called from other threads.
+        
+        IMPORTANT: In production, this is called via:
+        OllamaWorker.chunk_received -> MainWindow.on_chunk -> current_assistant_widget.appendAnswer
+        
+        The Qt signal/slot mechanism ensures thread safety when used correctly.
+        Do not call appendAnswer() directly from non-main threads.
+        """
+        # Thread safety check - ensure this is called from main thread
+        from PySide6.QtCore import QThread, QCoreApplication
+        
+        app = QCoreApplication.instance()
+        if app is not None:
+            current_thread = QThread.currentThread()
+            app_thread = app.thread()
+            if current_thread != app_thread:
+                # Log error for debugging
+                import sys
+                print(f"WARNING: appendAnswer() called from thread {current_thread.objectName()} instead of main thread.", file=sys.stderr)
+                print(f"         This may cause segfaults. Call should be via Qt signal/slot mechanism.", file=sys.stderr)
+                # Don't crash, just continue - defensive approach
+                # In production, this should never happen if architecture is correct
+                return
+
+        # Handle None delta gracefully
+        if delta is None:
+            self._raw_delta_count = getattr(self, "_raw_delta_count", 0) + 1
             return
+
+        # Increment raw delta count for all non-None deltas
+        self._raw_delta_count = getattr(self, "_raw_delta_count", 0) + 1
+
+        # Handle empty deltas (consistent with original behavior)
+        if not delta:
+            self._empty_delta_count = getattr(self, "_empty_delta_count", 0) + 1
+            return
+
+        last_emit = getattr(self, "_last_emit", "")
+
+        # --------------------------------------------------
+        # DEDUP 2: snapshot completo repetido.
+        # Prioridad alta porque evita duplicar toda la respuesta.
+        # --------------------------------------------------
+        if self.full_text and delta == self.full_text:
+            self._duplicate_fulltext_count = (
+                getattr(self, "_duplicate_fulltext_count", 0) + 1
+            )
+            self._last_emit = delta
+
+            # Opcional: healing solo si el widget no refleja full_text.
+            # Evitar setMarkdown() incondicional para no provocar repintado.
+            if self.text_browser.toPlainText().strip() != self.full_text.strip():
+                self.text_browser.setMarkdown(self.full_text)
+                self._reflow()
+            return
+
+        # --------------------------------------------------
+        # DEDUP 1: duplicado consecutivo exacto.
+        # --------------------------------------------------
+        if delta == last_emit:
+            self._duplicate_consecutive_count = (
+                getattr(self, "_duplicate_consecutive_count", 0) + 1
+            )
+            return
+
+        # --------------------------------------------------
+        # Snapshot creciente opcional.
+        # Si delta contiene full_text + sufijo nuevo, aceptar solo sufijo.
+        # --------------------------------------------------
         if self.full_text and delta.startswith(self.full_text):
-            self.full_text = delta            # llegó acumulado: reemplaza, no concatena
-        elif self.full_text.endswith(delta):
-            pass                              # chunk repetido: ignóralo
-        else:
-            self.full_text += delta
+            suffix = delta[len(self.full_text):]
+
+            if suffix:
+                self.full_text = delta
+                self._last_emit = delta
+                self._accepted_delta_count = (
+                    getattr(self, "_accepted_delta_count", 0) + 1
+                )
+                self.text_browser.insertPlainText(suffix)
+                self._reflow()
+                return
+
+            # Si suffix vacío, ya lo trató DEDUP 2, pero por seguridad:
+            self._duplicate_fulltext_count = (
+                getattr(self, "_duplicate_fulltext_count", 0) + 1
+            )
+            self._last_emit = delta
+            return
+
+        # --------------------------------------------------
+        # DEDUP 3: delta incremental normal.
+        # --------------------------------------------------
+        self.full_text += delta
+        self._last_emit = delta
+        self._accepted_delta_count = (
+            getattr(self, "_accepted_delta_count", 0) + 1
+        )
+        trace(f"appendAnswer: agregando nuevo delta, total aceptado {self._accepted_delta_count}: {delta[:40]!r}")
+
         trace(f"appendAnswer after len={len(self.full_text)}")
         if self.role == "user" and hasattr(self, 'bubble') and self.bubble.isHidden():
             self.bubble.show()
+        if self.role == "assistant" and not getattr(self, "_answer_started", False):
+            self.text_browser.show()
+            self._answer_started = True
         self.text_browser.setMarkdown(self.full_text + " ▍")
         self._reflow()
-
-    def finishAnswer(self, answer: str, thinking: str):
-        self.text_browser.setMarkdown(answer)
-        if not answer.strip():
-            # Fallback visible: el modelo no sintetizó tras las herramientas
-            self.text_browser.setMarkdown("_(el modelo no produjo síntesis tras las herramientas)_")
-        if self.thinking_block is not None:
-            self.thinking_block.finish(thinking)
-        if self.tool_block is not None:
-            self.tool_block.finish()
-        self.updateGeometry()
-        if self.layout():
-            self.layout().activate()
 
     def showTTS(self):
         if hasattr(self, 'icon_container'):
             self.icon_container.setVisible(True)
+
+    def _snapshot_dedup_metrics(self) -> dict:
+        return {
+            "raw_delta_count": getattr(self, "_raw_delta_count", 0),
+            "accepted_delta_count": getattr(self, "_accepted_delta_count", 0),
+            "duplicate_consecutive_count": getattr(self, "_duplicate_consecutive_count", 0),
+            "duplicate_fulltext_count": getattr(self, "_duplicate_fulltext_count", 0),
+            "empty_delta_count": getattr(self, "_empty_delta_count", 0),
+            "dedup_enabled": getattr(self, "_dedup_enabled", True),
+        }
+
+    def finishAnswer(self, answer: str, thinking: str, error: str = None):
+        """
+        Finish answer with final content, thinking block, or error.
+        
+        Thread Safety: This method should only be called from the main thread.
+        It mutates UI widgets and should only be accessed via proper Qt
+        signal/slot mechanisms in production.
+        """
+        # Thread safety check - ensure this is called from main thread
+        from PySide6.QtCore import QThread, QCoreApplication
+        
+        app = QCoreApplication.instance()
+        if app is not None:
+            current_thread = QThread.currentThread()
+            app_thread = app.thread()
+            if current_thread != app_thread:
+                # Log error for debugging
+                import sys
+                print(f"WARNING: finishAnswer() called from thread {current_thread.objectName()} instead of main thread.", file=sys.stderr)
+                print(f"         UI widgets should only be mutated from main thread.", file=sys.stderr)
+                # Don't crash, just continue - defensive approach
+                return
+        try:
+            if error is not None:
+                # Error takes absolute priority but preserves existing content
+                if self.full_text:
+                    self.text_browser.setMarkdown(f"{self.full_text}\n[ERROR] {error}")
+                else:
+                    self.text_browser.setMarkdown(f"[ERROR] {error}")
+                # When error is shown, answer is considered started
+                if not getattr(self, "_answer_started", False):
+                    self.text_browser.show()
+                    self._answer_started = True
+            elif answer.strip():
+                # Normal answer with content
+                self.text_browser.setMarkdown(answer)
+                # When answer is shown, mark as started
+                if not getattr(self, "_answer_started", False):
+                    self.text_browser.show()
+                    self._answer_started = True
+            elif self.thinking_block is not None:
+                # Show placeholder when there's thinking block
+                if self.full_text:
+                    self.text_browser.setMarkdown(self.full_text)
+                else:
+                    self.text_browser.setMarkdown("_(el modelo no produjo síntesis tras las herramientas)_")
+                if not getattr(self, "_answer_started", False):
+                    self.text_browser.show()
+                    self._answer_started = True
+            elif self.tool_block is not None:
+                # Show placeholder when there's tool block
+                if self.full_text:
+                    self.text_browser.setMarkdown(self.full_text)
+                else:
+                    self.text_browser.setMarkdown("_(el modelo no produjo síntesis tras las herramientas)_")
+                if not getattr(self, "_answer_started", False):
+                    self.text_browser.show()
+                    self._answer_started = True
+            elif self.full_text:
+                # Preserve streaming content when answer is empty
+                self.text_browser.setMarkdown(self.full_text)
+                if not getattr(self, "_answer_started", False):
+                    self.text_browser.show()
+                    self._answer_started = True
+            else:
+                # Empty answer, thinking, or tool block only - hide text browser
+                self.text_browser.hide()
+                self.text_browser.setMarkdown("")
+                # Don't start answer when there's no content
+                self._answer_started = False
+        finally:
+            # Cleanup structural blocks regardless of exceptions
+            if self.thinking_block is not None:
+                self.thinking_block.finish(thinking)
+            if self.tool_block is not None:
+                self.tool_block.finish()
+            self.updateGeometry()
+            if self.layout():
+                self.layout().activate()
+            # Snapshot deduplication metrics before resetting
+            metrics = self._snapshot_dedup_metrics()
+            metrics["dedup_enabled"] = getattr(self, "_dedup_enabled", True)
+            self._last_dedup_metrics = metrics
+            
+            # Log metrics if debug enabled
+            if DEBUG_DEDUP:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.info(
+                    "E3 dedup metrics: raw=%s accepted=%s dup_consecutive=%s "
+                    "dup_fulltext=%s empty=%s dedup_enabled=%s",
+                    metrics.get("raw_delta_count"),
+                    metrics.get("accepted_delta_count"),
+                    metrics.get("duplicate_consecutive_count"),
+                    metrics.get("duplicate_fulltext_count"),
+                    metrics.get("empty_delta_count"),
+                    metrics.get("dedup_enabled"),
+                )
+            
+            if DEDUP_LOG_PATH:
+                try:
+                    from pathlib import Path
+                    log_file = Path(DEDUP_LOG_PATH)
+                    log_file.parent.mkdir(parents=True, exist_ok=True)
+                    with log_file.open("a", encoding="utf-8") as fh:
+                        fh.write(json.dumps(metrics, ensure_ascii=False) + "\n")
+                except Exception:
+                    # No romper la UI por fallos de logging.
+                    pass
+            
+            # Reset deduplication metrics after answer is complete
+            self._duplicate_consecutive_count = 0
+            self._duplicate_fulltext_count = 0
+            self._accepted_delta_count = 0
+            self._raw_delta_count = 0
+            self._empty_delta_count = 0
+            self._last_emit = ""
 
 
 class ChatContainer(QWidget):

@@ -1,0 +1,49 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+env/
+
+# ===== Entornos y cachés =====
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# ===== Secrets y credenciales =====
+.env
+*.key
+credentials.json
+secrets/
+
+# ===== Editores / IDE =====
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ===== Sistema operativo =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== Logs y bases de datos =====
+*.log
+*.sqlite3
+*.db
+
+# ===== Node (por si acaso) =====
+node_modules/
+
+# ===== Audio y modelos pesados (AUREA/VoxForge) =====
+*.wav
+*.mp3
+*.flac
+*.ogg
+*.onnx
+*.pt
+*.gguf
