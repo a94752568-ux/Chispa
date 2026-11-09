@@ -8,4 +8,5 @@ markdown>=3.5
 pytz>=2023.3
 psutil>=5.9.0
 pyttsx3>=2.90
+piper-tts>=1.0.0
 speechrecognition>=3.10.0
