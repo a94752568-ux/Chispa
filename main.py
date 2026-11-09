@@ -203,7 +203,11 @@ class OllamaWorker(QThread):
             while self.enable_tools and tool_iterations < 3 and not self._stop:
                 self.status_update.emit(f"Analizando si necesita herramientas... (iter {tool_iterations+1})")
                 try:
-                    resp = client.chat(model=self.model, messages=current_history, tools=self.tools_def, stream=False, think=self.enable_think)
+                    # FASE 1 SIN reasoning: pensar no ayuda a decidir tool calls
+                    # y multiplica la latencia de cada iteración (generaciones
+                    # completas sin streaming). El thinking queda solo para la
+                    # respuesta final streameada (FASE 2).
+                    resp = client.chat(model=self.model, messages=current_history, tools=self.tools_def, stream=False, think=False)
                 except Exception as e:
                     # Ollama devolvió 500 (ej: tool calls malformados del modelo).
                     # Reintentar SIN tools para que el usuario obtenga respuesta.
@@ -211,7 +215,7 @@ class OllamaWorker(QThread):
                     tools_def_sin = self.tools_def
                     self.tools_def = []
                     try:
-                        resp = client.chat(model=self.model, messages=current_history, tools=[], stream=False, think=self.enable_think)
+                        resp = client.chat(model=self.model, messages=current_history, tools=[], stream=False, think=False)
                         msg = resp.get('message', {})
                         final_ans = msg.get('content', '')
                         self.final_answer.emit(final_ans, msg.get('thinking', ''))
