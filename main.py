@@ -82,7 +82,7 @@ def trace(msg):
 # Tools registry - robusto con fallback
 try:
     from tools import load_tools
-    from tools.pre_router import ToolRouter, BASIC_TOOL_NAMES
+    from tools.pre_router import ToolRouter
     from tools.agent_orchestrator import Orchestrator
 except ImportError as e:
     print(f"⚠ No se pudo importar tools.load_tools: {e}")
@@ -1540,7 +1540,7 @@ class MainWindow(QMainWindow):
         func_layout.addWidget(self.tools_check)
 
         self.think_check = QCheckBox("🧠 Mostrar Pensamiento")
-        self.think_check.setChecked(False)
+        self.think_check.setChecked(True)
         self.think_check.setStyleSheet(self._checkbox_style())
         func_layout.addWidget(self.think_check)
 
@@ -2202,16 +2202,10 @@ class MainWindow(QMainWindow):
         enable_tools = self.tools_check.isChecked()
         enable_think = self.think_check.isChecked() and self.modelo_piensa(self.current_model)
 
-        # Cuando thinking está activado, qwen3.5:4b entra en modo reasoning lento
-        # y no soporta bien tool calls. No enviar herramientas de dominio.
-        if enable_think:
-            route_defs = [d for d in self.tools_def
-                          if d.get("function", {}).get("name") in BASIC_TOOL_NAMES]
-            route_execs = {k: v for k, v in self.executors.items()
-                           if k in BASIC_TOOL_NAMES}
-            print(f"Thinking ON: solo herramientas básicas ({len(route_defs)})")
         # Pre-router: filtrar tools según el mensaje del usuario
-        elif self.tool_router is not None and enable_tools:
+        route_defs = self.tools_def
+        route_execs = self.executors
+        if self.tool_router is not None and enable_tools:
             try:
                 route_defs = self.tool_router.route(text)
                 route_execs = {k: v for k, v in self.executors.items()
