@@ -6,7 +6,7 @@ selection. Component-specific QSS can progressively migrate to these tokens.
 from __future__ import annotations
 
 from PySide6.QtGui import QColor, QPalette
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QWidget
 
 THEMES = {
     "dark": {
