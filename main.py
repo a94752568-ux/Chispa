@@ -138,6 +138,17 @@ def is_vision_model(name: str) -> bool:
     low = name.lower()
     return any(v in low for v in VISION_MODELS)
 
+
+# ================================================================
+# Memoria persistente del chat
+# ================================================================
+MEMORY_DIR = Path.home() / ".local" / "share" / "OllamaChat-GUI"
+MEMORY_FILE = MEMORY_DIR / "chat_history.json"
+
+
+def _ensure_memory_dir():
+    MEMORY_DIR.mkdir(parents=True, exist_ok=True)
+
 def encode_image(path: str) -> Optional[str]:
     try:
         with open(path, "rb") as f:
@@ -1319,7 +1330,8 @@ class MainWindow(QMainWindow):
         )
 
         self.chat_history: List[Dict] = []
-        self.current_model = "llama3.1"
+        self._load_memory()
+        self.current_model = "qwen3.5:4b"
         self.models: List[str] = []
         self.attached_images: List[str] = []
         self.worker: Optional[OllamaWorker] = None
@@ -2107,6 +2119,28 @@ class MainWindow(QMainWindow):
         except Exception as e:
             QMessageBox.warning(self, "Error TTS", str(e))
 
+    def _load_memory(self):
+        """Carga el historial de chat desde disco si existe."""
+        try:
+            if MEMORY_FILE.exists():
+                with open(MEMORY_FILE, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                if isinstance(data, list):
+                    self.chat_history = data
+                    print(f"Memoria cargada: {len(self.chat_history)} mensajes desde {MEMORY_FILE}")
+        except Exception as e:
+            print(f"⚠ No se pudo cargar la memoria persistente: {e}")
+            self.chat_history = []
+
+    def _save_memory(self):
+        """Guarda el historial de chat en disco."""
+        try:
+            _ensure_memory_dir()
+            with open(MEMORY_FILE, "w", encoding="utf-8") as f:
+                json.dump(self.chat_history, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print(f"⚠ No se pudo guardar la memoria persistente: {e}")
+
     def send_message(self):
         text = self.input_edit.toPlainText().strip()
         if not text and not self.attached_images:
@@ -2129,6 +2163,7 @@ class MainWindow(QMainWindow):
                 user_dict["images"] = b64_list
 
         self.chat_history.append(user_dict)
+        self._save_memory()
         self.input_edit.clear()
         attached_copy = self.attached_images.copy()
         self.attached_images = []
@@ -2245,6 +2280,7 @@ class MainWindow(QMainWindow):
         # Modelo primero: historial siempre se guarda, pase lo que pase en la vista
         if hasattr(self, 'current_assistant_widget'):
             self.chat_history.append({"role": "assistant", "content": answer})
+            self._save_memory()
             try:
                 self.current_assistant_widget.finishAnswer(answer, thinking)
                 self.current_assistant_widget.showTTS()
