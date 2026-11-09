@@ -31,10 +31,6 @@ DEBUG_DEDUP = os.getenv("OLLAMA_GUI_DEBUG_DEDUP", "0").lower() in {
 
 DEDUP_LOG_PATH = os.getenv("OLLAMA_GUI_DEDUP_LOG", "")
 
-# Asegurar que el directorio del script esté en sys.path para encontrar tools/
-SCRIPT_DIR = Path(__file__).parent.resolve()
-sys.path.insert(0, str(SCRIPT_DIR))
-
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QScrollArea, QTextEdit, QPushButton, QLabel, QComboBox, QCheckBox,
@@ -47,7 +43,7 @@ from PySide6.QtGui import QDragEnterEvent, QDropEvent, QPixmap, QIcon, QFont, QC
 # Ollama
 try:
     import ollama
-except:
+except Exception:
     ollama = None
 
 # ================================================================
@@ -161,7 +157,7 @@ def encode_image(path: str) -> Optional[str]:
     try:
         with open(path, "rb") as f:
             return base64.b64encode(f.read()).decode("utf-8")
-    except:
+    except Exception:
         return None
 
 # ================= WORKER =================
@@ -212,8 +208,6 @@ class OllamaWorker(QThread):
                     # Ollama devolvió 500 (ej: tool calls malformados del modelo).
                     # Reintentar SIN tools para que el usuario obtenga respuesta.
                     self.status_update.emit(f"Herramientas no disponibles, respondiendo directo: {str(e)[:60]}")
-                    tools_def_sin = self.tools_def
-                    self.tools_def = []
                     try:
                         resp = client.chat(model=self.model, messages=current_history, tools=[], stream=False, think=False)
                         msg = resp.get('message', {})
@@ -221,8 +215,6 @@ class OllamaWorker(QThread):
                         self.final_answer.emit(final_ans, msg.get('thinking', ''))
                     except Exception as e2:
                         self.error_occurred.emit(f"Ollama error: {e2}")
-                    finally:
-                        self.tools_def = tools_def_sin
                     return
                 msg = resp.get('message', {})
                 tool_calls = msg.get('tool_calls', [])
@@ -235,7 +227,7 @@ class OllamaWorker(QThread):
                         if isinstance(args, str):
                             try:
                                 args = json.loads(args)
-                            except:
+                            except Exception:
                                 args = {"query": args}
 
                         self.tool_call_detected.emit(name, args)
@@ -823,7 +815,7 @@ class MessageBubble(QFrame):
                         name_lbl = QLabel(f"📎 {Path(img_path).name}")
                         name_lbl.setStyleSheet("color: #9aa0a6; font-size: 11px; font-weight: 600;")
                         bubble_layout.addWidget(name_lbl)
-                    except:
+                    except Exception:
                         pass
 
             self.text_browser = QTextBrowser()
@@ -2058,7 +2050,7 @@ class MainWindow(QMainWindow):
         tools_path = str((SCRIPT_DIR / "tools").absolute())
         try:
             subprocess.Popen(["xdg-open", tools_path])
-        except:
+        except Exception:
             QMessageBox.information(self, "Carpeta tools", f"Abre manualmente: {tools_path}")
 
     def create_new_tool(self):

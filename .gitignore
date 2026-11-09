@@ -6,7 +6,7 @@ __pycache__/
 dist/
 build/
 *.pkg
-*.spec
+# OllamaChat-GUI.spec (config de PyInstaller) SÍ se versiona; no ignorar *.spec
 venv/
 .venv/
 env/
@@ -29,7 +29,7 @@ secrets/
 *.swo
 
 # ===== Respaldos temporales =====
-*.bak
+*.bak*
 *.orig
 *~
 
