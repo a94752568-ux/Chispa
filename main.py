@@ -249,10 +249,12 @@ class OllamaWorker(QThread):
                                 result = executor(**args) if args else executor()
                                 if name in MUTACIONES:
                                     result += (
-                                        "\n\n⚠️ Esta herramienta de escritura solo se "
-                                        "ejecutó en modo SIMULACIÓN (dry_run). Informar al "
-                                        "usuario que los cambios reales requieren su "
-                                        "autorización (plan del agente)."
+                                        "\n\n⚠️ SIMULACIÓN (dry_run): NO se escribió nada en disco. "
+                                        "No vuelvas a invocar esta herramienta en este turno. Explica al "
+                                        "usuario que el cambio es simulado y que, si quiere aplicarlo de "
+                                        "verdad, responde con un plan JSON con la clave \"pasos\" (ej: "
+                                        '{"pasos": [{"tool": "write_desktop", "args": {...}}]}): el '
+                                        "orquestador pedirá su autorización antes de ejecutarlo."
                                     )
                             except Exception as e:
                                 result = f"Error ejecutando {name}: {e}"
