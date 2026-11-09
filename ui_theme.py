@@ -252,6 +252,43 @@ def apply_component_theme(root, theme: str = "dark") -> None:
         widget = root.findChild(QWidget, name)
         if widget is not None:
             widget.setStyleSheet(stylesheet)
+
+    # Shell typography and secondary controls.
+    named_styles = {
+        "novaAppTitle": f"color: {c['accent']}; font-size: 19px; font-weight: 800; letter-spacing: 0.4px; background: transparent; border: none;",
+        "novaChatTitle": f"color: {c['text']}; font-size: 14px; font-weight: 700; background: transparent; border: none;",
+        "novaStatusLabel": f"color: {c['muted']}; font-size: 10px; background: transparent; border: none;",
+        "novaModelStatus": f"color: {c['muted']}; font-size: 10px; background: transparent; border: none;",
+        "novaFolderButton": f"QPushButton {{ background: {c['surface_hover']}; color: {c['text']}; border: 1px solid {c['border']}; border-radius: 8px; }} QPushButton:hover {{ border-color: {c['accent']}; }}",
+        "novaMicButton": f"QPushButton {{ background: {c['surface_hover']}; color: {c['text']}; border: 1px solid {c['border']}; border-radius: 18px; }} QPushButton:checked {{ background: {c['danger']}; color: white; }}",
+        "novaClearImagesButton": f"QPushButton {{ background: {c['surface_hover']}; color: {c['text']}; border: 1px solid {c['border']}; border-radius: 18px; }}",
+        "novaChatScroll": f"QScrollArea {{ background: {c['window']}; border: none; }}",
+        "novaChatContainer": f"background: {c['window']}; border: none;",
+    }
+    for name, stylesheet in named_styles.items():
+        widget = root.findChild(QWidget, name)
+        if widget is not None:
+            widget.setStyleSheet(stylesheet)
+
+    # Checkboxes are styled individually in the legacy UI; refresh all six
+    # together so the accent and contrast follow the active palette.
+    checkbox_style = f"""
+        QCheckBox {{ color: {c['text']}; font-size: 12px; spacing: 9px; background: transparent; }}
+        QCheckBox::indicator {{ width: 18px; height: 18px; border-radius: 5px;
+            background: {c['window']}; border: 1px solid {c['border']}; }}
+        QCheckBox::indicator:checked {{ background: {c['accent']}; border: 1px solid {c['accent']}; }}
+        QCheckBox::indicator:hover {{ border: 1px solid {c['accent']}; }}
+    """
+    for checkbox in root.findChildren(QCheckBox):
+        checkbox.setStyleSheet(checkbox_style)
+
+    splitter = root.findChild(QWidget, "novaSplitter")
+    if splitter is not None:
+        splitter.setStyleSheet(
+            f"QSplitter::handle {{ background: {c['border']}; width: 5px; }}"
+            f"QSplitter::handle:hover {{ background: {c['accent']}; }}"
+        )
+
     for name in ("novaModelTitle", "novaFunctionsTitle", "novaToolsTitle"):
         label = root.findChild(QWidget, name)
         if label is not None:
