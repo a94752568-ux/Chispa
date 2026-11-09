@@ -1342,7 +1342,7 @@ class MainWindow(QMainWindow):
 
         self.chat_history: List[Dict] = []
         self._load_memory()
-        self.current_model = "qwen3.5:4b"
+        self.current_model = "llama3.1"
         self.models: List[str] = []
         self.attached_images: List[str] = []
         self.worker: Optional[OllamaWorker] = None
