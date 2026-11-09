@@ -672,8 +672,9 @@ class MainWindow(QMainWindow):
         self.stt_check.setStyleSheet(self._checkbox_style())
         func_layout.addWidget(self.stt_check)
 
-        self.tts_check = QCheckBox("🔊 Leer respuestas (TTS)")
+        self.tts_check = QCheckBox("🔊 Leer respuestas automáticamente")
         self.tts_check.setChecked(False)
+        self.tts_check.setToolTip("Lee en voz alta cada respuesta nueva (TTS)")
         self.tts_check.setStyleSheet(self._checkbox_style())
         func_layout.addWidget(self.tts_check)
 
@@ -1044,16 +1045,23 @@ class MainWindow(QMainWindow):
             self.status_label.setText("Listo")
 
     def speak_response(self, text: str):
-        if not self.tts_check.isChecked():
+        """Lee un texto en voz alta (TTS) en segundo plano, sin congelar la GUI."""
+        if not text or not text.strip():
             return
-        try:
-            result = self.executors.get("speak")
-            if result:
-                result(text=text)
-            else:
-                QMessageBox.warning(self, "TTS no disponible", "Motor TTS no cargado")
-        except Exception as e:
-            QMessageBox.warning(self, "Error TTS", str(e))
+        speak = self.executors.get("speak")
+        if speak is None:
+            QMessageBox.warning(self, "TTS no disponible", "Motor TTS no cargado")
+            return
+        self.status_label.setText("🔊 Leyendo respuesta…")
+
+        def _do_speak():
+            try:
+                speak(text=text)
+                self.status_label.setText("Listo")
+            except Exception as e:
+                self.status_label.setText(f"Error TTS: {e}")
+
+        threading.Thread(target=_do_speak, daemon=True).start()
 
     def _save_memory(self):
         """Guarda la conversación activa en disco."""
@@ -1602,6 +1610,8 @@ class MainWindow(QMainWindow):
             try:
                 self.current_assistant_widget.finishAnswer(answer, thinking)
                 self.current_assistant_widget.showTTS()
+                if self.tts_check.isChecked() and answer.strip():
+                    self.speak_response(answer)
             except Exception:
                 import traceback
                 traceback.print_exc()
