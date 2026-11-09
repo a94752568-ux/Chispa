@@ -22,6 +22,7 @@ THEMES = {
         "accent_hover": "#78E8FA",
         "danger": "#F04452",
         "selection": "#174B59",
+        "on_accent": "#07131A",
         "code": "#0C1016",
     },
     "light": {
@@ -37,6 +38,7 @@ THEMES = {
         "accent_hover": "#056779",
         "danger": "#C92738",
         "selection": "#BDECF4",
+        "on_accent": "#FFFFFF",
         "code": "#E9EEF4",
     },
 }
