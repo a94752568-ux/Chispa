@@ -149,7 +149,10 @@ def retint_widget_styles(app: QApplication, theme: str = "dark") -> None:
         if not current:
             continue
         original = widget.property("_nova_original_stylesheet")
-        if original is None:
+        last_applied = widget.property("_nova_last_applied_stylesheet")
+        # A widget may update its own QSS later (e.g. tool status changes).
+        # Treat that newer stylesheet as the source instead of restoring stale QSS.
+        if original is None or (last_applied is not None and current != last_applied):
             original = current
             widget.setProperty("_nova_original_stylesheet", original)
         updated = original
@@ -158,6 +161,7 @@ def retint_widget_styles(app: QApplication, theme: str = "dark") -> None:
             updated = updated.replace(source.upper(), colors[token])
         if updated != current:
             widget.setStyleSheet(updated)
+        widget.setProperty("_nova_last_applied_stylesheet", updated)
 
 
 def apply_theme(app: QApplication, theme: str = "dark") -> str:
