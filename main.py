@@ -666,7 +666,7 @@ class MainWindow(QMainWindow):
         self.theme_btn.setText("◐ Tema claro" if self.theme_name == "dark" else "◐ Tema oscuro")
         self.status_label.setText(f"Tema: {THEMES[self.theme_name]['name']}")
 
-    def _checkbox_style():
+    def _checkbox_style(self):
         return """
             QCheckBox {
                 color: #e0e0e0;
