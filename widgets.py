@@ -15,13 +15,14 @@ from typing import List
 import markdown as _md
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QPushButton, QLabel, QFrame, QTextBrowser, QSizePolicy,
+    QPushButton, QLabel, QFrame, QTextBrowser, QSizePolicy, QApplication,
 )
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QPixmap
 
 from common import trace, MD_CSS, DEDUP_ENABLED, DEBUG_DEDUP, DEDUP_LOG_PATH
 from tools.chat_fx import fade_in, animate_height, Spinner, PensandoDots
+import theme
 
 # ================= UI WIDGETS =================
 class ThinkingBlockWidget(QFrame):
@@ -50,7 +51,7 @@ class ThinkingBlockWidget(QFrame):
 
         self.chevron = QLabel("⌄")
         self.chevron.setFixedSize(14, 14)
-        self.chevron.setStyleSheet("color: #9aa0a6; font-size: 10px;")
+        self.chevron.setStyleSheet(f"color: {theme.TEXT_SECOND}; font-size: 10px;")
         header.addWidget(self.chevron)
 
         self.dots = PensandoDots()
@@ -68,16 +69,16 @@ class ThinkingBlockWidget(QFrame):
         self.body = QLabel()
         self.body.setWordWrap(True)
         self.body.setTextInteractionFlags(Qt.TextSelectableByMouse)
-        self.body.setStyleSheet("""
-            QLabel {
+        self.body.setStyleSheet(f"""
+            QLabel {{
                 background: transparent;
                 border: none;
-                color: #9aa0a6;
+                color: {theme.TEXT_SECOND};
                 font-size: 13px;
                 line-height: 1.5;
                 padding: 0 0 0 12px;
-                font-family: "Inter", "Noto Sans", "Ubuntu", sans-serif;
-            }
+                font-family: {theme.FONT_STACK};
+            }}
         """)
         self.body.setVisible(False)
         layout.addWidget(self.body)
@@ -155,11 +156,11 @@ class ToolBlockWidget(QFrame):
 
         self.chevron = QLabel("⌄")
         self.chevron.setFixedSize(14, 14)
-        self.chevron.setStyleSheet("color: #9aa0a6; font-size: 10px;")
+        self.chevron.setStyleSheet(f"color: {theme.TEXT_SECOND}; font-size: 10px;")
         header.addWidget(self.chevron)
 
         self.label = QLabel("🔧 Herramientas")
-        self.label.setStyleSheet("color: #9aa0a6; font-weight: 600; font-size: 11px;")
+        self.label.setStyleSheet(f"color: {theme.TEXT_SECOND}; font-weight: 600; font-size: 11px;")
         header.addWidget(self.label)
         header.addStretch()
 
@@ -171,13 +172,13 @@ class ToolBlockWidget(QFrame):
 
         # Cuerpo: filas de herramientas (oculto al inicio)
         self.body_widget = QFrame()
-        self.body_widget.setStyleSheet("""
-            QFrame {
-                background: #1a1a1c;
+        self.body_widget.setStyleSheet(f"""
+            QFrame {{
+                background: {theme.BG_ELEVATED};
                 border: none;
                 border-top: none;
-                border-radius: 0 0 8px 8px;
-            }
+                border-radius: 0 0 10px 10px;
+            }}
         """)
         self.body_widget.setVisible(False)
 
@@ -199,12 +200,12 @@ class ToolBlockWidget(QFrame):
         """Crea una fila limpia por tool ejecutado."""
         trace(f"ToolBlockWidget.add_call name={name} args={args}")
         row = QFrame()
-        row.setStyleSheet("""
-            QFrame {
+        row.setStyleSheet(f"""
+            QFrame {{
                 background: transparent;
-                border-bottom: 1px solid #272729;
+                border-bottom: 1px solid {theme.BORDER_SOFT};
                 padding: 6px 12px;
-            }
+            }}
         """)
         row.setCursor(Qt.PointingHandCursor)
         row.mousePressEvent = lambda e: self._toggle_detail_by_row(row)
@@ -219,18 +220,18 @@ class ToolBlockWidget(QFrame):
         row_layout.addWidget(status_icon)
 
         name_lbl = QLabel(name)
-        name_lbl.setStyleSheet("color: #e5e5ea; font-weight: 600; font-size: 13px;")
+        name_lbl.setStyleSheet(f"color: {theme.TEXT}; font-weight: 600; font-size: 13px;")
         row_layout.addWidget(name_lbl)
 
         status_lbl = QLabel("ejecutando…")
-        status_lbl.setStyleSheet("color: #9aa0a6; font-size: 11px; font-style: italic;")
+        status_lbl.setStyleSheet(f"color: {theme.TEXT_SECOND}; font-size: 11px; font-style: italic;")
         row_layout.addWidget(status_lbl)
         row_layout.addStretch()
 
         # Chevron inline al final de la fila
         row_chevron = QLabel("⌄")
         row_chevron.setFixedSize(12, 12)
-        row_chevron.setStyleSheet("color: #9aa0a6; font-size: 9px;")
+        row_chevron.setStyleSheet(f"color: {theme.TEXT_SECOND}; font-size: 9px;")
         row_layout.addWidget(row_chevron)
 
         body_layout = self.body_widget.layout()
@@ -260,7 +261,7 @@ class ToolBlockWidget(QFrame):
                 entry["done"] = True
                 summary = self._make_summary(name, result)
                 entry["status_lbl"].setText(summary)
-                entry["status_lbl"].setStyleSheet("color: #34c759; font-size: 11px; font-weight: 600;")
+                entry["status_lbl"].setStyleSheet(f"color: {theme.SUCCESS}; font-size: 11px; font-weight: 600;")
                 entry["status_icon"].stop(True)
                 entry["row_chevron"].setText("⌃")
                 self._notify_parent()
@@ -315,19 +316,19 @@ class ToolBlockWidget(QFrame):
             result_text = "\n\n".join(lines)
             html = _md.markdown(result_text, extensions=["extra"])
             detail.setHtml(html)
-            detail.setStyleSheet("""
-                QTextBrowser {
+            detail.setStyleSheet(f"""
+                QTextBrowser {{
                     background: transparent;
                     border: none;
-                    border-left: 2px solid #2a2c31;
+                    border-left: 2px solid {theme.BORDER};
                     border-radius: 0;
-                    color: #e5e5ea;
+                    color: {theme.TEXT};
                     font-size: 13px;
                     line-height: 1.5;
                     padding: 0 0 0 12px;
-                    font-family: "Inter", "Noto Sans", "Ubuntu", sans-serif;
-                }
-                QTextBrowser a { color: #34c759; text-decoration: underline; }
+                    font-family: {theme.FONT_STACK};
+                }}
+                QTextBrowser a {{ color: {theme.LINK}; text-decoration: underline; }}
             """)
             detail.document().setDefaultStyleSheet(MD_CSS)
             detail.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -345,10 +346,10 @@ class ToolBlockWidget(QFrame):
     def _set_header_state(self):
         if self._has_error:
             self.label.setText("🔧 Herramientas finalizadas con errores")
-            self.label.setStyleSheet("color: #ff453a; font-weight: 600; font-size: 11px;")
+            self.label.setStyleSheet(f"color: {theme.ERROR}; font-weight: 600; font-size: 11px;")
         else:
             self.label.setText("🔧 Herramientas completadas")
-            self.label.setStyleSheet("color: #34c759; font-weight: 600; font-size: 11px;")
+            self.label.setStyleSheet(f"color: {theme.SUCCESS}; font-weight: 600; font-size: 11px;")
 
     def finish(self):
         """Contención inmediata: filas sin resultado pasan a error.
@@ -364,7 +365,7 @@ class ToolBlockWidget(QFrame):
             if not entry["done"]:
                 entry["done"] = True
                 entry["status_lbl"].setText("sin respuesta (timeout)")
-                entry["status_lbl"].setStyleSheet("color: #ff453a; font-size: 11px; font-weight: 600;")
+                entry["status_lbl"].setStyleSheet(f"color: {theme.ERROR}; font-size: 11px; font-weight: 600;")
                 entry["status_icon"].stop(False)
                 self._has_error = True
         self._set_header_state()
@@ -415,38 +416,28 @@ class MessageBubble(QFrame):
         layout.setSpacing(0)
 
         # ================================================================
-        # Nivel 1: Header con avatar (estilo ChatGPT: avatar pequeño, sin nombre)
+        # Nivel 1: Header estilo Vibe (solo asistente: chispa naranja)
         # ================================================================
-        header = QHBoxLayout()
-        header.setContentsMargins(0, 0, 0, 0)
-        header.setSpacing(8)
+        if role == "assistant":
+            head = QHBoxLayout()
+            head.setContentsMargins(0, 0, 0, 6)
+            head.setSpacing(8)
 
-        avatar = QLabel()
-        avatar.setFixedSize(28, 28)
-        avatar.setAlignment(Qt.AlignCenter)
-        if role == "user":
-            avatar.setText("👤")
-            avatar.setStyleSheet("""
-                QLabel {
-                    background: #343541;
-                    color: #ffffff;
-                    border-radius: 14px;
-                    font-size: 14px;
-                }
+            spark = QLabel("✦")
+            spark.setFixedSize(22, 22)
+            spark.setAlignment(Qt.AlignCenter)
+            spark.setStyleSheet(f"""
+                QLabel {{
+                    background: {theme.ACCENT};
+                    color: {theme.TEXT_ON_ACCENT};
+                    border-radius: 11px;
+                    font-size: 13px;
+                    font-weight: bold;
+                }}
             """)
-            header.addStretch()
-            header.addWidget(avatar)
-            layout.addLayout(header)
-        else:
-            avatar.setText("🤖")
-            avatar.setStyleSheet("""
-                QLabel {
-                    background: #10a37f;
-                    color: #ffffff;
-                    border-radius: 14px;
-                    font-size: 14px;
-                }
-            """)
+            head.addWidget(spark)
+            head.addStretch()
+            layout.addLayout(head)
 
         # ================================================================
         # Nivel 2: Contenido del mensaje (burbujas o zona de proceso)
@@ -459,18 +450,18 @@ class MessageBubble(QFrame):
 
             self.bubble = QFrame()
             self.bubble.setObjectName("userBubble")
-            self.bubble.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-            self.bubble.setMinimumWidth(280)
-            self.bubble.setStyleSheet("""
-                QFrame#userBubble {
-                    background: #3d4653;
-                    border: none;
+            self.bubble.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Preferred)
+            self.bubble.setMaximumWidth(620)
+            self.bubble.setStyleSheet(f"""
+                QFrame#userBubble {{
+                    background: {theme.ACCENT_TINT};
+                    border: 1px solid {theme.ACCENT_BORDER};
                     border-radius: 18px;
-                }
+                }}
             """)
 
             bubble_layout = QVBoxLayout(self.bubble)
-            bubble_layout.setContentsMargins(14, 12, 14, 12)
+            bubble_layout.setContentsMargins(16, 12, 16, 12)
             bubble_layout.setSpacing(10)
 
             if self.images:
@@ -483,7 +474,7 @@ class MessageBubble(QFrame):
                             img_lbl.setStyleSheet("border-radius: 8px; background: #0a0a0b; padding: 4px;")
                             bubble_layout.addWidget(img_lbl)
                         name_lbl = QLabel(f"📎 {Path(img_path).name}")
-                        name_lbl.setStyleSheet("color: #9aa0a6; font-size: 11px; font-weight: 600;")
+                        name_lbl.setStyleSheet(f"color: {theme.TEXT_SECOND}; font-size: 11px; font-weight: 600;")
                         bubble_layout.addWidget(name_lbl)
                     except Exception:
                         pass
@@ -491,17 +482,17 @@ class MessageBubble(QFrame):
             self.text_browser = QTextBrowser()
             self.text_browser.setOpenExternalLinks(True)
             self.text_browser.setMarkdown(content or "")
-            self.text_browser.setStyleSheet("""
-                QTextBrowser {
+            self.text_browser.setStyleSheet(f"""
+                QTextBrowser {{
                     background: transparent;
                     border: none;
-                    color: #ffffff;
+                    color: {theme.TEXT};
                     font-size: 14px;
                     line-height: 1.6;
                     padding: 0;
-                    font-family: "Inter", "Noto Sans", "Ubuntu", sans-serif;
-                }
-                QTextBrowser a { color: #34c759; text-decoration: underline; }
+                    font-family: {theme.FONT_STACK};
+                }}
+                QTextBrowser a {{ color: {theme.LINK}; text-decoration: underline; }}
             """)
             self.text_browser.document().setDefaultStyleSheet(MD_CSS)
             self.text_browser.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -542,17 +533,17 @@ class MessageBubble(QFrame):
             self.text_browser = QTextBrowser()
             self.text_browser.setOpenExternalLinks(True)
             self.text_browser.setMarkdown(content or "")
-            self.text_browser.setStyleSheet("""
-                QTextBrowser {
+            self.text_browser.setStyleSheet(f"""
+                QTextBrowser {{
                     background: transparent;
                     border: none;
-                    color: #e5e5ea;
+                    color: {theme.TEXT};
                     font-size: 15px;
                     line-height: 1.6;
                     padding: 0 0 12px 0;
-                    font-family: "Inter", "Noto Sans", "Ubuntu", sans-serif;
-                }
-                QTextBrowser a { color: #34c759; text-decoration: underline; }
+                    font-family: {theme.FONT_STACK};
+                }}
+                QTextBrowser a {{ color: {theme.LINK}; text-decoration: underline; }}
             """)
             self.text_browser.document().setDefaultStyleSheet(MD_CSS)
             self.text_browser.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -567,43 +558,44 @@ class MessageBubble(QFrame):
             copy_btn = QPushButton("⧉")
             copy_btn.setFixedSize(24, 24)
             copy_btn.setToolTip("Copiar respuesta")
-            copy_btn.setStyleSheet("""
-                QPushButton {
+            copy_btn.clicked.connect(lambda: QApplication.clipboard().setText(self.full_text or ""))
+            copy_btn.setStyleSheet(f"""
+                QPushButton {{
                     background: transparent;
-                    color: #9aa0a6;
+                    color: {theme.TEXT_SECOND};
                     border: none;
                     border-radius: 4px;
                     font-size: 14px;
-                }
-                QPushButton:hover { background: #1f2126; color: #ffffff; }
+                }}
+                QPushButton:hover {{ background: {theme.BG_INPUT}; color: {theme.TEXT}; }}
             """)
 
             retry_btn = QPushButton("♻")
             retry_btn.setFixedSize(24, 24)
             retry_btn.setToolTip("Regenerar respuesta")
-            retry_btn.setStyleSheet("""
-                QPushButton {
+            retry_btn.setStyleSheet(f"""
+                QPushButton {{
                     background: transparent;
-                    color: #9aa0a6;
+                    color: {theme.TEXT_SECOND};
                     border: none;
                     border-radius: 4px;
                     font-size: 14px;
-                }
-                QPushButton:hover { background: #1f2126; color: #ffffff; }
+                }}
+                QPushButton:hover {{ background: {theme.BG_INPUT}; color: {theme.TEXT}; }}
             """)
 
             tts_btn = QPushButton("🔊")
             tts_btn.setFixedSize(24, 24)
             tts_btn.setToolTip("Leer respuesta en voz alta (TTS)")
-            tts_btn.setStyleSheet("""
-                QPushButton {
+            tts_btn.setStyleSheet(f"""
+                QPushButton {{
                     background: transparent;
-                    color: #9aa0a6;
+                    color: {theme.TEXT_SECOND};
                     border: none;
                     border-radius: 4px;
                     font-size: 14px;
-                }
-                QPushButton:hover { background: #1f2126; color: #ffffff; }
+                }}
+                QPushButton:hover {{ background: {theme.BG_INPUT}; color: {theme.TEXT}; }}
             """)
             tts_btn.clicked.connect(lambda: self.window().speak_response(self.full_text))
 
@@ -933,32 +925,32 @@ class TitleBar(QFrame):
         super().__init__(parent)
         self.window = parent
         self.setFixedHeight(40)
-        self.setStyleSheet("""
-            QFrame {
-                background: #16161a;
-                border-bottom: 1px solid #2a2a30;
-            }
-            QLabel {
-                color: #e0e0e0;
+        self.setStyleSheet(f"""
+            QFrame {{
+                background: {theme.BG_TITLEBAR};
+                border-bottom: 1px solid {theme.BORDER_SOFT};
+            }}
+            QLabel {{
+                color: {theme.TEXT};
                 font-size: 13px;
                 font-weight: bold;
                 padding-left: 12px;
-            }
-            QPushButton {
+            }}
+            QPushButton {{
                 background: transparent;
-                color: #e0e0e0;
+                color: {theme.TEXT};
                 border: none;
                 font-size: 16px;
                 font-weight: bold;
-            }
-            QPushButton:hover {
-                background: #2a2a30;
+            }}
+            QPushButton:hover {{
+                background: {theme.BG_ELEVATED};
                 border-radius: 6px;
-            }
-            QPushButton#closeBtn:hover {
+            }}
+            QPushButton#closeBtn:hover {{
                 background: #4a1a1a;
-                color: #ff6b6b;
-            }
+                color: {theme.ERROR};
+            }}
         """)
         self._pressing = False
         self._start_pos = None

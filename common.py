@@ -42,7 +42,7 @@ pre { background: #1f2126; border-radius: 8px; padding: 10px 12px; }
 pre code { background: transparent; padding: 0; }
 blockquote { border-left: 3px solid #2a2c31; margin: 8px 0;
              padding: 2px 0 2px 10px; color: #9aa0a6; }
-a { color: #6cb6ff; text-decoration: none; }
+a { color: #FF9D57; text-decoration: none; }
 hr { border: none; border-top: 1px solid #2a2c31; margin: 10px 0; }
 """
 
