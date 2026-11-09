@@ -15,13 +15,14 @@ from typing import List
 import markdown as _md
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QPushButton, QLabel, QFrame, QTextBrowser, QSizePolicy,
+    QPushButton, QLabel, QFrame, QTextBrowser, QSizePolicy, QApplication,
 )
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QPixmap
 
 from common import trace, MD_CSS, DEDUP_ENABLED, DEBUG_DEDUP, DEDUP_LOG_PATH
 from tools.chat_fx import fade_in, animate_height, Spinner, PensandoDots
+from ui_theme import retint_widget_styles
 
 # ================= UI WIDGETS =================
 class ThinkingBlockWidget(QFrame):
@@ -249,6 +250,9 @@ class ToolBlockWidget(QFrame):
             "done": False,
         })
         self.show()
+        app = QApplication.instance()
+        if app:
+            retint_widget_styles(app, app.property("nova_theme") or "dark")
         self._notify_parent()
 
     def add_result(self, name: str, result: str):
@@ -263,6 +267,9 @@ class ToolBlockWidget(QFrame):
                 entry["status_lbl"].setStyleSheet("color: #34c759; font-size: 11px; font-weight: 600;")
                 entry["status_icon"].stop(True)
                 entry["row_chevron"].setText("⌃")
+                app = QApplication.instance()
+                if app:
+                    retint_widget_styles(app, app.property("nova_theme") or "dark")
                 self._notify_parent()
                 break
 
@@ -337,6 +344,9 @@ class ToolBlockWidget(QFrame):
             idx = body_layout.indexOf(entry["row"])
             body_layout.insertWidget(idx + 1, detail)
             entry["detail_widget"] = detail
+            app = QApplication.instance()
+            if app:
+                retint_widget_styles(app, app.property("nova_theme") or "dark")
             entry["expanded"] = True
             entry["row_chevron"].setText("⌄")
             animate_height(detail, True, ms=140)
@@ -917,6 +927,9 @@ class ChatContainer(QWidget):
 
     def add_message_widget(self, widget: MessageBubble):
         self.layout.addWidget(widget)
+        app = QApplication.instance()
+        if app:
+            retint_widget_styles(app, app.property("nova_theme") or "dark")
         fade_in(widget)
 
     def clear_except_welcome(self):
