@@ -67,7 +67,7 @@ TOOL_DEFINITION = {
     "type": "function",
     "function": {
         "name": "hunt_alias",
-        "description": "USAR CUANDO el usuario quiere saber si un nombre de usuario o alias existe en redes sociales. Ejemplos: '¿Existe el usuario johndoe en GitHub?', 'Busca este alias en redes sociales', '¿torvalds tiene cuenta en Reddit?', '¿Este username está en múltiples plataformas?'. Busca en 10 plataformas: GitHub, GitLab, Reddit, Keybase, Instagram, TikTok, Pinterest, X/Twitter, HackerNews, DeviantArt. NO usar para: buscar correos electrónicos, investigar dominios, o detectar tecnologías web.
+        "description": "USAR CUANDO el usuario quiere saber si un nombre de usuario o alias existe en redes sociales. Ejemplos: '¿Existe el usuario johndoe en GitHub?', 'Busca este alias en redes sociales', '¿torvalds tiene cuenta en Reddit?', '¿Este username está en múltiples plataformas?'. Busca en 10 plataformas: GitHub, GitLab, Reddit, Keybase, Instagram, TikTok, Pinterest, X/Twitter, HackerNews, DeviantArt. NO usar para: buscar correos electrónicos, investigar dominios, o detectar tecnologías web.",
         "parameters": {
             "type": "object",
             "properties": {

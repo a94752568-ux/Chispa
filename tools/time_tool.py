@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-import pytz
 TOOL_DEFINITION = {
     "type": "function",
     "function": {

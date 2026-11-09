@@ -48,7 +48,7 @@ TOOL_DEFINITION = {
     "type": "function",
     "function": {
         "name": "check_exposure",
-        "description": "USAR CUANDO el usuario pregunta si un correo electrónico fue comprometido o apareció en filtraciones de datos. Ejemplos: '¿Este email fue filtrado?', '¿user@gmail.com está en alguna brecha de datos?', 'Revisa si este correo apareció en HaveIBeenPwned', '¿Está comprometida esta dirección?'. Consulta la API de HaveIBeenPwned v3. Requiere variable de entorno OSINT_API_KEY_HIBP. Si no hay API key, devuelve instrucciones claras para configurarla. NO usar para: buscar alias de usuario, investigar dominios, o detectar tecnologías.
+        "description": "USAR CUANDO el usuario pregunta si un correo electrónico fue comprometido o apareció en filtraciones de datos. Ejemplos: '¿Este email fue filtrado?', '¿user@gmail.com está en alguna brecha de datos?', 'Revisa si este correo apareció en HaveIBeenPwned', '¿Está comprometida esta dirección?'. Consulta la API de HaveIBeenPwned v3. Requiere variable de entorno OSINT_API_KEY_HIBP. Si no hay API key, devuelve instrucciones claras para configurarla. NO usar para: buscar alias de usuario, investigar dominios, o detectar tecnologías.",
         "parameters": {
             "type": "object",
             "properties": {

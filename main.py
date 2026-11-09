@@ -82,6 +82,7 @@ def trace(msg):
 # Tools registry - robusto con fallback
 try:
     from tools import load_tools
+    from tools.pre_router import ToolRouter
 except ImportError as e:
     print(f"⚠ No se pudo importar tools.load_tools: {e}")
     print(f"  Buscando en: {SCRIPT_DIR / 'tools'}")
@@ -1329,6 +1330,14 @@ class MainWindow(QMainWindow):
         self.tools_def, self.executors = load_tools()
         print(f"Tools cargados: {list(self.executors.keys())}")
 
+        # Pre-router por embeddings (Rama B - Fase 1)
+        self.tool_router: Optional[ToolRouter] = None
+        try:
+            self.tool_router = ToolRouter()
+            print(f"Pre-router listo (categorías: {list(self.tool_router.anchor_embeddings.keys())})")
+        except Exception as e:
+            print(f"⚠ Pre-router no disponible: {e}")
+
         # =====================================================================
         # ESTRUCTURA UNICA: MainWindow -> centralWidget -> QSplitter(2 widgets)
         # =====================================================================
@@ -2128,6 +2137,18 @@ class MainWindow(QMainWindow):
         enable_tools = self.tools_check.isChecked()
         enable_think = self.think_check.isChecked() and self.modelo_piensa(self.current_model)
 
+        # Pre-router: filtrar tools según el mensaje del usuario
+        route_defs = self.tools_def
+        route_execs = self.executors
+        if self.tool_router is not None and enable_tools:
+            try:
+                route_defs = self.tool_router.route(text)
+                route_execs = {k: v for k, v in self.executors.items()
+                               if k in {d.get("function", {}).get("name") for d in route_defs}}
+                print(f"Pre-router: {len(route_defs)} tools de {len(self.tools_def)} totales")
+            except Exception as e:
+                print(f"⚠ Pre-router falló, usando todas las tools: {e}")
+
         # Inyectar system prompt al inicio del historial si no está ya
         history_with_system = []
         if not any(m.get("role") == "system" for m in self.chat_history):
@@ -2151,7 +2172,7 @@ class MainWindow(QMainWindow):
                         pass
         self._prev_assistant_widget = assistant_widget
 
-        self.worker = OllamaWorker(self.current_model, history_with_system, self.tools_def, self.executors, enable_tools=enable_tools, enable_think=enable_think)
+        self.worker = OllamaWorker(self.current_model, history_with_system, route_defs, route_execs, enable_tools=enable_tools, enable_think=enable_think)
         self.worker.chunk_received.connect(self.on_chunk)
         self.worker.thinking_chunk.connect(self.on_thinking_chunk)
         self.worker.thinking_started.connect(self.on_thinking_started)

@@ -1,5 +1,3 @@
-import pyttsx3
-
 TOOL_DEFINITION = {
     "type": "function",
     "function": {
@@ -23,6 +21,10 @@ _engine = None
 def _get_engine():
     global _engine
     if _engine is None:
+        try:
+            import pyttsx3
+        except ImportError:
+            return None
         _engine = pyttsx3.init()
         _engine.setProperty('rate', 175)
         _engine.setProperty('volume', 1.0)
@@ -30,8 +32,10 @@ def _get_engine():
 
 
 def execute(text: str, rate: int = 175, volume: float = 1.0) -> str:
+    engine = _get_engine()
+    if engine is None:
+        return "TTS no disponible: pyttsx3 no está instalado (pip install pyttsx3)."
     try:
-        engine = _get_engine()
         engine.setProperty('rate', rate)
         engine.setProperty('volume', max(0.0, min(1.0, volume)))
         engine.say(text)
