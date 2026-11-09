@@ -83,7 +83,7 @@ def trace(msg):
 try:
     from tools import load_tools
     from tools.pre_router import ToolRouter
-    from tools.agent_orchestrator import Orchestrator
+    from tools.agent_orchestrator import Orchestrator, MUTACIONES
 except ImportError as e:
     print(f"⚠ No se pudo importar tools.load_tools: {e}")
     print(f"  Buscando en: {SCRIPT_DIR / 'tools'}")
@@ -115,6 +115,10 @@ except ImportError as e:
                 traceback.print_exc()
         return definitions, executors
 
+    # Fallback: mismo set de mutaciones que agent_orchestrator.MUTACIONES.
+    # Si cambia la lista ahí, actualizarla aquí también.
+    MUTACIONES = {"write_desktop", "organize_files", "db_writer", "move_file"}
+
 from tools.chat_fx import fade_in, animate_height, Spinner, PensandoDots
 
 
@@ -145,6 +149,9 @@ def is_vision_model(name: str) -> bool:
 # ================================================================
 MEMORY_DIR = Path.home() / ".local" / "share" / "OllamaChat-GUI"
 MEMORY_FILE = MEMORY_DIR / "chat_history.json"
+# Tope del historial persistido y del contexto enviado al modelo:
+# evita que chat_history.json y cada request crezcan sin límite.
+MAX_MEMORY_MESSAGES = 40
 
 
 def _ensure_memory_dir():
@@ -232,7 +239,21 @@ class OllamaWorker(QThread):
                         executor = self.executors.get(name)
                         if executor:
                             try:
+                                # Gate de mutación: en tool calls directos del chat,
+                                # las tools de escritura NUNCA se ejecutan de verdad.
+                                # Solo el orquestador, con autorización explícita del
+                                # usuario, puede mandar dry_run=False.
+                                if name in MUTACIONES:
+                                    args = dict(args)
+                                    args["dry_run"] = True
                                 result = executor(**args) if args else executor()
+                                if name in MUTACIONES:
+                                    result += (
+                                        "\n\n⚠️ Esta herramienta de escritura solo se "
+                                        "ejecutó en modo SIMULACIÓN (dry_run). Informar al "
+                                        "usuario que los cambios reales requieren su "
+                                        "autorización (plan del agente)."
+                                    )
                             except Exception as e:
                                 result = f"Error ejecutando {name}: {e}"
                         else:
@@ -2156,7 +2177,7 @@ class MainWindow(QMainWindow):
                 with open(MEMORY_FILE, "r", encoding="utf-8") as f:
                     data = json.load(f)
                 if isinstance(data, list):
-                    self.chat_history = data
+                    self.chat_history = data[-MAX_MEMORY_MESSAGES:]
                     print(f"Memoria cargada: {len(self.chat_history)} mensajes desde {MEMORY_FILE}")
         except Exception as e:
             print(f"⚠ No se pudo cargar la memoria persistente: {e}")
@@ -2166,8 +2187,9 @@ class MainWindow(QMainWindow):
         """Guarda el historial de chat en disco."""
         try:
             _ensure_memory_dir()
+            historial = self.chat_history[-MAX_MEMORY_MESSAGES:]
             with open(MEMORY_FILE, "w", encoding="utf-8") as f:
-                json.dump(self.chat_history, f, ensure_ascii=False, indent=2)
+                json.dump(historial, f, ensure_ascii=False, indent=2)
         except Exception as e:
             print(f"⚠ No se pudo guardar la memoria persistente: {e}")
 
@@ -2193,6 +2215,9 @@ class MainWindow(QMainWindow):
                 user_dict["images"] = b64_list
 
         self.chat_history.append(user_dict)
+        # Mantener el historial acotado: lo mismo que se envía al modelo.
+        if len(self.chat_history) > MAX_MEMORY_MESSAGES:
+            self.chat_history = self.chat_history[-MAX_MEMORY_MESSAGES:]
         self._save_memory()
         self.input_edit.clear()
         attached_copy = self.attached_images.copy()
@@ -2219,11 +2244,12 @@ class MainWindow(QMainWindow):
         elif enable_think:
             print(f"Thinking ON: todas las herramientas ({len(self.tools_def)})")
 
-        # Inyectar system prompt al inicio del historial si no está ya
-        history_with_system = []
-        if not any(m.get("role") == "system" for m in self.chat_history):
-            history_with_system.append({"role": "system", "content": SYSTEM_PROMPT})
-        history_with_system.extend(self.chat_history)
+        # Inyectar SIEMPRE el system prompt vigente: la memoria persistida
+        # nunca debe congelar una versión vieja del prompt.
+        history_with_system = [{"role": "system", "content": SYSTEM_PROMPT}]
+        history_with_system.extend(
+            m for m in self.chat_history if m.get("role") != "system"
+        )
 
         assistant_widget = MessageBubble("assistant", "", [], enable_think=enable_think)
         self.chat_container_widget.add_message_widget(assistant_widget)
