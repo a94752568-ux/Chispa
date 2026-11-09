@@ -205,7 +205,26 @@ class OllamaWorker(QThread):
 
             while self.enable_tools and tool_iterations < 3 and not self._stop:
                 self.status_update.emit(f"Analizando si necesita herramientas... (iter {tool_iterations+1})")
-                resp = client.chat(model=self.model, messages=current_history, tools=self.tools_def, stream=False, think=self.enable_think)
+                try:
+                    resp = client.chat(model=self.model, messages=current_history, tools=self.tools_def, stream=False, think=self.enable_think)
+                except Exception as e:
+                    # Ollama devolvió 500 (ej: tool calls malformados del modelo).
+                    # Reintentar SIN tools para que el usuario obtenga respuesta.
+                    self.status_update.emit(f"Herramientas no disponibles, respondiendo directo: {str(e)[:60]}")
+                    tools_def_sin = self.tools_def
+                    self.tools_def = []
+                    try:
+                        resp = client.chat(model=self.model, messages=current_history, tools=[], stream=False, think=self.enable_think)
+                        msg = resp.get('message', {})
+                        final_ans = msg.get('content', '')
+                        self.final_answer.emit(final_ans, msg.get('thinking', ''))
+                    except Exception as e2:
+                        self.error_occurred.emit(f"Ollama error: {e2}")
+                    finally:
+                        self.tools_def = tools_def_sin
+                    self.send_btn.setEnabled(True)
+                    self.status_label.setText("Listo")
+                    return
                 msg = resp.get('message', {})
                 tool_calls = msg.get('tool_calls', [])
 
