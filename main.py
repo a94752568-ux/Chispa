@@ -1157,9 +1157,12 @@ class MainWindow(QMainWindow):
         if item is None:
             return
         menu = QMenu(self)
+        ren = menu.addAction("✏️ Renombrar conversación")
         act = menu.addAction("🗑️ Eliminar conversación")
         chosen = menu.exec(self.chats_list.mapToGlobal(pos))
-        if chosen is act:
+        if chosen is ren:
+            self._rename_chat_at(self.chats_list.row(item))
+        elif chosen is act:
             self._delete_chat_at(self.chats_list.row(item))
 
     def _clear_chat_view(self):
@@ -1176,7 +1179,12 @@ class MainWindow(QMainWindow):
         if not self.chat_history:
             self.chat_container_widget.add_message_widget(self._build_empty_state())
         else:
-            for m in self.chat_history:
+            last_user_idx = -1
+            for i in range(len(self.chat_history) - 1, -1, -1):
+                if self.chat_history[i].get("role") == "user":
+                    last_user_idx = i
+                    break
+            for i, m in enumerate(self.chat_history):
                 role = m.get("role", "assistant")
                 if role == "system":
                     continue
@@ -1186,6 +1194,12 @@ class MainWindow(QMainWindow):
                     if w.thinking_block is not None:
                         w.thinking_block.hide()
                     self._wire_assistant_actions(w)
+                else:
+                    self._wire_user_actions(w)
+                    if i != last_user_idx:
+                        w.edit_btn.hide()
+                    else:
+                        self._last_user_widget = w
                 self.chat_container_widget.add_message_widget(w)
         self.scroll_to_bottom(force=True)
 
@@ -1263,6 +1277,54 @@ class MainWindow(QMainWindow):
         self.input_edit.setPlainText(text)
         self.input_edit.setFocus()
 
+    def _rename_chat_at(self, row: int):
+        """Renombra la conversación de la fila dada."""
+        if row < 0 or row >= len(self.chats):
+            return
+        from PySide6.QtWidgets import QInputDialog
+        meta = self.chats[row]
+        nuevo, ok = QInputDialog.getText(
+            self, "Renombrar conversación", "Nuevo título:", text=meta["title"])
+        nuevo = (nuevo or "").strip()
+        if not ok or not nuevo or nuevo == meta["title"]:
+            return
+        memoria.guardar_chat(meta["id"], nuevo, memoria.cargar_chat(meta["id"]))
+        meta["title"] = nuevo
+        item = self.chats_list.item(row)
+        if item:
+            item.setText(nuevo)
+            item.setToolTip(nuevo)
+        if meta["id"] == self.chat_id:
+            self._chat_title = nuevo
+            self.chat_title_label.setText(nuevo)
+
+    def _edit_user_message(self):
+        """Edita el último mensaje del usuario: lo regresa al composer y descarta lo posterior."""
+        if self.worker and self.worker.isRunning():
+            self.status_label.setText("Detén la generación antes de editar un mensaje")
+            return
+        last_user_idx = -1
+        for i in range(len(self.chat_history) - 1, -1, -1):
+            if self.chat_history[i].get("role") == "user":
+                last_user_idx = i
+                break
+        if last_user_idx < 0:
+            return
+        texto = self.chat_history[last_user_idx].get("content", "")
+        # Descartar desde ese mensaje en adelante y regresar el texto al composer
+        self.chat_history = self.chat_history[:last_user_idx]
+        self._save_memory()
+        self._render_chat()
+        self.input_edit.setPlainText(texto)
+        self.input_edit.setFocus()
+        self.status_label.setText("Edita tu mensaje y presiona Enter")
+
+    def _wire_user_actions(self, w):
+        """Conecta las acciones de una burbuja de usuario (editar)."""
+        btn = getattr(w, "edit_btn", None)
+        if btn is not None:
+            btn.clicked.connect(lambda _=False: self._edit_user_message())
+
     def _wire_assistant_actions(self, w):
         """Conecta las acciones de una burbuja de asistente (regenerar)."""
         btn = getattr(w, "retry_btn", None)
@@ -1297,6 +1359,15 @@ class MainWindow(QMainWindow):
             return
 
         user_widget = MessageBubble("user", text or "(solo imagen)", self.attached_images.copy())
+        self._wire_user_actions(user_widget)
+        # Solo el último mensaje del usuario conserva el botón de editar
+        prev_user = getattr(self, "_last_user_widget", None)
+        if prev_user is not None:
+            try:
+                prev_user.edit_btn.hide()
+            except Exception:
+                pass
+        self._last_user_widget = user_widget
         self.chat_container_widget.add_message_widget(user_widget)
 
         user_dict = {"role": "user", "content": text}

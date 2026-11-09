@@ -503,6 +503,31 @@ class MessageBubble(QFrame):
             bubble_container.addWidget(self.bubble, 0, Qt.AlignRight)
             layout.addLayout(bubble_container)
 
+            # Fila de acciones del usuario: editar (visible al hover)
+            self.edit_btn = QPushButton("✎")
+            self.edit_btn.setFixedSize(24, 24)
+            self.edit_btn.setToolTip("Editar mensaje y reenviar")
+            self.edit_btn.setCursor(Qt.PointingHandCursor)
+            self.edit_btn.setStyleSheet(f"""
+                QPushButton {{
+                    background: transparent;
+                    color: {theme.TEXT_SECOND};
+                    border: none;
+                    border-radius: 4px;
+                    font-size: 14px;
+                }}
+                QPushButton:hover {{ background: {theme.BG_INPUT}; color: {theme.TEXT}; }}
+            """)
+            edit_row = QHBoxLayout()
+            edit_row.setContentsMargins(0, 4, 0, 0)
+            edit_row.setSpacing(10)
+            edit_row.addStretch()
+            edit_row.addWidget(self.edit_btn)
+            self.edit_container = QFrame()
+            self.edit_container.setLayout(edit_row)
+            self.edit_container.setVisible(False)
+            layout.addWidget(self.edit_container)
+
         else:
             # OLLAMA: Nivel 2 - Zona de proceso (Think + Tools, fondo sutil)
             process_zone = QFrame()
@@ -628,11 +653,15 @@ class MessageBubble(QFrame):
     def enterEvent(self, event):
         if self.role == "assistant" and hasattr(self, 'icon_container'):
             self.icon_container.setVisible(True)
+        if self.role == "user" and hasattr(self, 'edit_container') and not self.edit_btn.isHidden():
+            self.edit_container.setVisible(True)
         super().enterEvent(event)
 
     def leaveEvent(self, event):
         if self.role == "assistant" and hasattr(self, 'icon_container'):
             self.icon_container.setVisible(False)
+        if self.role == "user" and hasattr(self, 'edit_container'):
+            self.edit_container.setVisible(False)
         super().leaveEvent(event)
 
     def setAnswer(self, text: str):
