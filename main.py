@@ -2202,10 +2202,13 @@ class MainWindow(QMainWindow):
         enable_tools = self.tools_check.isChecked()
         enable_think = self.think_check.isChecked() and self.modelo_piensa(self.current_model)
 
-        # Pre-router: filtrar tools según el mensaje del usuario
+        # Pre-router: filtrar tools según el mensaje del usuario.
+        # Cuando thinking está activado (qwen3.5:4b), enviar TODAS las tools
+        # sin filtrar: el modo reasoning no soporta bien el filtrado selectivo
+        # y el modelo necesita ver todas las opciones para decidir invocarlas.
         route_defs = self.tools_def
         route_execs = self.executors
-        if self.tool_router is not None and enable_tools:
+        if self.tool_router is not None and enable_tools and not enable_think:
             try:
                 route_defs = self.tool_router.route(text)
                 route_execs = {k: v for k, v in self.executors.items()
@@ -2213,6 +2216,8 @@ class MainWindow(QMainWindow):
                 print(f"Pre-router: {len(route_defs)} tools de {len(self.tools_def)} totales")
             except Exception as e:
                 print(f"⚠ Pre-router falló, usando todas las tools: {e}")
+        elif enable_think:
+            print(f"Thinking ON: todas las herramientas ({len(self.tools_def)})")
 
         # Inyectar system prompt al inicio del historial si no está ya
         history_with_system = []
