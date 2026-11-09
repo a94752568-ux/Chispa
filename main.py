@@ -83,6 +83,7 @@ def trace(msg):
 try:
     from tools import load_tools
     from tools.pre_router import ToolRouter
+    from tools.agent_orchestrator import Orchestrator
 except ImportError as e:
     print(f"⚠ No se pudo importar tools.load_tools: {e}")
     print(f"  Buscando en: {SCRIPT_DIR / 'tools'}")
@@ -132,7 +133,17 @@ Cuando uses herramientas, sintetiza, nunca transcribas:
 2) 3-6 bullets con ideas principales y datos concretos.
 3) Un párrafo breve de matices o contexto.
 4) Fuentes como enlaces markdown al final.
-Prohibido volcar resultados crudos o listar URLs sin interpretarlas."""
+Prohibido volcar resultados crudos o listar URLs sin interpretarlas.
+
+--- AGENTE DE ESCRITORIO ---
+Cuando el usuario pida guardar, crear, exportar u organizar algo en su carpeta personal, NO lo hagas tú: responde ÚNICAMENTE con un JSON válido de este formato, sin texto alrededor:
+{"objetivo": "...", "pasos": [{"tool": "nombre", "args": {...}}, ...]}
+Reglas del plan:
+1. Usa SOLO estas tools: web_search, rag_search, read_file, system_monitor, full_recon, analyze_security, ocr_tool, metadata_tool, sentiment_tool, write_desktop, organize_files, db_writer.
+2. Para referir el resultado de un paso anterior en args, usa {paso_N} (ej: {paso_1}).
+3. write_desktop/organize_files/db_writer son MUTACIONES: el sistema pedirá autorización al usuario antes de ejecutarlas. Tú solo las propones.
+4. Máximo 5 pasos. Si la tarea es simple (solo leer), responde normal sin JSON.
+5. NUNCA propongas borrar archivos ni escribir en .ssh, .gnupg o venv."""
 
 def is_vision_model(name: str) -> bool:
     low = name.lower()
@@ -1350,6 +1361,18 @@ class MainWindow(QMainWindow):
         except Exception as e:
             print(f"⚠ Pre-router no disponible: {e}")
 
+        # Orquestador de agentes (gate de autorización estructural)
+        self.tools_map: dict = self.executors
+        self.orch: Optional[Orchestrator] = None
+        try:
+            self.orch = Orchestrator(self.tools_map)
+            self.orch.necesita_aprobacion.connect(self._pedir_aprobacion)
+            self.orch.terminado.connect(self._mostrar_informe_agente)
+            self.orch.error.connect(self._mostrar_error_agente)
+            print("Orquestador listo")
+        except Exception as e:
+            print(f"⚠ Orquestador no disponible: {e}")
+
         # =====================================================================
         # ESTRUCTURA UNICA: MainWindow -> centralWidget -> QSplitter(2 widgets)
         # =====================================================================
@@ -2277,6 +2300,16 @@ class MainWindow(QMainWindow):
     @Slot(str, str)
     def on_final_answer(self, answer: str, thinking: str):
         trace(f"on_final_answer answer_len={len(answer or '')} thinking_len={len(thinking or '')}")
+        # Si el modelo devolvió un plan JSON del agente, enrutar al orquestador
+        if self.orch is not None:
+            try:
+                plan = json.loads(answer)
+                if isinstance(plan, dict) and "pasos" in plan:
+                    self.orch.ejecutar(answer)
+                    self.status_label.setText("Agente: plan recibido, ejecutando...")
+                    return
+            except (json.JSONDecodeError, TypeError):
+                pass
         # Modelo primero: historial siempre se guarda, pase lo que pase en la vista
         if hasattr(self, 'current_assistant_widget'):
             self.chat_history.append({"role": "assistant", "content": answer})
@@ -2298,6 +2331,52 @@ class MainWindow(QMainWindow):
         QMessageBox.critical(self, "Error Ollama", f"{err}\n\nVerifica que 'ollama serve' esté corriendo y el modelo exista.\nollama pull {self.current_model}")
         self.send_btn.setEnabled(True)
         self.status_label.setText(f"Error: {err[:50]}")
+
+    # ---------- Orquestador: gate de autorización ----------
+    @Slot(int, dict, str)
+    def _pedir_aprobacion(self, idx: int, paso: dict, preview: str):
+        """Diálogo de aprobación para pasos de MUTACIÓN."""
+        btn = QMessageBox.question(
+            self,
+            "Autorizar operación de escritorio",
+            f"Paso {idx + 1}: {paso.get('tool')}\n\n{preview}\n\n¿Autorizas?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
+        self.orch.resume(btn == QMessageBox.Yes)
+
+    @Slot(str)
+    def _mostrar_informe_agente(self, informe: str):
+        """Muestra el informe final del orquestador como burbuja de asistente."""
+        widget = MessageBubble("assistant", informe, [], enable_think=False)
+        self.chat_container_widget.add_message_widget(widget)
+        self.current_assistant_widget = widget
+        self.chat_history.append({"role": "assistant", "content": informe})
+        self._save_memory()
+        self.scroll_to_bottom()
+        self.send_btn.setEnabled(True)
+        self.status_label.setText("Agente: plan completado")
+
+    @Slot(int, str)
+    def _mostrar_error_agente(self, idx: int, motivo: str):
+        """Muestra un error del orquestador como burbuja de asistente."""
+        widget = MessageBubble("assistant", f"⚠️ Error en paso {idx + 1}: {motivo}", [], enable_think=False)
+        self.chat_container_widget.add_message_widget(widget)
+        self.current_assistant_widget = widget
+        self.chat_history.append({"role": "assistant", "content": f"Error en paso {idx + 1}: {motivo}"})
+        self._save_memory()
+        self.scroll_to_bottom()
+        self.send_btn.setEnabled(True)
+        self.status_label.setText("Agente: error")
+
+    # ---------- Ayuda: añadir burbuja de asistente desde cualquier contexto ----------
+    def _agregar_burbuja_asistente(self, texto: str, enable_think: bool = False):
+        widget = MessageBubble("assistant", texto, [], enable_think=enable_think)
+        self.chat_container_widget.add_message_widget(widget)
+        self.current_assistant_widget = widget
+        self.chat_history.append({"role": "assistant", "content": texto})
+        self._save_memory()
+        self.scroll_to_bottom()
 
 
 def main():
