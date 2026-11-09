@@ -175,3 +175,87 @@ def apply_theme(app: QApplication, theme: str = "dark") -> str:
     app.setPalette(palette_for(normalized))
     app.setStyleSheet(app_stylesheet(normalized))
     return normalized
+
+
+def apply_component_theme(root, theme: str = "dark") -> None:
+    """Apply the coordinated Neon Nexus component skin to named shell widgets."""
+    c = THEMES.get(theme, THEMES["dark"])
+    styles = {
+        "novaSidebar": f"QFrame#novaSidebar {{ background: {c['surface']}; border-right: 1px solid {c['border']}; }}",
+        "novaModelCard, #novaFunctionsCard, #novaToolsCard": "",
+    }
+    card = f"""
+        QFrame {{ background: {c['surface_elevated']}; border: 1px solid {c['border']};
+                  border-radius: 13px; }}
+    """
+    styles.update({
+        "novaModelCard": card,
+        "novaFunctionsCard": card,
+        "novaToolsCard": card,
+        "novaCentralPanel": f"QFrame#novaCentralPanel {{ background: {c['window']}; border: none; }}",
+        "novaChatHeader": f"QFrame#novaChatHeader {{ background: {c['surface']}; border-bottom: 1px solid {c['border']}; }}",
+        "novaComposerFrame": f"QFrame#novaComposerFrame {{ background: {c['surface']}; border-top: 1px solid {c['border']}; }}",
+        "novaModelCombo": f"""
+            QComboBox {{ background: {c['window']}; color: {c['text']}; border: 1px solid {c['border']};
+                         border-radius: 9px; padding: 7px 10px; selection-background-color: {c['selection']}; }}
+            QComboBox:hover, QComboBox:focus {{ border: 1px solid {c['accent']}; }}
+            QComboBox QAbstractItemView {{ background: {c['surface_elevated']}; color: {c['text']};
+                         border: 1px solid {c['border']}; selection-background-color: {c['selection']}; }}
+        """,
+        "novaToolsList": f"""
+            QListWidget {{ background: {c['window']}; color: {c['text']}; border: 1px solid {c['border']};
+                          border-radius: 9px; padding: 4px; outline: none; }}
+            QListWidget::item {{ padding: 8px 9px; border: none; border-radius: 6px; }}
+            QListWidget::item:hover {{ background: {c['surface_hover']}; }}
+            QListWidget::item:selected {{ background: {c['selection']}; color: {c['text']}; }}
+        """,
+        "novaMessageInput": f"""
+            QTextEdit {{ background: {c['window']}; color: {c['text']}; border: 1px solid {c['border']};
+                         border-radius: 15px; padding: 10px 14px; font-size: 13px; }}
+            QTextEdit:focus {{ border: 1px solid {c['accent']}; }}
+        """,
+        "novaNewChat": f"""
+            QPushButton {{ background: {c['surface_hover']}; color: {c['text']}; border: 1px solid {c['border']};
+                           border-radius: 10px; padding: 8px 12px; font-weight: 650; }}
+            QPushButton:hover {{ background: {c['selection']}; border-color: {c['accent']}; }}
+        """,
+        "novaPullModel": f"""
+            QPushButton {{ background: {c['surface_hover']}; color: {c['text']}; border: 1px solid {c['border']};
+                           border-radius: 9px; padding: 6px 10px; font-weight: 600; }}
+            QPushButton:hover {{ border-color: {c['accent']}; }}
+        """,
+        "novaAddTool": f"""
+            QPushButton {{ background: {c['surface_hover']}; color: {c['text']}; border: 1px solid {c['border']};
+                           border-radius: 9px; padding: 6px 10px; font-weight: 600; }}
+            QPushButton:hover {{ border-color: {c['accent']}; }}
+        """,
+        "novaAttach": f"""
+            QPushButton {{ background: {c['surface_hover']}; color: {c['text']}; border: 1px solid {c['border']};
+                           border-radius: 18px; font-size: 16px; }}
+            QPushButton:hover {{ background: {c['selection']}; border-color: {c['accent']}; }}
+        """,
+        "novaSend": f"""
+            QPushButton {{ background: {c['accent']}; color: {c['on_accent']}; border: none;
+                           border-radius: 10px; font-weight: 700; padding: 8px 16px; }}
+            QPushButton:hover {{ background: {c['accent_hover']}; }}
+            QPushButton:disabled {{ background: {c['surface_hover']}; color: {c['muted']}; }}
+        """,
+        "themeToggle": f"""
+            QPushButton {{ background: {c['surface_elevated']}; color: {c['text']}; border: 1px solid {c['border']};
+                           border-radius: 9px; padding: 5px 12px; font-weight: 600; }}
+            QPushButton:hover {{ border-color: {c['accent']}; color: {c['accent']}; }}
+        """,
+    })
+    for name, stylesheet in styles.items():
+        if not stylesheet:
+            continue
+        widget = root.findChild(QWidget, name)
+        if widget is not None:
+            widget.setStyleSheet(stylesheet)
+    for name in ("novaModelTitle", "novaFunctionsTitle", "novaToolsTitle"):
+        label = root.findChild(QWidget, name)
+        if label is not None:
+            label.setStyleSheet(
+                f"color: {c['accent']}; font-size: 11px; font-weight: 700; "
+                f"background: transparent; border: none; padding: 2px 0;"
+            )
