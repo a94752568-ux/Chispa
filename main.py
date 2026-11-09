@@ -31,6 +31,7 @@ except Exception:
     ollama = None
 
 from common import trace, MD_CSS, DEDUP_ENABLED, DEBUG_DEDUP, DEDUP_LOG_PATH
+import memoria  # persistencia del historial del chat
 
 
 # Tools registry - robusto con fallback
@@ -98,18 +99,6 @@ def is_vision_model(name: str) -> bool:
     return any(v in low for v in VISION_MODELS)
 
 
-# ================================================================
-# Memoria persistente del chat
-# ================================================================
-MEMORY_DIR = Path.home() / ".local" / "share" / "OllamaChat-GUI"
-MEMORY_FILE = MEMORY_DIR / "chat_history.json"
-# Tope del historial persistido y del contexto enviado al modelo:
-# evita que chat_history.json y cada request crezcan sin límite.
-MAX_MEMORY_MESSAGES = 40
-
-
-def _ensure_memory_dir():
-    MEMORY_DIR.mkdir(parents=True, exist_ok=True)
 
 def encode_image(path: str) -> Optional[str]:
     try:
@@ -2133,26 +2122,14 @@ class MainWindow(QMainWindow):
 
     def _load_memory(self):
         """Carga el historial de chat desde disco si existe."""
-        try:
-            if MEMORY_FILE.exists():
-                with open(MEMORY_FILE, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                if isinstance(data, list):
-                    self.chat_history = data[-MAX_MEMORY_MESSAGES:]
-                    print(f"Memoria cargada: {len(self.chat_history)} mensajes desde {MEMORY_FILE}")
-        except Exception as e:
-            print(f"⚠ No se pudo cargar la memoria persistente: {e}")
-            self.chat_history = []
+        data = memoria.cargar()
+        if data:
+            print(f"Memoria cargada: {len(data)} mensajes desde {memoria.MEMORY_FILE}")
+        self.chat_history = data
 
     def _save_memory(self):
         """Guarda el historial de chat en disco."""
-        try:
-            _ensure_memory_dir()
-            historial = self.chat_history[-MAX_MEMORY_MESSAGES:]
-            with open(MEMORY_FILE, "w", encoding="utf-8") as f:
-                json.dump(historial, f, ensure_ascii=False, indent=2)
-        except Exception as e:
-            print(f"⚠ No se pudo guardar la memoria persistente: {e}")
+        memoria.guardar(self.chat_history)
 
     def send_message(self):
         text = self.input_edit.toPlainText().strip()
@@ -2177,8 +2154,8 @@ class MainWindow(QMainWindow):
 
         self.chat_history.append(user_dict)
         # Mantener el historial acotado: lo mismo que se envía al modelo.
-        if len(self.chat_history) > MAX_MEMORY_MESSAGES:
-            self.chat_history = self.chat_history[-MAX_MEMORY_MESSAGES:]
+        if len(self.chat_history) > memoria.MAX_MEMORY_MESSAGES:
+            self.chat_history = self.chat_history[-memoria.MAX_MEMORY_MESSAGES:]
         self._save_memory()
         self.input_edit.clear()
         attached_copy = self.attached_images.copy()
