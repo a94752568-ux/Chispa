@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  sintaxis:
+    name: Sintaxis (py_compile)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compilar todos los .py del repo
+        run: python -m py_compile $(git ls-files '*.py')
+
+  tests:
+    name: Pytest (headless)
+    runs-on: ubuntu-latest
+    # ⚠️ continue-on-error hasta confirmar que los tests GUI pasan en
+    # headless (QT_QPA_PLATFORM=offscreen). Quitarlo cuando estén verdes.
+    continue-on-error: true
+    env:
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+          pip install -r requirements.txt
+      - name: Correr tests (sin los que requieren Ollama local)
+        run: pytest tests/ --ignore=tests/test_router.py -q
