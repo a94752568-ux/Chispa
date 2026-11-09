@@ -4,6 +4,7 @@ import os
 import re
 import json
 import base64
+import threading
 import requests
 from pathlib import Path
 from datetime import datetime
@@ -31,6 +32,7 @@ except Exception:
 
 from common import trace
 import memoria  # persistencia del historial del chat
+import theme  # paleta centralizada "estilo Vibe"
 from worker import OllamaWorker
 from widgets import ThinkingBlockWidget, ToolBlockWidget, MessageBubble, ChatContainer, TitleBar
 
@@ -184,14 +186,14 @@ class MainWindow(QMainWindow):
         splitter = QSplitter(Qt.Horizontal)
         splitter.setChildrenCollapsible(False)
         splitter.setHandleWidth(2)
-        splitter.setStyleSheet("""
-            QSplitter::handle {
-                background: #2a2a30;
+        splitter.setStyleSheet(f"""
+            QSplitter::handle {{
+                background: {theme.BORDER_SOFT};
                 width: 2px;
-            }
-            QSplitter::handle:hover {
-                background: #8ab4f8;
-            }
+            }}
+            QSplitter::handle:hover {{
+                background: {theme.ACCENT};
+            }}
         """)
         main_layout.addWidget(splitter, 1)
 
@@ -200,99 +202,101 @@ class MainWindow(QMainWindow):
         # ---------------------------------------------------------------
         sidebar = QFrame()
         sidebar.setFixedWidth(280)
-        sidebar.setStyleSheet("""
-            QFrame {
-                background: #16161a;
-                border-right: 1px solid #2a2a30;
-            }
+        sidebar.setStyleSheet(f"""
+            QFrame {{
+                background: {theme.BG_SIDEBAR};
+                border-right: 1px solid {theme.BORDER_SOFT};
+            }}
         """)
         sidebar_layout = QVBoxLayout(sidebar)
         sidebar_layout.setContentsMargins(16, 16, 16, 16)
-        sidebar_layout.setSpacing(16)
+        sidebar_layout.setSpacing(14)
 
-        app_title = QLabel("Ollama GUI")
-        app_title.setStyleSheet("font-size: 18px; font-weight: bold; color: #8ab4f8;")
+        app_title = QLabel("✦ Ollama GUI")
+        app_title.setStyleSheet(f"font-size: 17px; font-weight: 800; color: {theme.ACCENT};")
         sidebar_layout.addWidget(app_title)
 
         self.new_chat_btn = QPushButton("＋ Nuevo Chat")
-        self.new_chat_btn.setFixedHeight(36)
-        self.new_chat_btn.setStyleSheet("""
-            QPushButton {
-                background: #2a2a30;
-                color: #e0e0e0;
-                border: 1px solid #3a3a44;
-                border-radius: 6px;
+        self.new_chat_btn.setFixedHeight(38)
+        self.new_chat_btn.setCursor(Qt.PointingHandCursor)
+        self.new_chat_btn.setStyleSheet(f"""
+            QPushButton {{
+                background: {theme.ACCENT};
+                color: {theme.TEXT_ON_ACCENT};
+                border: none;
+                border-radius: 10px;
                 font-size: 13px;
                 font-weight: bold;
-            }
-            QPushButton:hover {
-                background: #3a3a44;
-                border-color: #8ab4f8;
-            }
+            }}
+            QPushButton:hover {{ background: {theme.ACCENT_HOVER}; }}
+            QPushButton:pressed {{ background: {theme.ACCENT_ACTIVE}; }}
         """)
         self.new_chat_btn.clicked.connect(self.new_chat)
         sidebar_layout.addWidget(self.new_chat_btn)
 
         # Selector de modelo
         model_group = QFrame()
-        model_group.setStyleSheet("""
-            QFrame {
-                background: #1a1a1e;
-                border: 1px solid #2a2a30;
-                border-radius: 8px;
-            }
+        model_group.setStyleSheet(f"""
+            QFrame {{
+                background: {theme.BG_ELEVATED};
+                border: 1px solid {theme.BORDER_SOFT};
+                border-radius: 12px;
+            }}
         """)
         model_layout = QVBoxLayout(model_group)
         model_layout.setContentsMargins(12, 10, 12, 10)
         model_layout.setSpacing(8)
 
-        model_label = QLabel("Modelo")
-        model_label.setStyleSheet("color: #8ab4f8; font-weight: bold; font-size: 12px;")
+        model_label = QLabel("MODELO")
+        model_label.setStyleSheet(f"color: {theme.TEXT_SECOND}; font-weight: 700; font-size: 11px;")
         model_layout.addWidget(model_label)
 
         self.model_combo = QComboBox()
         self.model_combo.setFixedHeight(32)
-        self.model_combo.setStyleSheet("""
-            QComboBox {
-                background: #17181c;
-                color: #e0e0e0;
-                border: 1px solid #3a3a44;
-                border-radius: 4px;
-                padding: 4px 8px;
+        self.model_combo.setCursor(Qt.PointingHandCursor)
+        self.model_combo.setStyleSheet(f"""
+            QComboBox {{
+                background: {theme.BG_INPUT};
+                color: {theme.TEXT};
+                border: 1px solid {theme.BORDER};
+                border-radius: 8px;
+                padding: 4px 10px;
                 font-size: 12px;
-            }
-            QComboBox::drop-down {
+            }}
+            QComboBox:focus {{ border-color: {theme.ACCENT}; }}
+            QComboBox::drop-down {{
                 border: none;
-                width: 20px;
-            }
-            QComboBox QAbstractItemView {
-                background: #17181c;
-                color: #e0e0e0;
-                border: 1px solid #3a3a44;
-                selection-background-color: #8ab4f8;
-                selection-color: #000;
-            }
+                width: 22px;
+            }}
+            QComboBox QAbstractItemView {{
+                background: {theme.BG_INPUT};
+                color: {theme.TEXT};
+                border: 1px solid {theme.BORDER};
+                selection-background-color: {theme.ACCENT};
+                selection-color: {theme.TEXT_ON_ACCENT};
+            }}
         """)
         self.model_combo.currentTextChanged.connect(self.on_model_changed)
         model_layout.addWidget(self.model_combo)
 
         self.model_status = QLabel("Cargando modelos...")
-        self.model_status.setStyleSheet("color: #888; font-size: 10px;")
+        self.model_status.setStyleSheet(f"color: {theme.TEXT_MUTED}; font-size: 10px;")
         model_layout.addWidget(self.model_status)
 
         self.pull_model_btn = QPushButton("⬇️ Pull Modelo")
         self.pull_model_btn.setFixedHeight(30)
-        self.pull_model_btn.setStyleSheet("""
-            QPushButton {
-                background: #2a2a30;
-                color: #e0e0e0;
-                border: 1px solid #3a3a44;
-                border-radius: 4px;
+        self.pull_model_btn.setCursor(Qt.PointingHandCursor)
+        self.pull_model_btn.setStyleSheet(f"""
+            QPushButton {{
+                background: transparent;
+                color: {theme.TEXT_SECOND};
+                border: 1px solid {theme.BORDER};
+                border-radius: 8px;
                 font-size: 11px;
-                font-weight: bold;
-            }
-            QPushButton:hover { background: #3a3a44; }
-            QPushButton:disabled { background: #222228; color: #666; }
+                font-weight: 600;
+            }}
+            QPushButton:hover {{ border-color: {theme.ACCENT}; color: {theme.TEXT}; }}
+            QPushButton:disabled {{ color: {theme.TEXT_MUTED}; border-color: {theme.BORDER_SOFT}; }}
         """)
         self.pull_model_btn.clicked.connect(self.pull_model)
         model_layout.addWidget(self.pull_model_btn)
@@ -301,19 +305,19 @@ class MainWindow(QMainWindow):
 
         # Funciones automáticas
         func_group = QFrame()
-        func_group.setStyleSheet("""
-            QFrame {
-                background: #1a1a1e;
-                border: 1px solid #2a2a30;
-                border-radius: 8px;
-            }
+        func_group.setStyleSheet(f"""
+            QFrame {{
+                background: {theme.BG_ELEVATED};
+                border: 1px solid {theme.BORDER_SOFT};
+                border-radius: 12px;
+            }}
         """)
         func_layout = QVBoxLayout(func_group)
         func_layout.setContentsMargins(12, 10, 12, 10)
         func_layout.setSpacing(8)
 
-        func_label = QLabel("Funciones Automáticas")
-        func_label.setStyleSheet("color: #8ab4f8; font-weight: bold; font-size: 12px;")
+        func_label = QLabel("FUNCIONES AUTOMÁTICAS")
+        func_label.setStyleSheet(f"color: {theme.TEXT_SECOND}; font-weight: 700; font-size: 11px;")
         func_layout.addWidget(func_label)
 
         self.web_search_check = QCheckBox("🌐 Web Search Auto")
@@ -350,40 +354,40 @@ class MainWindow(QMainWindow):
 
         # Plugins / Tools
         tools_group = QFrame()
-        tools_group.setStyleSheet("""
-            QFrame {
-                background: #1a1a1e;
-                border: 1px solid #2a2a30;
-                border-radius: 8px;
-            }
+        tools_group.setStyleSheet(f"""
+            QFrame {{
+                background: {theme.BG_ELEVATED};
+                border: 1px solid {theme.BORDER_SOFT};
+                border-radius: 12px;
+            }}
         """)
         tools_layout = QVBoxLayout(tools_group)
         tools_layout.setContentsMargins(12, 10, 12, 10)
         tools_layout.setSpacing(8)
 
-        tools_label = QLabel("Tools instalados")
-        tools_label.setStyleSheet("color: #8ab4f8; font-weight: bold; font-size: 12px;")
+        tools_label = QLabel("TOOLS INSTALADOS")
+        tools_label.setStyleSheet(f"color: {theme.TEXT_SECOND}; font-weight: 700; font-size: 11px;")
         tools_layout.addWidget(tools_label)
 
         self.tools_list = QListWidget()
         self.tools_list.setMinimumHeight(140)
-        self.tools_list.setStyleSheet("""
-            QListWidget {
-                background: #17181c;
-                color: #e0e0e0;
-                border: 1px solid #2a2a30;
-                border-radius: 4px;
+        self.tools_list.setStyleSheet(f"""
+            QListWidget {{
+                background: {theme.BG_INPUT};
+                color: {theme.TEXT};
+                border: 1px solid {theme.BORDER};
+                border-radius: 8px;
                 font-size: 11px;
                 outline: none;
-            }
-            QListWidget::item {
+            }}
+            QListWidget::item {{
                 padding: 6px 8px;
-                border-bottom: 1px solid #2a2a30;
-            }
-            QListWidget::item:selected {
-                background: #8ab4f8;
-                color: #000;
-            }
+                border-bottom: 1px solid {theme.BORDER_SOFT};
+            }}
+            QListWidget::item:selected {{
+                background: {theme.ACCENT};
+                color: {theme.TEXT_ON_ACCENT};
+            }}
         """)
         self.tools_list.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.tools_list.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
@@ -395,31 +399,33 @@ class MainWindow(QMainWindow):
 
         self.add_tool_btn = QPushButton("＋ Nuevo Tool")
         self.add_tool_btn.setFixedHeight(28)
-        self.add_tool_btn.setStyleSheet("""
-            QPushButton {
-                background: #2a2a30;
-                color: #e0e0e0;
-                border: 1px solid #3a3a44;
-                border-radius: 4px;
+        self.add_tool_btn.setCursor(Qt.PointingHandCursor)
+        self.add_tool_btn.setStyleSheet(f"""
+            QPushButton {{
+                background: transparent;
+                color: {theme.TEXT_SECOND};
+                border: 1px solid {theme.BORDER};
+                border-radius: 8px;
                 font-size: 11px;
-                font-weight: bold;
-            }
-            QPushButton:hover { background: #3a3a44; }
+                font-weight: 600;
+            }}
+            QPushButton:hover {{ border-color: {theme.ACCENT}; color: {theme.TEXT}; }}
         """)
         self.add_tool_btn.clicked.connect(self.create_new_tool)
         btn_row.addWidget(self.add_tool_btn)
 
         self.open_tools_folder_btn = QPushButton("📁")
         self.open_tools_folder_btn.setFixedSize(28, 28)
-        self.open_tools_folder_btn.setStyleSheet("""
-            QPushButton {
-                background: #2a2a30;
-                color: #e0e0e0;
-                border: 1px solid #3a3a44;
-                border-radius: 4px;
+        self.open_tools_folder_btn.setCursor(Qt.PointingHandCursor)
+        self.open_tools_folder_btn.setStyleSheet(f"""
+            QPushButton {{
+                background: transparent;
+                color: {theme.TEXT_SECOND};
+                border: 1px solid {theme.BORDER};
+                border-radius: 8px;
                 font-size: 12px;
-            }
-            QPushButton:hover { background: #3a3a44; }
+            }}
+            QPushButton:hover {{ border-color: {theme.ACCENT}; color: {theme.TEXT}; }}
         """)
         self.open_tools_folder_btn.clicked.connect(self.open_tools_folder)
         self.open_tools_folder_btn.setToolTip("Abrir carpeta tools")
@@ -431,7 +437,7 @@ class MainWindow(QMainWindow):
         sidebar_layout.addStretch()
 
         self.status_label = QLabel("Listo")
-        self.status_label.setStyleSheet("color: #666; font-size: 11px; font-style: italic;")
+        self.status_label.setStyleSheet(f"color: {theme.TEXT_MUTED}; font-size: 11px; font-style: italic;")
         sidebar_layout.addWidget(self.status_label)
 
         # Sidebar dentro de QScrollArea
@@ -448,27 +454,27 @@ class MainWindow(QMainWindow):
         # 2. CENTRAL: QVBoxLayout con 3 filas (header, chat, composer)
         # ---------------------------------------------------------------
         central_panel = QFrame()
-        central_panel.setStyleSheet("background: #17181c;")
+        central_panel.setStyleSheet(f"background: {theme.BG_WINDOW};")
         central_layout = QVBoxLayout(central_panel)
         central_layout.setContentsMargins(0, 0, 0, 0)
         central_layout.setSpacing(0)
 
-        # 2a. Header pequeño de chat
+        # 2a. Header pequeño de chat (título de la conversación activa)
         chat_header = QFrame()
         chat_header.setFixedHeight(44)
-        chat_header.setStyleSheet("""
-            QFrame {
-                background: #16161a;
-                border-bottom: 1px solid #2a2a30;
-            }
+        chat_header.setStyleSheet(f"""
+            QFrame {{
+                background: {theme.BG_SIDEBAR};
+                border-bottom: 1px solid {theme.BORDER_SOFT};
+            }}
         """)
         header_layout = QHBoxLayout(chat_header)
         header_layout.setContentsMargins(16, 0, 16, 0)
         header_layout.setSpacing(10)
 
-        chat_title = QLabel("Chat")
-        chat_title.setStyleSheet("color: #e0e0e0; font-size: 14px; font-weight: bold;")
-        header_layout.addWidget(chat_title)
+        self.chat_title_label = QLabel("Chat")
+        self.chat_title_label.setStyleSheet(f"color: {theme.TEXT}; font-size: 14px; font-weight: bold;")
+        header_layout.addWidget(self.chat_title_label)
         header_layout.addStretch()
 
         central_layout.addWidget(chat_header)
@@ -478,140 +484,147 @@ class MainWindow(QMainWindow):
         self.scroll.setWidgetResizable(True)
         self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.scroll.setStyleSheet("border: none; background: #17181c;")
+        self.scroll.setStyleSheet(f"border: none; background: {theme.BG_WINDOW};")
 
         self.chat_container_widget = ChatContainer()
-        self.chat_container_widget.setStyleSheet("background: #17181c;")
+        self.chat_container_widget.setStyleSheet(f"background: {theme.BG_WINDOW};")
         self.scroll.setWidget(self.chat_container_widget)
         central_layout.addWidget(self.scroll, 1)  # stretch 1
 
-        # 2c. Composer con stretch 0, siempre visible abajo
+        # 2c. Composer estilo Vibe: contenedor redondeado con input e iconos
         input_frame = QFrame()
-        input_frame.setFixedHeight(110)
-        input_frame.setStyleSheet("""
-            QFrame {
-                background: #16161a;
-                border-top: 1px solid #2a2a30;
-            }
-        """)
+        input_frame.setStyleSheet(f"QFrame {{ background: {theme.BG_WINDOW}; border: none; }}")
         input_layout = QVBoxLayout(input_frame)
-        input_layout.setContentsMargins(16, 12, 16, 12)
-        input_layout.setSpacing(10)
+        input_layout.setContentsMargins(16, 8, 16, 12)
+        input_layout.setSpacing(6)
 
-        input_row = QHBoxLayout()
-        input_row.setContentsMargins(0, 0, 0, 0)
-        input_row.setSpacing(10)
+        composer = QFrame()
+        composer.setObjectName("composer")
+        composer.setStyleSheet(f"""
+            QFrame#composer {{
+                background: {theme.BG_ELEVATED};
+                border: 1px solid {theme.BORDER};
+                border-radius: 24px;
+            }}
+            QFrame#composer:hover {{
+                border-color: {theme.TEXT_MUTED};
+            }}
+        """)
+        composer_layout = QVBoxLayout(composer)
+        composer_layout.setContentsMargins(0, 0, 0, 0)
+        composer_layout.setSpacing(0)
 
         self.input_edit = QTextEdit()
-        self.input_edit.setPlaceholderText("Escribe tu mensaje... Arrastra imágenes aquí o usa el clip")
-        self.input_edit.setFixedHeight(56)
-        self.input_edit.setStyleSheet("""
-            QTextEdit {
-                background: #17181c;
-                color: #e0e0e0;
-                border: 1px solid #3a3a44;
-                border-radius: 22px;
-                padding: 8px 16px;
-                font-size: 13px;
+        self.input_edit.setPlaceholderText("Escribe tu mensaje… (Enter envía · Shift+Enter salto de línea · arrastra imágenes)")
+        self.input_edit.setFixedHeight(58)
+        self.input_edit.setStyleSheet(f"""
+            QTextEdit {{
+                background: transparent;
+                border: none;
+                color: {theme.TEXT};
+                font-size: 14px;
                 line-height: 1.4;
-            }
-            QTextEdit:focus {
-                border-color: #8ab4f8;
-            }
+                padding: 12px 18px 6px 18px;
+                font-family: {theme.FONT_STACK};
+            }}
         """)
         # Event filter: Enter envía, Shift+Enter nueva línea
         self.input_edit.installEventFilter(self)
-        input_row.addWidget(self.input_edit, 1)
+        composer_layout.addWidget(self.input_edit)
 
-        btns_col = QVBoxLayout()
-        btns_col.setSpacing(6)
-
-        top_btns = QHBoxLayout()
-        top_btns.setSpacing(6)
+        # Fila inferior del composer: iconos a la izquierda, enviar a la derecha
+        bottom_row = QHBoxLayout()
+        bottom_row.setContentsMargins(8, 0, 8, 8)
+        bottom_row.setSpacing(2)
 
         self.attach_btn = QPushButton("📎")
-        self.attach_btn.setFixedSize(36, 36)
-        self.attach_btn.setStyleSheet("""
-            QPushButton {
-                background: #2a2a30;
-                color: #e0e0e0;
+        self.attach_btn.setFixedSize(32, 32)
+        self.attach_btn.setCursor(Qt.PointingHandCursor)
+        self.attach_btn.setStyleSheet(f"""
+            QPushButton {{
+                background: transparent;
+                color: {theme.TEXT_SECOND};
                 border: none;
-                border-radius: 18px;
-                font-size: 16px;
-            }
-            QPushButton:hover { background: #3a3a44; }
+                border-radius: 16px;
+                font-size: 15px;
+            }}
+            QPushButton:hover {{ background: {theme.BG_INPUT}; color: {theme.TEXT}; }}
         """)
         self.attach_btn.clicked.connect(self.attach_image)
         self.attach_btn.setToolTip("Adjuntar imagen para visión")
-        top_btns.addWidget(self.attach_btn)
+        bottom_row.addWidget(self.attach_btn)
 
         self.mic_btn = QPushButton("🎤")
-        self.mic_btn.setFixedSize(36, 36)
+        self.mic_btn.setFixedSize(32, 32)
         self.mic_btn.setCheckable(True)
-        self.mic_btn.setStyleSheet("""
-            QPushButton {
-                background: #2a2a30;
-                color: #e0e0e0;
+        self.mic_btn.setCursor(Qt.PointingHandCursor)
+        self.mic_btn.setStyleSheet(f"""
+            QPushButton {{
+                background: transparent;
+                color: {theme.TEXT_SECOND};
                 border: none;
-                border-radius: 18px;
-                font-size: 16px;
-            }
-            QPushButton:checked {
-                background: #ff6b6b;
+                border-radius: 16px;
+                font-size: 15px;
+            }}
+            QPushButton:hover {{ background: {theme.BG_INPUT}; color: {theme.TEXT}; }}
+            QPushButton:checked {{
+                background: {theme.ERROR};
                 color: #fff;
-            }
-            QPushButton:hover { background: #3a3a44; }
+            }}
         """)
         self.mic_btn.clicked.connect(self.toggle_dictation)
         self.mic_btn.setToolTip("Dictado por voz (STT)")
         self.mic_btn.hide()
-        top_btns.addWidget(self.mic_btn)
+        bottom_row.addWidget(self.mic_btn)
 
         self.clear_images_btn = QPushButton("🗑️")
-        self.clear_images_btn.setFixedSize(36, 36)
-        self.clear_images_btn.setStyleSheet("""
-            QPushButton {
-                background: #2a2a30;
-                color: #e0e0e0;
+        self.clear_images_btn.setFixedSize(32, 32)
+        self.clear_images_btn.setCursor(Qt.PointingHandCursor)
+        self.clear_images_btn.setStyleSheet(f"""
+            QPushButton {{
+                background: transparent;
+                color: {theme.TEXT_SECOND};
                 border: none;
-                border-radius: 18px;
-                font-size: 16px;
-            }
-            QPushButton:hover { background: #3a3a44; }
+                border-radius: 16px;
+                font-size: 15px;
+            }}
+            QPushButton:hover {{ background: {theme.BG_INPUT}; color: {theme.TEXT}; }}
         """)
         self.clear_images_btn.clicked.connect(lambda: self.clear_attached_images())
         self.clear_images_btn.hide()
         self.clear_images_btn.setToolTip("Limpiar imágenes adjuntas")
-        top_btns.addWidget(self.clear_images_btn)
+        bottom_row.addWidget(self.clear_images_btn)
 
-        top_btns.addStretch()
-        btns_col.addLayout(top_btns)
+        bottom_row.addStretch()
 
-        self.send_btn = QPushButton("Enviar ▶")
-        self.send_btn.setFixedSize(140, 36)
-        self.send_btn.setStyleSheet("""
-            QPushButton {
-                background: #8ab4f8;
-                color: #000;
-                font-weight: bold;
-                font-size: 13px;
+        self.send_btn = QPushButton("➤")
+        self.send_btn.setFixedSize(36, 36)
+        self.send_btn.setCursor(Qt.PointingHandCursor)
+        self.send_btn.setToolTip("Enviar (Enter)")
+        self.send_btn.setStyleSheet(f"""
+            QPushButton {{
+                background: {theme.ACCENT};
+                color: {theme.TEXT_ON_ACCENT};
                 border: none;
-                border-radius: 6px;
-            }
-            QPushButton:hover { background: #a0c4ff; }
-            QPushButton:disabled {
-                background: #2a2a30;
-                color: #666;
-            }
+                border-radius: 18px;
+                font-size: 16px;
+                font-weight: bold;
+            }}
+            QPushButton:hover {{ background: {theme.ACCENT_HOVER}; }}
+            QPushButton:pressed {{ background: {theme.ACCENT_ACTIVE}; }}
+            QPushButton:disabled {{
+                background: {theme.BORDER};
+                color: {theme.TEXT_MUTED};
+            }}
         """)
         self.send_btn.clicked.connect(self.send_message)
-        btns_col.addWidget(self.send_btn)
+        bottom_row.addWidget(self.send_btn)
 
-        input_row.addLayout(btns_col)
-        input_layout.addLayout(input_row)
+        composer_layout.addLayout(bottom_row)
+        input_layout.addWidget(composer)
 
         self.images_label = QLabel("")
-        self.images_label.setStyleSheet("color: #8ab4f8; font-size: 11px; font-weight: bold;")
+        self.images_label.setStyleSheet(f"color: {theme.ACCENT}; font-size: 11px; font-weight: 600; padding-left: 6px;")
         self.images_label.hide()
         input_layout.addWidget(self.images_label)
 
@@ -646,26 +659,27 @@ class MainWindow(QMainWindow):
 
     @staticmethod
     def _checkbox_style():
-        return """
-            QCheckBox {
-                color: #e0e0e0;
+        return f"""
+            QCheckBox {{
+                color: {theme.TEXT};
                 font-size: 12px;
                 spacing: 8px;
-            }
-            QCheckBox::indicator {
+            }}
+            QCheckBox::indicator {{
                 width: 18px;
                 height: 18px;
-                background: #17181c;
-                border: 1px solid #3a3a44;
-                border-radius: 4px;
-            }
-            QCheckBox::indicator:checked {
-                background: #8ab4f8;
-                border-color: #8ab4f8;
-            }
-            QCheckBox::indicator:checked::hover {
-                background: #a0c4ff;
-            }
+                background: {theme.BG_INPUT};
+                border: 1px solid {theme.BORDER};
+                border-radius: 5px;
+            }}
+            QCheckBox::indicator:checked {{
+                background: {theme.ACCENT};
+                border-color: {theme.ACCENT};
+            }}
+            QCheckBox::indicator:checked::hover {{
+                background: {theme.ACCENT_HOVER};
+            }}
+            QCheckBox:hover {{ color: {theme.TEXT}; }}
         """
 
     def refresh_tools_list(self):
@@ -826,27 +840,28 @@ class MainWindow(QMainWindow):
         dlg = QDialog(self)
         dlg.setWindowTitle("Crear Nuevo Tool")
         dlg.setFixedSize(400, 200)
-        dlg.setStyleSheet("""
-            QDialog { background: #16161a; }
-            QLabel { color: #e0e0e0; font-size: 12px; }
-            QLineEdit {
-                background: #17181c;
-                color: #e0e0e0;
-                border: 1px solid #3a3a44;
-                border-radius: 4px;
+        dlg.setStyleSheet(f"""
+            QDialog {{ background: {theme.BG_ELEVATED}; }}
+            QLabel {{ color: {theme.TEXT}; font-size: 12px; }}
+            QLineEdit {{
+                background: {theme.BG_INPUT};
+                color: {theme.TEXT};
+                border: 1px solid {theme.BORDER};
+                border-radius: 6px;
                 padding: 6px;
                 font-size: 12px;
-            }
-            QPushButton {
-                background: #8ab4f8;
-                color: #000;
+            }}
+            QLineEdit:focus {{ border-color: {theme.ACCENT}; }}
+            QPushButton {{
+                background: {theme.ACCENT};
+                color: {theme.TEXT_ON_ACCENT};
                 font-weight: bold;
                 border: none;
-                border-radius: 4px;
+                border-radius: 6px;
                 padding: 6px 16px;
                 font-size: 12px;
-            }
-            QPushButton:hover { background: #a0c4ff; }
+            }}
+            QPushButton:hover {{ background: {theme.ACCENT_HOVER}; }}
         """)
         layout = QFormLayout(dlg)
         layout.setSpacing(12)
@@ -1199,20 +1214,21 @@ def main():
     app.setStyle("Fusion")
     from PySide6.QtGui import QPalette, QColor
     palette = QPalette()
-    palette.setColor(QPalette.Window, QColor(14,14,16))
-    palette.setColor(QPalette.WindowText, QColor(224,224,224))
-    palette.setColor(QPalette.Base, QColor(26,26,30))
-    palette.setColor(QPalette.AlternateBase, QColor(14,14,16))
-    palette.setColor(QPalette.ToolTipBase, QColor(255,255,255))
-    palette.setColor(QPalette.ToolTipText, QColor(0,0,0))
-    palette.setColor(QPalette.Text, QColor(224,224,224))
-    palette.setColor(QPalette.Button, QColor(42,42,48))
-    palette.setColor(QPalette.ButtonText, QColor(224,224,224))
-    palette.setColor(QPalette.BrightText, QColor(255,0,0))
-    palette.setColor(QPalette.Link, QColor(138,180,248))
-    palette.setColor(QPalette.Highlight, QColor(138,180,248))
-    palette.setColor(QPalette.HighlightedText, QColor(0,0,0))
+    palette.setColor(QPalette.Window, QColor(theme.BG_WINDOW))
+    palette.setColor(QPalette.WindowText, QColor(theme.TEXT))
+    palette.setColor(QPalette.Base, QColor(theme.BG_ELEVATED))
+    palette.setColor(QPalette.AlternateBase, QColor(theme.BG_WINDOW))
+    palette.setColor(QPalette.ToolTipBase, QColor(theme.BG_ELEVATED))
+    palette.setColor(QPalette.ToolTipText, QColor(theme.TEXT))
+    palette.setColor(QPalette.Text, QColor(theme.TEXT))
+    palette.setColor(QPalette.Button, QColor(theme.BG_ELEVATED))
+    palette.setColor(QPalette.ButtonText, QColor(theme.TEXT))
+    palette.setColor(QPalette.BrightText, QColor(theme.ERROR))
+    palette.setColor(QPalette.Link, QColor(theme.ACCENT))
+    palette.setColor(QPalette.Highlight, QColor(theme.ACCENT))
+    palette.setColor(QPalette.HighlightedText, QColor(theme.TEXT_ON_ACCENT))
     app.setPalette(palette)
+    app.setStyleSheet(theme.app_qss())
     app.setFont(QFont("Inter", 10))
 
     window = MainWindow()
