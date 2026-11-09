@@ -17,12 +17,14 @@ import re
 from pathlib import Path
 from typing import Any
 
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import QObject, Signal, Slot
 
-# ⚠️ Si añades una tool de escritura, regístrala aquí o se tratará como lectura.
-# Este es el único punto frágil del diseño: una tool de escritura no registrada
-# se ejecutará sin pedir permiso.
-MUTACIONES: set[str] = {"write_desktop", "organize_files", "db_writer", "move_file"}
+# Fuente única de verdad: tools/__init__.py define MUTACIONES.
+# El fallback cubre contextos sin paquete (ejecución directa del archivo / PyInstaller).
+try:
+    from tools import MUTACIONES
+except ImportError:
+    MUTACIONES = {"write_desktop", "organize_files", "db_writer", "move_file"}
 
 
 class Orchestrator(QObject):
@@ -47,7 +49,10 @@ class Orchestrator(QObject):
         except json.JSONDecodeError as e:
             self.terminado.emit(f"🚫 Plan inválido (JSON): {e}")
             return
-        pasos = plan.get("pasos") or plan
+        if not isinstance(plan, (dict, list)):
+            self.terminado.emit(f"🚫 Plan inválido: se esperaba objeto o lista, llegó {type(plan).__name__}.")
+            return
+        pasos = (plan.get("pasos") or plan) if isinstance(plan, dict) else plan
         if not isinstance(pasos, list) or not pasos:
             self.terminado.emit("🚫 El plan no contiene pasos ejecutables.")
             return
@@ -72,8 +77,15 @@ class Orchestrator(QObject):
     def _avanzar(self) -> None:
         while self._idx < len(self._plan):
             paso = self._plan[self._idx]
+            if not isinstance(paso, dict):
+                self.error.emit(self._idx, f"Paso inválido: se esperaba un objeto, llegó {type(paso).__name__}")
+                return
             tool = paso.get("tool")
-            args = self._sustituye(paso.get("args", {}) or {})
+            raw_args = paso.get("args", {}) or {}
+            if not isinstance(raw_args, dict):
+                self.error.emit(self._idx, f"Paso {tool}: 'args' debe ser un objeto, llegó {type(raw_args).__name__}")
+                return
+            args = self._sustituye(raw_args)
             if tool in MUTACIONES:
                 preview = self._preview(tool, args)
                 self.necesita_aprobacion.emit(self._idx, paso, preview)
@@ -110,7 +122,7 @@ class Orchestrator(QObject):
         else:
             paso = None
 
-        if paso is not None and paso.get("tool") in MUTACIONES:
+        if paso is not None and isinstance(paso, dict) and paso.get("tool") in MUTACIONES:
             self._pendiente = paso
 
         if not autorizado:
@@ -124,9 +136,16 @@ class Orchestrator(QObject):
         if paso is None:
             self._fin()
             return
+        if not isinstance(paso, dict):
+            self.error.emit(self._idx, f"Paso inválido: se esperaba un objeto, llegó {type(paso).__name__}")
+            return
 
         tool = paso.get("tool")
-        args = self._sustituye(paso.get("args", {}) or {})
+        raw_args = paso.get("args", {}) or {}
+        if not isinstance(raw_args, dict):
+            self.error.emit(self._idx, f"Paso {tool}: 'args' debe ser un objeto, llegó {type(raw_args).__name__}")
+            return
+        args = self._sustituye(raw_args)
         args["dry_run"] = False  # el orquestador ya validó: escribe de verdad
         try:
             res = self.tools[tool](**args)

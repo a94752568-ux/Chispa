@@ -77,9 +77,9 @@ def trace(msg):
 
 # Tools registry - robusto con fallback
 try:
-    from tools import load_tools
+    from tools import load_tools, MUTACIONES
     from tools.pre_router import ToolRouter
-    from tools.agent_orchestrator import Orchestrator, MUTACIONES
+    from tools.agent_orchestrator import Orchestrator
 except ImportError as e:
     print(f"⚠ No se pudo importar tools.load_tools: {e}")
     print(f"  Buscando en: {SCRIPT_DIR / 'tools'}")
@@ -111,7 +111,7 @@ except ImportError as e:
                 traceback.print_exc()
         return definitions, executors
 
-    # Fallback: mismo set de mutaciones que agent_orchestrator.MUTACIONES.
+    # Fallback: mismo set de mutaciones que tools/__init__.py (MUTACIONES).
     # Si cambia la lista ahí, actualizarla aquí también.
     MUTACIONES = {"write_desktop", "organize_files", "db_writer", "move_file"}
 

@@ -2,6 +2,11 @@ import importlib.util
 from pathlib import Path
 import traceback
 
+# ⚠️ ÚNICO PUNTO DE VERDAD de las tools de MUTACIÓN (escritura).
+# Si añades una tool de escritura, regístrala aquí: una tool de escritura
+# no registrada se ejecutará sin pedir permiso al usuario.
+MUTACIONES = {"write_desktop", "organize_files", "db_writer", "move_file"}
+
 
 def get_tools_dir():
     """Busca carpeta tools en múltiples ubicaciones (dev y PyInstaller bundle)"""
