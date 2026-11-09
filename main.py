@@ -33,6 +33,7 @@ from common import trace
 import memoria  # persistencia del historial del chat
 from worker import OllamaWorker
 from widgets import ThinkingBlockWidget, ToolBlockWidget, MessageBubble, ChatContainer, TitleBar
+from ui_theme import THEMES, apply_theme
 
 
 # Tools registry - robusto con fallback
@@ -112,6 +113,10 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Ollama GUI - Lubuntu Edition")
+        self.settings = QSettings("Nova-Aegis", "OllamaChat-GUI")
+        self.theme_name = self.settings.value("appearance/theme", "dark", type=str)
+        if self.theme_name not in THEMES:
+            self.theme_name = "dark"
         self.setAcceptDrops(True)
         # Ventana sin borde nativo (barra de título personalizada)
         self.setWindowFlags(Qt.FramelessWindowHint)
@@ -471,6 +476,13 @@ class MainWindow(QMainWindow):
         header_layout.addWidget(chat_title)
         header_layout.addStretch()
 
+        self.theme_btn = QPushButton("◐ Tema claro" if self.theme_name == "dark" else "◐ Tema oscuro")
+        self.theme_btn.setObjectName("themeToggle")
+        self.theme_btn.setFixedHeight(30)
+        self.theme_btn.setToolTip("Cambiar entre tema oscuro y claro")
+        self.theme_btn.clicked.connect(self.toggle_theme)
+        header_layout.addWidget(self.theme_btn)
+
         central_layout.addWidget(chat_header)
 
         # 2b. ChatScrollArea con stretch 1, widgetResizable True, sin scrollbar horizontal
@@ -645,6 +657,15 @@ class MainWindow(QMainWindow):
         self.mic_btn.setVisible(self.stt_available and self.stt_check.isChecked())
 
     @staticmethod
+    def toggle_theme(self):
+        """Toggle Neon Nexus dark/light appearance and persist the choice."""
+        app = QApplication.instance()
+        self.theme_name = "light" if self.theme_name == "dark" else "dark"
+        apply_theme(app, self.theme_name)
+        self.settings.setValue("appearance/theme", self.theme_name)
+        self.theme_btn.setText("◐ Tema claro" if self.theme_name == "dark" else "◐ Tema oscuro")
+        self.status_label.setText(f"Tema: {THEMES[self.theme_name]['name']}")
+
     def _checkbox_style():
         return """
             QCheckBox {
@@ -1197,22 +1218,9 @@ class MainWindow(QMainWindow):
 def main():
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
-    from PySide6.QtGui import QPalette, QColor
-    palette = QPalette()
-    palette.setColor(QPalette.Window, QColor(14,14,16))
-    palette.setColor(QPalette.WindowText, QColor(224,224,224))
-    palette.setColor(QPalette.Base, QColor(26,26,30))
-    palette.setColor(QPalette.AlternateBase, QColor(14,14,16))
-    palette.setColor(QPalette.ToolTipBase, QColor(255,255,255))
-    palette.setColor(QPalette.ToolTipText, QColor(0,0,0))
-    palette.setColor(QPalette.Text, QColor(224,224,224))
-    palette.setColor(QPalette.Button, QColor(42,42,48))
-    palette.setColor(QPalette.ButtonText, QColor(224,224,224))
-    palette.setColor(QPalette.BrightText, QColor(255,0,0))
-    palette.setColor(QPalette.Link, QColor(138,180,248))
-    palette.setColor(QPalette.Highlight, QColor(138,180,248))
-    palette.setColor(QPalette.HighlightedText, QColor(0,0,0))
-    app.setPalette(palette)
+    settings = QSettings("Nova-Aegis", "OllamaChat-GUI")
+    theme_name = settings.value("appearance/theme", "dark", type=str)
+    apply_theme(app, theme_name)
     app.setFont(QFont("Inter", 10))
 
     window = MainWindow()
