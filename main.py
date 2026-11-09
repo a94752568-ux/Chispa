@@ -33,7 +33,7 @@ from common import trace
 import memoria  # persistencia del historial del chat
 from worker import OllamaWorker
 from widgets import ThinkingBlockWidget, ToolBlockWidget, MessageBubble, ChatContainer, TitleBar
-from ui_theme import THEMES, apply_theme
+from ui_theme import THEMES, apply_theme, retint_widget_styles
 
 
 # Tools registry - robusto con fallback
@@ -656,12 +656,12 @@ class MainWindow(QMainWindow):
             self.stt_available = False
         self.mic_btn.setVisible(self.stt_available and self.stt_check.isChecked())
 
-    @staticmethod
     def toggle_theme(self):
         """Toggle Neon Nexus dark/light appearance and persist the choice."""
         app = QApplication.instance()
         self.theme_name = "light" if self.theme_name == "dark" else "dark"
         apply_theme(app, self.theme_name)
+        retint_widget_styles(app, self.theme_name)
         self.settings.setValue("appearance/theme", self.theme_name)
         self.theme_btn.setText("◐ Tema claro" if self.theme_name == "dark" else "◐ Tema oscuro")
         self.status_label.setText(f"Tema: {THEMES[self.theme_name]['name']}")
@@ -1224,6 +1224,7 @@ def main():
     app.setFont(QFont("Inter", 10))
 
     window = MainWindow()
+    retint_widget_styles(app, theme_name)
     window.show()
     sys.exit(app.exec())
 
