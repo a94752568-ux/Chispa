@@ -187,6 +187,7 @@ class MainWindow(QMainWindow):
 
         # QSplitter con SOLO 2 widgets: sidebar y central
         splitter = QSplitter(Qt.Horizontal)
+        splitter.setObjectName("novaSplitter")
         splitter.setChildrenCollapsible(False)
         splitter.setHandleWidth(2)
         splitter.setStyleSheet("""
@@ -217,6 +218,7 @@ class MainWindow(QMainWindow):
         sidebar_layout.setSpacing(16)
 
         app_title = QLabel("Ollama GUI")
+        app_title.setObjectName("novaAppTitle")
         app_title.setStyleSheet("font-size: 18px; font-weight: bold; color: #8ab4f8;")
         sidebar_layout.addWidget(app_title)
 
@@ -287,6 +289,7 @@ class MainWindow(QMainWindow):
         model_layout.addWidget(self.model_combo)
 
         self.model_status = QLabel("Cargando modelos...")
+        self.model_status.setObjectName("novaModelStatus")
         self.model_status.setStyleSheet("color: #888; font-size: 10px;")
         model_layout.addWidget(self.model_status)
 
@@ -427,6 +430,7 @@ class MainWindow(QMainWindow):
         btn_row.addWidget(self.add_tool_btn)
 
         self.open_tools_folder_btn = QPushButton("📁")
+        self.open_tools_folder_btn.setObjectName("novaFolderButton")
         self.open_tools_folder_btn.setFixedSize(28, 28)
         self.open_tools_folder_btn.setStyleSheet("""
             QPushButton {
@@ -448,6 +452,7 @@ class MainWindow(QMainWindow):
         sidebar_layout.addStretch()
 
         self.status_label = QLabel("Listo")
+        self.status_label.setObjectName("novaStatusLabel")
         self.status_label.setStyleSheet("color: #666; font-size: 11px; font-style: italic;")
         sidebar_layout.addWidget(self.status_label)
 
@@ -486,6 +491,7 @@ class MainWindow(QMainWindow):
         header_layout.setSpacing(10)
 
         chat_title = QLabel("Chat")
+        chat_title.setObjectName("novaChatTitle")
         chat_title.setStyleSheet("color: #e0e0e0; font-size: 14px; font-weight: bold;")
         header_layout.addWidget(chat_title)
         header_layout.addStretch()
@@ -501,12 +507,14 @@ class MainWindow(QMainWindow):
 
         # 2b. ChatScrollArea con stretch 1, widgetResizable True, sin scrollbar horizontal
         self.scroll = QScrollArea()
+        self.scroll.setObjectName("novaChatScroll")
         self.scroll.setWidgetResizable(True)
         self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.scroll.setStyleSheet("border: none; background: #17181c;")
 
         self.chat_container_widget = ChatContainer()
+        self.chat_container_widget.setObjectName("novaChatContainer")
         self.chat_container_widget.setStyleSheet("background: #17181c;")
         self.scroll.setWidget(self.chat_container_widget)
         central_layout.addWidget(self.scroll, 1)  # stretch 1
@@ -575,6 +583,7 @@ class MainWindow(QMainWindow):
         top_btns.addWidget(self.attach_btn)
 
         self.mic_btn = QPushButton("🎤")
+        self.mic_btn.setObjectName("novaMicButton")
         self.mic_btn.setFixedSize(36, 36)
         self.mic_btn.setCheckable(True)
         self.mic_btn.setStyleSheet("""
@@ -597,6 +606,7 @@ class MainWindow(QMainWindow):
         top_btns.addWidget(self.mic_btn)
 
         self.clear_images_btn = QPushButton("🗑️")
+        self.clear_images_btn.setObjectName("novaClearImagesButton")
         self.clear_images_btn.setFixedSize(36, 36)
         self.clear_images_btn.setStyleSheet("""
             QPushButton {
