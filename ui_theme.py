@@ -167,6 +167,7 @@ def retint_widget_styles(app: QApplication, theme: str = "dark") -> None:
 def apply_theme(app: QApplication, theme: str = "dark") -> str:
     """Apply a named theme to QApplication and return its normalized key."""
     normalized = theme if theme in THEMES else "dark"
+    app.setProperty("nova_theme", normalized)
     app.setPalette(palette_for(normalized))
     app.setStyleSheet(app_stylesheet(normalized))
     return normalized
