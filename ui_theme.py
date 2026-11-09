@@ -108,6 +108,8 @@ LEGACY_COLOR_TOKENS = {
     "#11151c": "window",
     "#16161a": "surface",
     "#1a1a1e": "surface_elevated",
+    "#000": "on_accent",
+    "#1a1a1e": "surface_elevated",
     "#17181c": "surface",
     "#1a1a1c": "surface_elevated",
     "#202631": "surface_elevated",
