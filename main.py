@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (
     QListWidget, QListWidgetItem, QFrame, QSplitter, QFileDialog, QMessageBox,
     QProgressBar, QGroupBox, QTextBrowser, QLineEdit, QSizePolicy
 )
-from PySide6.QtCore import Qt, QThread, Signal, Slot, QSize, QMimeData, QTimer, QEvent, QPropertyAnimation
+from PySide6.QtCore import Qt, QThread, Signal, Slot, QSize, QMimeData, QTimer, QEvent, QPropertyAnimation, QSettings
 from PySide6.QtGui import QDragEnterEvent, QDropEvent, QPixmap, QIcon, QFont, QColor
 
 # Ollama
