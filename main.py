@@ -1533,7 +1533,7 @@ class MainWindow(QMainWindow):
         func_layout.addWidget(self.tools_check)
 
         self.think_check = QCheckBox("🧠 Mostrar Pensamiento")
-        self.think_check.setChecked(True)
+        self.think_check.setChecked(False)
         self.think_check.setStyleSheet(self._checkbox_style())
         func_layout.addWidget(self.think_check)
 
