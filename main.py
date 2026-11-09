@@ -212,8 +212,6 @@ class OllamaWorker(QThread):
                         self.error_occurred.emit(f"Ollama error: {e2}")
                     finally:
                         self.tools_def = tools_def_sin
-                    self.send_btn.setEnabled(True)
-                    self.status_label.setText("Listo")
                     return
                 msg = resp.get('message', {})
                 tool_calls = msg.get('tool_calls', [])
