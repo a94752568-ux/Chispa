@@ -134,6 +134,10 @@ LEGACY_COLOR_TOKENS = {
     "#174b59": "selection",
     "#1f2126": "surface_hover",
     "#4a1a1a": "selection",
+    "#222228": "surface",
+    "#666": "muted",
+    "#a0c4ff": "accent",
+    "#fff": "text",
 }
 
 
