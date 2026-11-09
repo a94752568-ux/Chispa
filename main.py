@@ -123,7 +123,7 @@ VISION_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
 # ================================================================
 # System prompt inyectado en cada llamada al modelo
 # ================================================================
-SYSTEM_PROMPT = """Idioma: responde siempre en el idioma del mensaje del usuario. Si escribe en español, responde en español aunque las fuentes o herramientas devuelvan texto en otro idioma. Cita los títulos de las fuentes tal cual, pero explica en el idioma del usuario.
+SYSTEM_PROMPT = """Idioma: respondes SIEMPRE en español, el idioma del usuario, salvo que pida explícitamente otro idioma. Si el usuario escribe en español, respondes en español. No uses chino ni inglés salvo que se te pida. Si herramientas devuelven texto en otro idioma, traduce o explica en español.
 
 Estilo: no narres tu proceso interno en la respuesta final ("we need to...", "debemos analizar..."). La respuesta comienza directo con el hallazgo central; el razonamiento pertenece al canal de pensamiento, no al texto visible.
 

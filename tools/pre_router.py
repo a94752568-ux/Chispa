@@ -37,9 +37,17 @@ _BOOSTS = [
     (re.compile(r"\b(?:foto|imagen|metadato|exif|escanead|ocr|sentimiento|donde tome)\b", re.I), "analisis"),
 ]
 
-# Umbral de margen: si la diferencia entre la 1ª y 2ª ancla es menor,
-# se envían ambas categorías (cubre multi-intención y margen incierto)
 _MARGIN_THRESHOLD = 0.05
+
+# Umbral mínimo de similitud: por debajo, no se envían herramientas de dominio
+_CONFIDENCE_THRESHOLD = 0.35
+
+# Gate de saludos y meta-preguntas cortas: no arrastran tools de dominio
+_SALUDO = re.compile(
+    r"^\s*(hola|hey|buen[oa]s?\s*(d[ií]as|tardes|noches)|qu[eé]\s*tal|"
+    r"hi|hello|gracias|por\s*favor|ok|vale|dale)\s*[!.,?]?\s*$",
+    re.I,
+)
 
 # Overrides deterministas por nombre de tool: corrigen clasificaciones de
 # schemas que el cosíneo con anclas resuelve mal, sin depender del embedding.
@@ -170,8 +178,20 @@ class ToolRouter:
             if patron.search(user_message):
                 sims[cat] += 0.15
 
-        # Top-2 por margen: si el gap es estrecho, enviar ambas categorías
+        # Gate de saludos: no arrastrar tools de dominio para saludos cortos
+        if _SALUDO.match(user_message):
+            print(f"[router] saludo detectado -> solo herramientas básicas")
+            return [d for d in self.definitions
+                    if d.get("function", {}).get("name") in BASIC_TOOL_NAMES]
+
+        # Umbral de confianza: si la mejor ancla está por debajo, solo básicas
         orden = sorted(sims, key=sims.get, reverse=True)
+        if sims[orden[0]] < _CONFIDENCE_THRESHOLD:
+            print(f"[router] baja confianza ({sims[orden[0]]:.3f}) -> solo herramientas básicas")
+            return [d for d in self.definitions
+                    if d.get("function", {}).get("name") in BASIC_TOOL_NAMES]
+
+        # Top-2 por margen: si el gap es estrecho, enviar ambas categorías
         if len(orden) >= 2 and sims[orden[0]] - sims[orden[1]] < _MARGIN_THRESHOLD:
             cats = orden[:2]
         else:
