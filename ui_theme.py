@@ -100,6 +100,62 @@ def app_stylesheet(theme: str = "dark") -> str:
     """
 
 
+# Legacy component styles use these fixed colors. Re-map them from their original
+# source stylesheet on every theme change, so toggling remains reversible.
+LEGACY_COLOR_TOKENS = {
+    "#11151c": "window",
+    "#16161a": "surface",
+    "#1a1a1e": "surface_elevated",
+    "#17181c": "surface",
+    "#1a1a1c": "surface_elevated",
+    "#202631": "surface_elevated",
+    "#2a2a30": "border",
+    "#272729": "border",
+    "#2a2c31": "border",
+    "#303947": "border",
+    "#3a3a44": "surface_hover",
+    "#3d4653": "surface_elevated",
+    "#343541": "surface_hover",
+    "#0a0a0b": "code",
+    "#e0e0e0": "text",
+    "#e5e5ea": "text",
+    "#e8edf5": "text",
+    "#ffffff": "text",
+    "#9aa0a6": "muted",
+    "#9aa8ba": "muted",
+    "#888": "muted",
+    "#8ab4f8": "accent",
+    "#32d9f5": "accent",
+    "#34c759": "accent",
+    "#10a37f": "accent",
+    "#ff453a": "danger",
+    "#ff6b6b": "danger",
+    "#f04452": "danger",
+    "#174b59": "selection",
+    "#1f2126": "surface_hover",
+    "#4a1a1a": "selection",
+}
+
+
+def retint_widget_styles(app: QApplication, theme: str = "dark") -> None:
+    """Re-color legacy per-widget QSS while preserving its original stylesheet."""
+    colors = THEMES.get(theme, THEMES["dark"])
+    for widget in app.allWidgets():
+        current = widget.styleSheet()
+        if not current:
+            continue
+        original = widget.property("_nova_original_stylesheet")
+        if original is None:
+            original = current
+            widget.setProperty("_nova_original_stylesheet", original)
+        updated = original
+        for source, token in LEGACY_COLOR_TOKENS.items():
+            updated = updated.replace(source, colors[token])
+            updated = updated.replace(source.upper(), colors[token])
+        if updated != current:
+            widget.setStyleSheet(updated)
+
+
 def apply_theme(app: QApplication, theme: str = "dark") -> str:
     """Apply a named theme to QApplication and return its normalized key."""
     normalized = theme if theme in THEMES else "dark"
