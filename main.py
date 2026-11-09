@@ -1388,14 +1388,19 @@ class MainWindow(QMainWindow):
             print(f"⚠ Pre-router no disponible: {e}")
 
         # Orquestador de agentes (gate de autorización estructural)
+        # Vive en su propio QThread: las tools no congelan la GUI.
         self.tools_map: dict = self.executors
         self.orch: Optional[Orchestrator] = None
+        self.orch_thread: Optional[QThread] = None
         try:
+            self.orch_thread = QThread(self)
             self.orch = Orchestrator(self.tools_map)
+            self.orch.moveToThread(self.orch_thread)
+            self.orch_thread.start()
             self.orch.necesita_aprobacion.connect(self._pedir_aprobacion)
             self.orch.terminado.connect(self._mostrar_informe_agente)
             self.orch.error.connect(self._mostrar_error_agente)
-            print("Orquestador listo")
+            print("Orquestador listo (QThread dedicado)")
         except Exception as e:
             print(f"⚠ Orquestador no disponible: {e}")
 
@@ -2275,11 +2280,34 @@ class MainWindow(QMainWindow):
         self.worker.tool_result_ready.connect(self.on_tool_result)
         self.worker.final_answer.connect(self.on_final_answer)
         self.worker.error_occurred.connect(self.on_error)
-        self.worker.status_update.connect(lambda s: self.status_label.setText(s))
+        self.worker.status_update.connect(self._on_worker_status)
         self.worker.finished.connect(lambda: self.send_btn.setEnabled(True))
 
+        # Ruta de tools + cronómetro del turno en el status bar
+        self._turn_start = time.time()
+        if enable_tools:
+            if route_defs is self.tools_def:
+                ruta_desc = f"todas las tools ({len(self.tools_def)})"
+            else:
+                ruta_desc = f"{len(route_defs)}/{len(self.tools_def)} tools (pre-router)"
+            self.status_label.setText(f"Consultando... · {ruta_desc}")
         self.send_btn.setEnabled(False)
         self.worker.start()
+
+    @Slot(str)
+    def _on_worker_status(self, s: str):
+        """Status del worker + cronómetro del turno."""
+        elapsed = int(time.time() - getattr(self, "_turn_start", time.time()))
+        self.status_label.setText(f"{s} · {elapsed}s")
+
+    def closeEvent(self, event):
+        """Apagado limpio: detiene el hilo del orquestador antes de salir."""
+        if getattr(self, "orch_thread", None) is not None:
+            self.orch_thread.quit()
+            if not self.orch_thread.wait(2000):
+                self.orch_thread.terminate()
+                self.orch_thread.wait(1000)
+        event.accept()
 
     def scroll_to_bottom(self, force=False):
         sb = self.scroll.verticalScrollBar()

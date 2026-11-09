@@ -32,6 +32,12 @@ class Orchestrator(QObject):
     necesita_aprobacion = Signal(int, dict, str)   # idx, paso, preview
     terminado = Signal(str)                        # informe final
     error = Signal(int, str)                       # idx, motivo
+    # Señales internas: permiten mover el orquestador a su propio QThread.
+    # La GUI llama ejecutar()/resume() desde el hilo principal; Qt encola la
+    # llamada y _do_ejecutar/_do_resume corren en el hilo del orquestador,
+    # así las tools no congelan la interfaz.
+    _ejecutar_requested = Signal(str)
+    _resume_requested = Signal(bool)
 
     def __init__(self, tools_map: dict[str, Any]):
         """tools_map: {nombre_tool: callable_execute} cargado desde tools/."""
@@ -41,9 +47,17 @@ class Orchestrator(QObject):
         self._plan: list[dict] = []
         self._idx = 0
         self._pendiente: dict | None = None
+        # En el mismo hilo son llamadas directas; entre hilos Qt las encola.
+        self._ejecutar_requested.connect(self._do_ejecutar)
+        self._resume_requested.connect(self._do_resume)
 
     # ---------- entrada: el plan JSON del modelo ----------
     def ejecutar(self, plan_json: str | dict) -> None:
+        """Thread-safe: serializa el plan y lo delega al hilo del orquestador."""
+        self._ejecutar_requested.emit(plan_json if isinstance(plan_json, str) else json.dumps(plan_json))
+
+    @Slot(str)
+    def _do_ejecutar(self, plan_json: str | dict) -> None:
         try:
             plan = json.loads(plan_json) if isinstance(plan_json, str) else plan_json
         except json.JSONDecodeError as e:
@@ -114,6 +128,11 @@ class Orchestrator(QObject):
 
     # ---------- gate de autorización ----------
     def resume(self, autorizado: bool) -> None:
+        """Thread-safe: delega la decisión del usuario al hilo del orquestador."""
+        self._resume_requested.emit(autorizado)
+
+    @Slot(bool)
+    def _do_resume(self, autorizado: bool) -> None:
         # Determinar el paso actual (pendiente o el que toca por índice)
         if self._pendiente is not None:
             paso = self._pendiente
