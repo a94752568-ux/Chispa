@@ -178,18 +178,16 @@ class ToolRouter:
             if patron.search(user_message):
                 sims[cat] += 0.15
 
-        # Gate de saludos: no arrastrar tools de dominio para saludos cortos
+        # Gate de saludos: no arrastrar herramientas de dominio para saludos cortos
         if _SALUDO.match(user_message):
-            print(f"[router] saludo detectado -> solo herramientas básicas")
-            return [d for d in self.definitions
-                    if d.get("function", {}).get("name") in BASIC_TOOL_NAMES]
+            print(f"[router] saludo detectado -> sin herramientas (respuesta directa)")
+            return []
 
-        # Umbral de confianza: si la mejor ancla está por debajo, solo básicas
+        # Umbral de confianza: si la mejor ancla está por debajo, sin herramientas
         orden = sorted(sims, key=sims.get, reverse=True)
         if sims[orden[0]] < _CONFIDENCE_THRESHOLD:
-            print(f"[router] baja confianza ({sims[orden[0]]:.3f}) -> solo herramientas básicas")
-            return [d for d in self.definitions
-                    if d.get("function", {}).get("name") in BASIC_TOOL_NAMES]
+            print(f"[router] baja confianza ({sims[orden[0]]:.3f}) -> sin herramientas")
+            return []
 
         # Top-2 por margen: si el gap es estrecho, enviar ambas categorías
         if len(orden) >= 2 and sims[orden[0]] - sims[orden[1]] < _MARGIN_THRESHOLD:
