@@ -33,7 +33,7 @@ from common import trace
 import memoria  # persistencia del historial del chat
 from worker import OllamaWorker
 from widgets import ThinkingBlockWidget, ToolBlockWidget, MessageBubble, ChatContainer, TitleBar
-from ui_theme import THEMES, apply_theme, retint_widget_styles
+from ui_theme import THEMES, apply_theme, retint_widget_styles, apply_component_theme
 
 
 # Tools registry - robusto con fallback
@@ -204,6 +204,7 @@ class MainWindow(QMainWindow):
         # 1. SIDEBAR: ancho fijo 280px, con QScrollArea interno
         # ---------------------------------------------------------------
         sidebar = QFrame()
+        sidebar.setObjectName("novaSidebar")
         sidebar.setFixedWidth(280)
         sidebar.setStyleSheet("""
             QFrame {
@@ -220,6 +221,7 @@ class MainWindow(QMainWindow):
         sidebar_layout.addWidget(app_title)
 
         self.new_chat_btn = QPushButton("＋ Nuevo Chat")
+        self.new_chat_btn.setObjectName("novaNewChat")
         self.new_chat_btn.setFixedHeight(36)
         self.new_chat_btn.setStyleSheet("""
             QPushButton {
@@ -240,6 +242,7 @@ class MainWindow(QMainWindow):
 
         # Selector de modelo
         model_group = QFrame()
+        model_group.setObjectName("novaModelCard")
         model_group.setStyleSheet("""
             QFrame {
                 background: #1a1a1e;
@@ -252,10 +255,12 @@ class MainWindow(QMainWindow):
         model_layout.setSpacing(8)
 
         model_label = QLabel("Modelo")
+        model_label.setObjectName("novaModelTitle")
         model_label.setStyleSheet("color: #8ab4f8; font-weight: bold; font-size: 12px;")
         model_layout.addWidget(model_label)
 
         self.model_combo = QComboBox()
+        self.model_combo.setObjectName("novaModelCombo")
         self.model_combo.setFixedHeight(32)
         self.model_combo.setStyleSheet("""
             QComboBox {
@@ -286,6 +291,7 @@ class MainWindow(QMainWindow):
         model_layout.addWidget(self.model_status)
 
         self.pull_model_btn = QPushButton("⬇️ Pull Modelo")
+        self.pull_model_btn.setObjectName("novaPullModel")
         self.pull_model_btn.setFixedHeight(30)
         self.pull_model_btn.setStyleSheet("""
             QPushButton {
@@ -306,6 +312,7 @@ class MainWindow(QMainWindow):
 
         # Funciones automáticas
         func_group = QFrame()
+        func_group.setObjectName("novaFunctionsCard")
         func_group.setStyleSheet("""
             QFrame {
                 background: #1a1a1e;
@@ -318,6 +325,7 @@ class MainWindow(QMainWindow):
         func_layout.setSpacing(8)
 
         func_label = QLabel("Funciones Automáticas")
+        func_label.setObjectName("novaFunctionsTitle")
         func_label.setStyleSheet("color: #8ab4f8; font-weight: bold; font-size: 12px;")
         func_layout.addWidget(func_label)
 
@@ -355,6 +363,7 @@ class MainWindow(QMainWindow):
 
         # Plugins / Tools
         tools_group = QFrame()
+        tools_group.setObjectName("novaToolsCard")
         tools_group.setStyleSheet("""
             QFrame {
                 background: #1a1a1e;
@@ -367,10 +376,12 @@ class MainWindow(QMainWindow):
         tools_layout.setSpacing(8)
 
         tools_label = QLabel("Tools instalados")
+        tools_label.setObjectName("novaToolsTitle")
         tools_label.setStyleSheet("color: #8ab4f8; font-weight: bold; font-size: 12px;")
         tools_layout.addWidget(tools_label)
 
         self.tools_list = QListWidget()
+        self.tools_list.setObjectName("novaToolsList")
         self.tools_list.setMinimumHeight(140)
         self.tools_list.setStyleSheet("""
             QListWidget {
@@ -399,6 +410,7 @@ class MainWindow(QMainWindow):
         btn_row.setSpacing(8)
 
         self.add_tool_btn = QPushButton("＋ Nuevo Tool")
+        self.add_tool_btn.setObjectName("novaAddTool")
         self.add_tool_btn.setFixedHeight(28)
         self.add_tool_btn.setStyleSheet("""
             QPushButton {
@@ -453,6 +465,7 @@ class MainWindow(QMainWindow):
         # 2. CENTRAL: QVBoxLayout con 3 filas (header, chat, composer)
         # ---------------------------------------------------------------
         central_panel = QFrame()
+        central_panel.setObjectName("novaCentralPanel")
         central_panel.setStyleSheet("background: #17181c;")
         central_layout = QVBoxLayout(central_panel)
         central_layout.setContentsMargins(0, 0, 0, 0)
@@ -460,6 +473,7 @@ class MainWindow(QMainWindow):
 
         # 2a. Header pequeño de chat
         chat_header = QFrame()
+        chat_header.setObjectName("novaChatHeader")
         chat_header.setFixedHeight(44)
         chat_header.setStyleSheet("""
             QFrame {
@@ -499,6 +513,7 @@ class MainWindow(QMainWindow):
 
         # 2c. Composer con stretch 0, siempre visible abajo
         input_frame = QFrame()
+        input_frame.setObjectName("novaComposerFrame")
         input_frame.setFixedHeight(110)
         input_frame.setStyleSheet("""
             QFrame {
@@ -515,6 +530,7 @@ class MainWindow(QMainWindow):
         input_row.setSpacing(10)
 
         self.input_edit = QTextEdit()
+        self.input_edit.setObjectName("novaMessageInput")
         self.input_edit.setPlaceholderText("Escribe tu mensaje... Arrastra imágenes aquí o usa el clip")
         self.input_edit.setFixedHeight(56)
         self.input_edit.setStyleSheet("""
@@ -542,6 +558,7 @@ class MainWindow(QMainWindow):
         top_btns.setSpacing(6)
 
         self.attach_btn = QPushButton("📎")
+        self.attach_btn.setObjectName("novaAttach")
         self.attach_btn.setFixedSize(36, 36)
         self.attach_btn.setStyleSheet("""
             QPushButton {
@@ -600,6 +617,7 @@ class MainWindow(QMainWindow):
         btns_col.addLayout(top_btns)
 
         self.send_btn = QPushButton("Enviar ▶")
+        self.send_btn.setObjectName("novaSend")
         self.send_btn.setFixedSize(140, 36)
         self.send_btn.setStyleSheet("""
             QPushButton {
@@ -662,6 +680,7 @@ class MainWindow(QMainWindow):
         self.theme_name = "light" if self.theme_name == "dark" else "dark"
         apply_theme(app, self.theme_name)
         retint_widget_styles(app, self.theme_name)
+        apply_component_theme(self, self.theme_name)
         self.settings.setValue("appearance/theme", self.theme_name)
         self.theme_btn.setText("◐ Tema claro" if self.theme_name == "dark" else "◐ Tema oscuro")
         self.status_label.setText(f"Tema: {THEMES[self.theme_name]['name']}")
@@ -1225,6 +1244,7 @@ def main():
 
     window = MainWindow()
     retint_widget_styles(app, theme_name)
+    apply_component_theme(window, theme_name)
     window.show()
     sys.exit(app.exec())
 
