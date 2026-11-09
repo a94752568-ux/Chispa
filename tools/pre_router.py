@@ -40,7 +40,7 @@ _BOOSTS = [
 _MARGIN_THRESHOLD = 0.05
 
 # Umbral mínimo de similitud: por debajo, no se envían herramientas de dominio
-_CONFIDENCE_THRESHOLD = 0.35
+_CONFIDENCE_THRESHOLD = 0.25
 
 # Gate de saludos y meta-preguntas cortas: no arrastran tools de dominio
 _SALUDO = re.compile(
@@ -178,16 +178,19 @@ class ToolRouter:
             if patron.search(user_message):
                 sims[cat] += 0.15
 
-        # Gate de saludos: no arrastrar herramientas de dominio para saludos cortos
+        # Gate de saludos: no arrastrar herramientas de dominio para saludos cortos,
+        # pero dejar las básicas para que el modelo pueda responder directo si lo necesita
         if _SALUDO.match(user_message):
-            print(f"[router] saludo detectado -> sin herramientas (respuesta directa)")
-            return []
+            print(f"[router] saludo detectado -> solo herramientas básicas")
+            return [d for d in self.definitions
+                    if d.get("function", {}).get("name") in BASIC_TOOL_NAMES]
 
-        # Umbral de confianza: si la mejor ancla está por debajo, sin herramientas
+        # Umbral de confianza: si la mejor ancla está por debajo, solo herramientas básicas
         orden = sorted(sims, key=sims.get, reverse=True)
         if sims[orden[0]] < _CONFIDENCE_THRESHOLD:
-            print(f"[router] baja confianza ({sims[orden[0]]:.3f}) -> sin herramientas")
-            return []
+            print(f"[router] baja confianza ({sims[orden[0]]:.3f}) -> solo herramientas básicas")
+            return [d for d in self.definitions
+                    if d.get("function", {}).get("name") in BASIC_TOOL_NAMES]
 
         # Top-2 por margen: si el gap es estrecho, enviar ambas categorías
         if len(orden) >= 2 and sims[orden[0]] - sims[orden[1]] < _MARGIN_THRESHOLD:
