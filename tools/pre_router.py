@@ -35,6 +35,7 @@ _BOOSTS = [
     (re.compile(r"\b(?:mi repo|git|commit\w*|rama|cpu|ram|disco|nvme|waydroid|contenedor)\b", re.I), "sistema"),
     (re.compile(r"\b(?:recuerda|anot[eé]|mis notas|mi manual|mis documentos|mi pdf|agenda)\b", re.I), "datos"),
     (re.compile(r"\b(?:organiza\w*|ordena\w*|clasifica\w*|mueve\w*|renombra\w*|borra\w*|elimina\w*|papelera)\b", re.I), "sistema"),
+    (re.compile(r"\b(?:lista\w*|qu[eé]\s+hay\s+en|contenido\s+de\s+(?:la\s+)?carpeta|mu[eé]strame\s+(?:los|las)\s+(?:archivos|carpetas))\b", re.I), "datos"),
     (re.compile(r"\b(?:foto|imagen|metadato|exif|escanead|ocr|sentimiento|donde tome)\b", re.I), "analisis"),
 ]
 
@@ -90,6 +91,7 @@ _CATEGORY_OVERRIDES: Dict[str, str] = {
     "move_file": "sistema",
     "delete_file": "sistema",
     "find_files": "datos",
+    "list_dir": "datos",
 }
 
 
