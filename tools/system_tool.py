@@ -4,7 +4,7 @@ TOOL_DEFINITION = {
     "type": "function",
     "function": {
         "name": "system_info",
-        "description": "Obtiene informacion basica del sistema Lubuntu: CPU, RAM, disco, OS",
+        "description": "USAR CUANDO el usuario pida un resumen BREVE del estado de su equipo ('estado de mi sistema', '¿qué equipo tengo?'). Devuelve 4 líneas: OS, CPU, RAM y disco. Para diagnóstico con carga, temperatura NVMe y advertencias usa la tool 'system_monitor' en su lugar.",
         "parameters": {"type": "object", "properties": {}}
     }
 }
