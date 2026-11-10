@@ -119,7 +119,7 @@ def encode_image(path: str) -> Optional[str]:
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Ollama GUI - Lubuntu Edition")
+        self.setWindowTitle("Chispa - Asistente local")
         self.setAcceptDrops(True)
         # Ventana sin borde nativo (barra de título personalizada)
         self.setWindowFlags(Qt.FramelessWindowHint)
@@ -222,7 +222,7 @@ class MainWindow(QMainWindow):
         sidebar_layout.setContentsMargins(16, 16, 16, 16)
         sidebar_layout.setSpacing(14)
 
-        app_title = QLabel("✦ Ollama GUI")
+        app_title = QLabel("✦ Chispa")
         app_title.setStyleSheet(f"font-size: 17px; font-weight: 800; color: {theme.ACCENT};")
         sidebar_layout.addWidget(app_title)
 
