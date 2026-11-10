@@ -1000,7 +1000,7 @@ class TitleBar(QFrame):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
-        self.title_label = QLabel("Ollama GUI - Lubuntu Edition")
+        self.title_label = QLabel("Chispa - Asistente local")
         layout.addWidget(self.title_label)
         layout.addStretch()
 
