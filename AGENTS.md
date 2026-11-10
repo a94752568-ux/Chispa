@@ -31,7 +31,7 @@ GUI nativa (PySide6 / Qt6, ventana frameless con tema oscuro Fusion) que consume
     ├── pre_router.py           # Router por categorías con nomic-embed-text
     ├── agent_orchestrator.py   # Orquestador determinista (QThread) con gate de autorización
     ├── chat_fx.py              # fade_in, animate_height, Spinner, PensandoDots
-    ├── template_new_tool.py    # Plantilla para crear nuevos tools
+    ├── template_new_tool.py     # Plantilla para crear nuevos tools
     └── ...                     # Tools de lectura, OSINT, escritorio, voz, etc.
 ```
 
@@ -39,6 +39,7 @@ GUI nativa (PySide6 / Qt6, ventana frameless con tema oscuro Fusion) que consume
 
 - **main.py** ya no es un monolito: los módulos `common`, `memoria`, `worker` y `widgets` se importan estáticamente (PyInstaller los detecta solo).
 - **worker.OllamaWorker** fuerza `dry_run=True` en las tools de MUTACIONES: el modelo no puede escribir en disco en un tool call directo del chat; la única vía de escritura es el plan JSON del orquestador con su diálogo de autorización.
+- **worker.OllamaWorker reutiliza la respuesta de FASE 1**: si el modelo no invoca tools y ya redactó la respuesta, se emite directamente (antes se descartaba y FASE 2 la regeneraba completa: doble generación por turno, el mayor cuello de botella en CPU). FASE 2 queda solo para streaming con thinking o cuando FASE 1 llegó vacía.
 - **El orquestador vive en su propio QThread**: las tools del plan no congelan la GUI.
 - **MUTACIONES** se define SOLO en `tools/__init__.py`; si añades una tool de escritura, regístrala ahí o se ejecutará sin pedir permiso.
 
@@ -67,6 +68,8 @@ Cada tool es un `.py` en `tools/` con dos elementos obligatorios:
 - `execute(**args)`: implementación
 
 El sistema las detecta automáticamente al reiniciar la app (autodiscovery). No es necesario registrar manualmente, salvo las de **escritura**, que además deben añadirse a `MUTACIONES` en `tools/__init__.py`.
+
+Si el modelo invoca una tool inexistente o filtrada por el pre-router, el resultado incluye la lista de tools disponibles en ese turno: el modelo no debe quemar iteraciones reintentando una tool imposible.
 
 ## Herramientas disponibles (~30)
 
