@@ -242,8 +242,11 @@ class OllamaWorker(QThread):
                     self.chunk_received.emit(delta)
 
             if has_think:
-                m = re.search(r"<<thinking>>.*?</thinking>>(.*)", raw_accum, re.DOTALL)
-                final_ans = m.group(1).strip() if m else re.sub(r"<<thinking>>.*?</thinking>>", "", raw_accum, flags=re.DOTALL).strip()
+                # Mismo cierre tolerante del streaming: con "</thinking>" (un solo
+                # '>') los regex anteriores no matcheaban y la respuesta final
+                # incluía el bloque de thinking en crudo.
+                m = re.search(r"<<thinking>>.*?</thinking>>?(.*)", raw_accum, re.DOTALL)
+                final_ans = m.group(1).strip() if m else _THINK_BLOCK_RE.sub("", raw_accum).strip()
                 if not final_ans:
                     final_ans = answer_content.strip()
             else:
