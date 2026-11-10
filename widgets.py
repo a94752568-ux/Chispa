@@ -73,6 +73,7 @@ class ThinkingBlockWidget(QFrame):
             QLabel {{
                 background: transparent;
                 border: none;
+                border-left: 2px solid {theme.BORDER_STRONG};
                 color: {theme.TEXT_SECOND};
                 font-size: 13px;
                 line-height: 1.5;
@@ -176,8 +177,9 @@ class ToolBlockWidget(QFrame):
             QFrame {{
                 background: {theme.BG_ELEVATED};
                 border: none;
+                border-left: 2px solid {theme.ACCENT};
                 border-top: none;
-                border-radius: 0 0 10px 10px;
+                border-radius: 0 0 10px 6px;
             }}
         """)
         self.body_widget.setVisible(False)
@@ -516,7 +518,7 @@ class MessageBubble(QFrame):
                     border-radius: 4px;
                     font-size: 14px;
                 }}
-                QPushButton:hover {{ background: {theme.BG_INPUT}; color: {theme.TEXT}; }}
+                QPushButton:hover {{ background: {theme.BG_HOVER}; color: {theme.TEXT}; }}
             """)
             edit_row = QHBoxLayout()
             edit_row.setContentsMargins(0, 4, 0, 0)
@@ -592,7 +594,7 @@ class MessageBubble(QFrame):
                     border-radius: 4px;
                     font-size: 14px;
                 }}
-                QPushButton:hover {{ background: {theme.BG_INPUT}; color: {theme.TEXT}; }}
+                QPushButton:hover {{ background: {theme.BG_HOVER}; color: {theme.TEXT}; }}
             """)
 
             retry_btn = QPushButton("♻")
@@ -607,7 +609,7 @@ class MessageBubble(QFrame):
                     border-radius: 4px;
                     font-size: 14px;
                 }}
-                QPushButton:hover {{ background: {theme.BG_INPUT}; color: {theme.TEXT}; }}
+                QPushButton:hover {{ background: {theme.BG_HOVER}; color: {theme.TEXT}; }}
             """)
 
             tts_btn = QPushButton("🔊")
@@ -621,7 +623,7 @@ class MessageBubble(QFrame):
                     border-radius: 4px;
                     font-size: 14px;
                 }}
-                QPushButton:hover {{ background: {theme.BG_INPUT}; color: {theme.TEXT}; }}
+                QPushButton:hover {{ background: {theme.BG_HOVER}; color: {theme.TEXT}; }}
             """)
             tts_btn.clicked.connect(lambda: self.window().speak_response(self.full_text))
 
@@ -968,18 +970,22 @@ class TitleBar(QFrame):
             }}
             QPushButton {{
                 background: transparent;
-                color: {theme.TEXT};
+                color: {theme.TEXT_SECOND};
                 border: none;
-                font-size: 16px;
+                border-radius: 8px;
+                font-size: 15px;
                 font-weight: bold;
             }}
             QPushButton:hover {{
+                background: {theme.BG_HOVER};
+                color: {theme.TEXT};
+            }}
+            QPushButton:pressed {{
                 background: {theme.BG_ELEVATED};
-                border-radius: 6px;
             }}
             QPushButton#closeBtn:hover {{
-                background: #4a1a1a;
-                color: {theme.ERROR};
+                background: #E81123;
+                color: #FFFFFF;
             }}
         """)
         self._pressing = False
@@ -1034,5 +1040,6 @@ class TitleBar(QFrame):
     def mouseReleaseEvent(self, event):
         self._pressing = False
         super().mouseReleaseEvent(event)
+
 
 
