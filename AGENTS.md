@@ -75,10 +75,10 @@ Si el modelo invoca una tool inexistente o filtrada por el pre-router, el result
 
 | Categoría | Tools |
 |-----------|-------|
-| Básicas | `web_search` (DuckDuckGo), `get_weather` (wttr.in), `get_current_time`, `calculator` (parser AST), `read_file` (con contención de rutas), `system_info` |
+| Básicas | `web_search` (DuckDuckGo), `get_weather` (wttr.in), `get_current_time`, `calculator` (parser AST), `read_file` (bajo ~, blacklist y tope 20k), `find_files` (búsqueda por nombre bajo ~), `system_info` |
 | Voz | `speak` (TTS piper-tts es_MX-claude-high), `listen` (STT speech_recognition) |
 | OSINT | email_breach, username, full_recon, ip_domain, tech_fingerprint, cert_transparency (todas con timeout) |
-| Escritorio (**MUTACIONES**) | `write_desktop`, `organize_files` (dry_run + blacklist), `db_writer`, `move_file` |
+| Escritorio (**MUTACIONES**) | `write_desktop`, `organize_files` (dry_run + blacklist), `move_file` (archivo concreto), `delete_file` (papelera ~/.Papelera: nada se destruye), `db_writer` |
 | Otras | notas, RAG, calendario, git, contenedores, system_monitor |
 
 Para listar las cargadas en vivo: `python3 -c "from tools import load_tools; d, e = load_tools(); print(sorted(e.keys()))"`
