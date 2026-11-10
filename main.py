@@ -1410,12 +1410,17 @@ class MainWindow(QMainWindow):
         enable_think = self.think_check.isChecked() and self.modelo_piensa(self.current_model)
 
         # Pre-router: filtrar tools según el mensaje del usuario.
-        # Cuando thinking está activado (qwen3.5:4b), enviar TODAS las tools
-        # sin filtrar: el modo reasoning no soporta bien el filtrado selectivo
-        # y el modelo necesita ver todas las opciones para decidir invocarlas.
+        # Ahora también con thinking activado: la FASE 1 del worker corre con
+        # think=False, así que la razón original del salto (qwen razonando con
+        # tools filtradas) ya no aplica al loop de tools. Si el modelo alucina
+        # una tool filtrada, el worker le devuelve la lista de disponibles del
+        # turno; y si Ollama tronara, el worker cae a responder sin tools.
+        # Sin el filtrado, cada turno con thinking mandaba ~3,200 tokens de
+        # tools y Ollama trunca el prompt en silencio al superar num_ctx:
+        # el system prompt era lo primero en caer.
         route_defs = self.tools_def
         route_execs = self.executors
-        if self.tool_router is not None and enable_tools and not enable_think:
+        if self.tool_router is not None and enable_tools:
             try:
                 route_defs = self.tool_router.route(text)
                 route_execs = {k: v for k, v in self.executors.items()
@@ -1423,8 +1428,6 @@ class MainWindow(QMainWindow):
                 print(f"Pre-router: {len(route_defs)} tools de {len(self.tools_def)} totales")
             except Exception as e:
                 print(f"⚠ Pre-router falló, usando todas las tools: {e}")
-        elif enable_think:
-            print(f"Thinking ON: todas las herramientas ({len(self.tools_def)})")
 
         # Inyectar SIEMPRE el system prompt vigente: la memoria persistida
         # nunca debe congelar una versión vieja del prompt.
