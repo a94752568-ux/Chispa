@@ -34,7 +34,7 @@ def _load_existing_notes() -> str:
     notes_dir = _get_notes_dir()
     all_notes = []
     
-    for md_file in notes_dir.glob("*.md"):
+    for md_file in list(notes_dir.glob("*.md")) + list((notes_dir / "diario").glob("*.md")):
         try:
             content = md_file.read_text(encoding="utf-8")
             all_notes.append(content)
@@ -61,11 +61,10 @@ def execute(action: str, note: str = None, query: str = None) -> str:
             
             # Guardar nota en archivo diario
             daily_file = _get_daily_file()
-            daily_file.write_text(
-                f"## {datetime.now().strftime('%Y-%m-%d %H:%M')}\n{note}\n\n",
-                encoding="utf-8",
-                errors="ignore"
-            )
+            # Append: antes write_text SOBREESCRIBÍA el diario y la
+            # nota anterior del mismo día se perdía.
+            with daily_file.open("a", encoding="utf-8") as f:
+                f.write(f"## {datetime.now().strftime('%Y-%m-%d %H:%M')}\n{note}\n\n")
             
             # Reindexar incrementalmente (<5s)
             reindex_start = datetime.now()
