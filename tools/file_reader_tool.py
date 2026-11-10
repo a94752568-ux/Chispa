@@ -7,7 +7,7 @@ TOOL_DEFINITION = {
     "type": "function",
     "function": {
         "name": "read_file",
-        "description": "Lee el contenido de un archivo de texto local dentro del proyecto. No lee fuera del directorio base ni archivos binarios.",
+        "description": "USAR CUANDO necesites leer el contenido de un archivo de texto del proyecto (código, config, notas) para responder sobre él ('¿qué hay en settings.json?', 'mira el README'). Solo rutas dentro del directorio del proyecto; hasta 20,000 caracteres; no lee binarios.",
         "parameters": {
             "type": "object",
             "properties": {
