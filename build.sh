@@ -29,9 +29,9 @@ fi
 
 # Intentar con windowed, si falla usar console para ver errores
 if [ -n "$TOOLS_ARG" ]; then
-    echo "Comando: pyinstaller --onefile --windowed --name OllamaChat-GUI ... --add-data tools:tools main.py"
+    echo "Comando: pyinstaller --onefile --windowed --name Chispa ... --add-data tools:tools main.py"
     pyinstaller --onefile --windowed \
-      --name OllamaChat-GUI \
+      --name Chispa \
       --clean \
       --collect-all PySide6 \
       --collect-all shiboken6 \
@@ -43,7 +43,7 @@ if [ -n "$TOOLS_ARG" ]; then
       main.py || {
         echo "⚠ Falló con windowed, intentando con console y sin collect-all..."
         pyinstaller --onefile \
-          --name OllamaChat-GUI \
+          --name Chispa \
           --clean \
           --hidden-import=ollama \
           --add-data "$SCRIPT_DIR/tools:tools" \
@@ -52,29 +52,29 @@ if [ -n "$TOOLS_ARG" ]; then
 else
     # Sin tools
     pyinstaller --onefile --windowed \
-      --name OllamaChat-GUI \
+      --name Chispa \
       --clean \
       --collect-all PySide6 \
       --collect-all shiboken6 \
       --hidden-import=ollama \
-      main.py || pyinstaller --onefile --name OllamaChat-GUI --clean main.py
+      main.py || pyinstaller --onefile --name Chispa --clean main.py
 fi
 
 echo ""
-if [ -f "dist/OllamaChat-GUI" ]; then
-    echo "✅ Ejecutable GUI creado: ./dist/OllamaChat-GUI"
-    echo "   Tamaño: $(du -h dist/OllamaChat-GUI | cut -f1)"
-    echo "   Ejecuta: ./dist/OllamaChat-GUI"
+if [ -f "dist/Chispa" ]; then
+    echo "✅ Ejecutable GUI creado: ./dist/Chispa"
+    echo "   Tamaño: $(du -h dist/Chispa | cut -f1)"
+    echo "   Ejecuta: ./dist/Chispa"
     echo ""
     echo "Si usas modo onefile sin tools embebidos, copia la carpeta tools junto al binario:"
     echo "  cp -r tools dist/"
-    echo "  ./dist/OllamaChat-GUI"
+    echo "  ./dist/Chispa"
     echo ""
     echo "Para instalar en menu Lubuntu:"
-    echo "  sudo mv dist/OllamaChat-GUI /usr/local/bin/"
-    echo "  cp ollama-chat.desktop ~/.local/share/applications/"
+    echo "  sudo mv dist/Chispa /usr/local/bin/"
+    echo "  cp chispa.desktop ~/.local/share/applications/"
 else
-    echo "❌ Build falló, no se creó dist/OllamaChat-GUI"
+    echo "❌ Build falló, no se creó dist/Chispa"
     echo "Intenta build manual:"
     echo "  pyinstaller --onefile --windowed main.py"
     exit 1
