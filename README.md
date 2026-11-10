@@ -1,4 +1,6 @@
-# Ollama GUI - Lubuntu Edition
+# Chispa ✦ — Asistente de escritorio local
+
+(Antes "Ollama GUI - Lubuntu Edition". Renombrado en la ronda Chispa: la app creció de chat GUI a asistente con ~30 tools, agente con gate de mutaciones, voz y notas.)
 
 GUI nativa para Lubuntu (LXQt / Qt6) que consume Ollama para ejecutar modelos de lenguaje localmente. Incluye sistema de plugins, detección de pensamiento ("think"), visión (drag & drop de imágenes), búsqueda web, TTS neuronal (piper-tts), STT (dictado por voz), memoria persistente y agente de escritorio con gate de autorización estructural.
 
@@ -26,7 +28,7 @@ El orquestador (`agent_orchestrator.py`) ejecuta planes JSON del modelo paso a p
 - Chat central con burbujas, markdown real, scroll suave
 - Drag & Drop de imágenes para vision
 - Tema oscuro optimizado para Lubuntu
-- Memoria persistente del chat en `~/.local/share/OllamaChat-GUI/chat_history.json`
+- Memoria multi-conversación en `~/.local/share/Chispa/chats.json` (migración automática desde la carpeta Chispa al primer arranque)
 
 ### Detección automática
 - 🧠 **Think**: Detecta `think` de deepseek-r1/qwen3, muestra bloque colapsable con spinner (desactivado por defecto por latencia)
@@ -111,13 +113,13 @@ python main.py
 ```bash
 chmod +x build.sh
 ./build.sh
-./dist/OllamaChat-GUI
+./dist/Chispa
 ```
 
 Instalar en menú:
 ```bash
-sudo mv dist/OllamaChat-GUI /usr/local/bin/
-cp ollama-chat.desktop ~/.local/share/applications/
+sudo mv dist/Chispa /usr/local/bin/
+cp chispa.desktop ~/.local/share/applications/
 ```
 
 ## Seguridad
