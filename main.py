@@ -1058,20 +1058,62 @@ class MainWindow(QMainWindow):
             self.mic_btn.setText("🎤")
             self.status_label.setText("Listo")
 
+    @staticmethod
+    def _speakable_text(text: str) -> str:
+        """Aproximación a texto plano para TTS: sin sintaxis markdown ruidosa
+        (piper no debe leer '##' ni '**' en voz alta)."""
+        t = re.sub(r"```[\s\S]*?```", " (bloque de código) ", text)
+        t = re.sub(r"`([^`]*)`", r"\1", t)
+        t = re.sub(r"!\[([^\]]*)\]\([^)]*\)", " (imagen) ", t)
+        t = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", t)
+        t = re.sub(r"^#{1,6}\s*", "", t, flags=re.M)
+        t = re.sub(r"^>\s?", "", t, flags=re.M)
+        t = re.sub(r"(\*\*|__|\*|~~)", "", t)
+        t = re.sub(r"^\s*[-*+]\s+", "", t, flags=re.M)
+        t = re.sub(r"\|{2,}", ", ", t)
+        t = re.sub(r"\s{3,}", " ", t)
+        return t.strip()
+
+    @staticmethod
+    def _tts_problema():
+        """Chequeo rápido de salud del TTS (sin audio): piper y modelo de voz.
+        Devuelve el problema legible o None si el TTS está listo."""
+        try:
+            from tools import tts_tool
+        except Exception:
+            return "Motor TTS no cargado (revisa la consola de la app)"
+        try:
+            return tts_tool.health_check()
+        except Exception as e:
+            return f"No se pudo verificar el TTS: {e}"
+
     def speak_response(self, text: str):
-        """Lee un texto en voz alta (TTS) en segundo plano, sin congelar la GUI."""
+        """Lee un texto en voz alta (TTS) en segundo plano, sin congelar la GUI.
+        Los fallos del TTS se muestran (aviso + status); antes se tragaban
+        en silencio: el tool devuelve errores como texto y el status decía 'Listo'."""
         if not text or not text.strip():
+            self.status_label.setText("Nada que leer: la respuesta está vacía")
             return
         speak = self.executors.get("speak")
         if speak is None:
             QMessageBox.warning(self, "TTS no disponible", "Motor TTS no cargado")
             return
+        # Chequeo de salud ANTES de lanzar el hilo: modelo de voz, piper, etc.
+        problema = self._tts_problema()
+        if problema:
+            QMessageBox.warning(self, "TTS no disponible", problema)
+            self.status_label.setText("🔇 TTS no disponible (revisa el aviso)")
+            return
         self.status_label.setText("🔊 Leyendo respuesta…")
 
         def _do_speak():
             try:
-                speak(text=text)
-                self.status_label.setText("Listo")
+                # tts_tool NO lanza excepciones: devuelve el error como texto.
+                result = str(speak(text=self._speakable_text(text)) or "")
+                if result.startswith("Error TTS") or result.startswith("TTS no disponible"):
+                    self.status_label.setText(f"🔇 {result[:80]}")
+                else:
+                    self.status_label.setText("Listo")
             except Exception as e:
                 self.status_label.setText(f"Error TTS: {e}")
 
