@@ -42,6 +42,7 @@ GUI nativa (PySide6 / Qt6, ventana frameless con tema oscuro Fusion) que consume
 - **worker.OllamaWorker reutiliza la respuesta de FASE 1**: si el modelo no invoca tools y ya redactó la respuesta, se emite directamente (antes se descartaba y FASE 2 la regeneraba completa: doble generación por turno, el mayor cuello de botella en CPU). FASE 2 queda solo para streaming con thinking o cuando FASE 1 llegó vacía. FASE 1 además ve solo contexto reciente (system + últimos 12 mensajes), se fija num_ctx=8192 en todas las llamadas (la truncación silenciosa de Ollama tira primero el system prompt) y el mensaje assistant con tool_calls se agrega una sola vez por iteración. El pre-router filtra tools también con thinking activado (FASE 1 corre con think=False).
 - **El orquestador vive en su propio QThread**: las tools del plan no congelan la GUI.
 - **MUTACIONES** se define SOLO en `tools/__init__.py`; si añades una tool de escritura, regístrala ahí o se ejecutará sin pedir permiso.
+- **Uso profesional de tools (ronda 3)**: los resultados de tools se acotan a ~3,500 chars (`TOOL_RESULT_MAX`: head 2,600 + tail 600) para no desbordar `num_ctx`; hay caché de dedup por turno (una llamada idéntica repetida no quema iteraciones); `TOOL_POLICY` se inyecta como system al final de FASE 1 (máx 3 iteraciones, elegir la tool correcta a la primera); los errores de argumentos devuelven la firma esperada en vez de un TypeError críptico; y las tools de solo-GUI (`speak`/`listen`, constantes `GUI_ONLY_TOOLS`) no se exponen al modelo: son exclusivas de los botones 🔊/🎤 de la app.
 
 ## Cómo ejecutar (desarrollo)
 
@@ -64,8 +65,7 @@ chmod +x build.sh && ./build.sh
 
 Cada tool es un `.py` en `tools/` con dos elementos obligatorios:
 
-- `TOOL_DEFINITION`: esquema de función para Ollama
-- `execute(**args)`: implementación
+- `TOOL_DEFINITION`: esquema de función para Ollama. La `description` sigue el patrón **"USAR CUANDO"**: cuándo usarla (disparadores con ejemplos citables del usuario), qué devuelve y sus límites. Evita descripciones genéricas: el modelo elige entre ~30 tools solo por la descripción.
 
 El sistema las detecta automáticamente al reiniciar la app (autodiscovery). No es necesario registrar manualmente, salvo las de **escritura**, que además deben añadirse a `MUTACIONES` en `tools/__init__.py`.
 
