@@ -577,7 +577,7 @@ class MessageBubble(QFrame):
             self.text_browser.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
             layout.addWidget(self.text_browser)
 
-            # Fila de iconos (meta): ⧉ ♻ 🔊 💾 , oculta por defecto, visible al hover
+            # Fila de iconos (meta): ⧉ ♻ 🔊 💾 📄, oculta por defecto, visible al hover
             icon_row = QHBoxLayout()
             icon_row.setContentsMargins(0, 4, 0, 0)
             icon_row.setSpacing(10)
@@ -642,10 +642,27 @@ class MessageBubble(QFrame):
             """)
             save_btn.clicked.connect(lambda: self.window()._save_answer_as_file(self))
 
+            # Fase 3: ver la respuesta como documento en el panel lateral
+            doc_btn = QPushButton("📄")
+            doc_btn.setFixedSize(24, 24)
+            doc_btn.setToolTip("Ver como documento (panel lateral estilo canvas)")
+            doc_btn.setStyleSheet(f"""
+                QPushButton {{
+                    background: transparent;
+                    color: {theme.TEXT_SECOND};
+                    border: none;
+                    border-radius: 4px;
+                    font-size: 14px;
+                }}
+                QPushButton:hover {{ background: {theme.BG_HOVER}; color: {theme.TEXT}; }}
+            """)
+            doc_btn.clicked.connect(lambda: self.window()._open_document_panel(self))
+
             icon_row.addWidget(copy_btn)
             icon_row.addWidget(retry_btn)
             icon_row.addWidget(tts_btn)
             icon_row.addWidget(save_btn)
+            icon_row.addWidget(doc_btn)
             icon_row.addStretch()
 
             icon_container = QFrame()
@@ -754,7 +771,6 @@ class MessageBubble(QFrame):
                 print(f"WARNING: appendAnswer() called from thread {current_thread.objectName()} instead of main thread.", file=sys.stderr)
                 print(f"         This may cause segfaults. Call should be via Qt signal/slot mechanism.", file=sys.stderr)
                 # Don't crash, just continue - defensive approach
-                # In production, this should never happen if architecture is correct
                 return
 
         # Handle None delta gracefully
