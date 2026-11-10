@@ -6,7 +6,7 @@ TOOL_DEFINITION = {
     "type": "function",
     "function": {
         "name": "calculator",
-        "description": "Calculadora segura para expresiones matematicas. Soporta + - * / ** sqrt sin cos tan log exp etc.",
+        "description": "USAR CUANDO el usuario pida un cálculo concreto: propinas, porcentajes, conversiones, potencias o expresiones con funciones (sqrt, sin, cos, tan, log, exp). Ejemplos: 'propina del 15% de 350', '2**10 * 3', 'raíz cuadrada de 144'. Envía la expresión matemática como tal, no texto en lenguaje natural. NO la uses para cálculos triviales que puedes hacer mentalmente.",
         "parameters": {
             "type": "object",
             "properties": {
