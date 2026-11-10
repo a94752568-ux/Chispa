@@ -39,7 +39,7 @@ GUI nativa (PySide6 / Qt6, ventana frameless con tema oscuro Fusion) que consume
 
 - **main.py** ya no es un monolito: los módulos `common`, `memoria`, `worker` y `widgets` se importan estáticamente (PyInstaller los detecta solo).
 - **worker.OllamaWorker** fuerza `dry_run=True` en las tools de MUTACIONES: el modelo no puede escribir en disco en un tool call directo del chat; la única vía de escritura es el plan JSON del orquestador con su diálogo de autorización.
-- **worker.OllamaWorker reutiliza la respuesta de FASE 1**: si el modelo no invoca tools y ya redactó la respuesta, se emite directamente (antes se descartaba y FASE 2 la regeneraba completa: doble generación por turno, el mayor cuello de botella en CPU). FASE 2 queda solo para streaming con thinking o cuando FASE 1 llegó vacía.
+- **worker.OllamaWorker reutiliza la respuesta de FASE 1**: si el modelo no invoca tools y ya redactó la respuesta, se emite directamente (antes se descartaba y FASE 2 la regeneraba completa: doble generación por turno, el mayor cuello de botella en CPU). FASE 2 queda solo para streaming con thinking o cuando FASE 1 llegó vacía. FASE 1 además ve solo contexto reciente (system + últimos 12 mensajes), se fija num_ctx=8192 en todas las llamadas (la truncación silenciosa de Ollama tira primero el system prompt) y el mensaje assistant con tool_calls se agrega una sola vez por iteración. El pre-router filtra tools también con thinking activado (FASE 1 corre con think=False).
 - **El orquestador vive en su propio QThread**: las tools del plan no congelan la GUI.
 - **MUTACIONES** se define SOLO en `tools/__init__.py`; si añades una tool de escritura, regístrala ahí o se ejecutará sin pedir permiso.
 
