@@ -17,12 +17,18 @@ TOOL_DEFINITION = {
 
 import os
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
 VOICE_DIR = Path.home() / ".local" / "share" / "piper"
 VOICE_MODEL = "es_MX-claude-high.onnx"
 VOICE_PATH = VOICE_DIR / VOICE_MODEL
+
+_DOWNLOAD_CMD = (
+    "python -m piper.download_voices es_MX-claude-high "
+    f"--data-dir {VOICE_DIR}"
+)
 
 
 def _piper_available() -> bool:
@@ -33,54 +39,79 @@ def _piper_available() -> bool:
         return False
 
 
+def health_check() -> str | None:
+    """Chequeo rápido sin audio. Devuelve el problema legible o None si el TTS está listo."""
+    if not _piper_available():
+        return "piper-tts no está instalado.\n\nInstálalo con:\npip install piper-tts"
+    if not VOICE_PATH.exists():
+        return (
+            "Falta el modelo de voz español:\n"
+            f"{VOICE_PATH}\n\n"
+            "Descárgalo con:\n"
+            f"{_DOWNLOAD_CMD}\n\n"
+            "O manualmente (el .onnx Y su .onnx.json) desde:\n"
+            "https://huggingface.co/rhasspy/piper-voices — es/es_MX/claude/high"
+        )
+    return None
+
+
 def _play_wav(wav_path: str) -> bool:
-    for cmd in (["paplay", wav_path], ["mpv", "--no-cache", "--no-terminal", wav_path],
-                ["ffplay", "-nodisp", "-autoexit", wav_path], ["pw-cat", wav_path]):
+    """Reproduce el wav con el primer reproductor disponible que funcione.
+    Solo regresa True si el reproductor terminó con exit code 0
+    (antes: un paplay roto contaba como 'reproducido')."""
+    players = (
+        ["paplay", str(wav_path)],
+        ["mpv", "--no-cache", "--no-terminal", str(wav_path)],
+        ["ffplay", "-nodisp", "-autoexit", str(wav_path)],
+        ["pw-cat", str(wav_path)],
+    )
+    for cmd in players:
         try:
-            subprocess.run(cmd, check=False, capture_output=True, timeout=30)
-            return True
+            result = subprocess.run(cmd, capture_output=True, timeout=300)
+            if result.returncode == 0:
+                return True
         except Exception:
             continue
     return False
 
 
 def execute(text: str, rate: int = 175, volume: float = 1.0) -> str:
-    if not VOICE_PATH.exists():
-        return (
-            "TTS no disponible: modelo de voz no encontrado en "
-            f"{VOICE_PATH}. Ejecuta:\n"
-            "python -m piper.download_voices es_MX-claude-high "
-            f"--data-dir {VOICE_DIR}"
-        )
-
-    if not _piper_available():
-        return "TTS no disponible: piper-tts no está instalado (pip install piper-tts)."
+    problema = health_check()
+    if problema:
+        return f"TTS no disponible: {problema}"
 
     with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
         wav_path = tmp.name
 
     try:
-        import piper
-        from piper.audio import AudioPlayer
-
-        voice = piper.Voice.load(str(VOICE_PATH))
-        audio = voice.synthesize(text)
-        AudioPlayer(audio, sample_rate=voice.config.sample_rate).play()
-        return f"Reproducido por voz: {text[:100]}{'...' if len(text) > 100 else ''}"
-    except Exception:
         try:
+            # API Python de piper-tts (>= 1.2): síntesis a archivo wav
+            from piper import PiperVoice
+            voice = PiperVoice.load(str(VOICE_PATH))
+            with open(wav_path, "wb") as wav_file:
+                voice.synthesize_wav(text, wav_file)
+        except Exception:
+            # Fallback CLI: el MISMO intérprete que corre la GUI (venv incluido;
+            # antes se llamaba 'python' del PATH y podía caer fuera del venv)
             result = subprocess.run(
-                ["python", "-m", "piper", "-m", str(VOICE_PATH), "-f", wav_path],
+                [sys.executable, "-m", "piper", "-m", str(VOICE_PATH), "-f", wav_path],
                 input=text.encode("utf-8"),
                 capture_output=True,
-                timeout=60,
+                timeout=120,
             )
             if result.returncode != 0:
-                return f"Error TTS (piper): {result.stderr.decode(errors='replace')[:300]}"
-            _play_wav(wav_path)
-            return f"Reproducido por voz: {text[:100]}{'...' if len(text) > 100 else ''}"
-        except Exception as e:
-            return f"Error TTS: {e}"
+                return f"Error TTS (piper CLI): {result.stderr.decode(errors='replace')[:300]}"
+
+        if not _play_wav(wav_path):
+            return (
+                "Error TTS: ningún reproductor funcionó. Prueba:\n"
+                "sudo apt install pulseaudio-utils  # instala paplay"
+            )
+        return f"Reproducido por voz: {text[:100]}{'...' if len(text) > 100 else ''}"
+    except subprocess.TimeoutExpired:
+        return "Error TTS: la síntesis tardó más de 120s (texto muy largo)"
+    except Exception as e:
+        return f"Error TTS: {e}"
     finally:
         try:
             os.unlink(wav_path)
