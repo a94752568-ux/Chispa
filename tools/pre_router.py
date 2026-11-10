@@ -50,6 +50,15 @@ _SALUDO = re.compile(
     re.I,
 )
 
+# Meta-preguntas sobre la app misma: si el usuario pregunta por las
+# herramientas/capacidades o quién es, el router envía TODAS las tools
+# para que el modelo enumere capacidades reales en vez de inventarlas.
+_META = re.compile(
+    r"\b(?:herramientas|tools|plugins|capacidades)\b|"
+    r"qu[eé]\s+(?:puedes|sabes)\s+hacer|qui[eé]n\s+eres",
+    re.I,
+)
+
 # Overrides deterministas por nombre de tool: corrigen clasificaciones de
 # schemas que el cosíneo con anclas resuelve mal, sin depender del embedding.
 _CATEGORY_OVERRIDES: Dict[str, str] = {
@@ -170,6 +179,11 @@ class ToolRouter:
 
     def route(self, user_message: str) -> List[dict]:
         if not self._ready or self._client is None:
+            return self.definitions
+
+        # Meta-pregunta sobre la app: todas las herramientas visibles
+        if _META.search(user_message):
+            print("[router] meta-pregunta sobre la app -> todas las herramientas")
             return self.definitions
 
         msg_emb = self._embed([user_message])[0]
