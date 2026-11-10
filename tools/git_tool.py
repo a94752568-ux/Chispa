@@ -5,7 +5,7 @@ TOOL_DEFINITION = {
     "type": "function",
     "function": {
         "name": "git_status",
-        "description": "Obtiene estado, rama, últimos commits y cambios sin commitear de un repo local.",
+        "description": "USAR CUANDO el usuario pregunte por un repositorio git local: rama actual, últimos commits, cambios sin commitear o remotos ('¿en qué rama estoy?', 'estado del repo', 'últimos commits'). path es opcional (usa el directorio actual si no se especifica).",
         "parameters": {
             "type": "object",
             "properties": {
