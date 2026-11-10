@@ -5,7 +5,7 @@ TOOL_DEFINITION = {
     "type": "function",
     "function": {
         "name": "containers_status",
-        "description": "Estado de contenedores y apps instaladas. Detecta Waydroid o Docker y reporta según disponibilidad.",
+        "description": "USAR CUANDO el usuario pregunte por contenedores, Waydroid o Docker en su equipo ('¿tengo docker?', 'estado de waydroid', '¿qué apps corren en contenedores?'). Detecta automáticamente cuál está disponible y reporta su estado. Sin argumentos.",
         "parameters": {"type": "object", "properties": {}}
     }
 }
