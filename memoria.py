@@ -12,7 +12,13 @@ from datetime import datetime
 from pathlib import Path
 from uuid import uuid4
 
-MEMORY_DIR = Path.home() / ".local" / "share" / "OllamaChat-GUI"
+MEMORY_DIR = Path.home() / ".local" / "share" / "Chispa"
+# Renombrado de la app (OllamaChat-GUI → Chispa): si existe la carpeta
+# vieja y la nueva no, se migra entera (chats.json incluido) sin pérdida.
+_LEGACY_DIR = Path.home() / ".local" / "share" / "OllamaChat-GUI"
+if _LEGACY_DIR.exists() and not MEMORY_DIR.exists():
+    import shutil as _shutil
+    _shutil.move(str(_LEGACY_DIR), str(MEMORY_DIR))
 CHATS_FILE = MEMORY_DIR / "chats.json"
 LEGACY_FILE = MEMORY_DIR / "chat_history.json"
 MAX_MEMORY_MESSAGES = 40
