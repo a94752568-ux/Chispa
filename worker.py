@@ -10,6 +10,10 @@ Optimización de latencia: si FASE 1 termina SIN tool calls y el modelo ya
 redactó la respuesta, se reutiliza tal cual (antes se descartaba y FASE 2
 la regeneraba desde cero: doble generación completa por turno en CPU).
 FASE 2 solo corre si hay thinking que streamear o si FASE 1 llegó vacía.
+
+FASE 1 además ve solo contexto reciente (system + últimos N mensajes):
+el prefill del historial completo es el costo dominante en CPU y rara vez
+hace falta contexto antiguo para decidir tool calls. FASE 2 sí ve todo.
 """
 import json
 import re
@@ -34,6 +38,15 @@ except ImportError:
 # se quede colgado esperando un cierre que nunca llega.
 _THINK_CLOSE_RE = re.compile(r"</thinking>>?")
 _THINK_BLOCK_RE = re.compile(r"<<thinking>>(.*?)</thinking>>?", re.DOTALL)
+
+# num_ctx explícito: si el prompt supera el contexto default de Ollama, la
+# truncación es SILENTE y desde el principio — lo primero en caer es el
+# system prompt. 8192 cubre historial completo + tools sin agotar la RAM
+# del i3 con modelos ≤8B.
+NUM_CTX = 8192
+
+# Mensajes recientes (además de los system) que ve FASE 1 para decidir tools.
+FASE1_HISTORY_LIMIT = 12
 
 # ================= WORKER =================
 class OllamaWorker(QThread):
@@ -60,6 +73,17 @@ class OllamaWorker(QThread):
     def stop(self):
         self._stop = True
 
+    def _fase1_messages(self, tool_convo: List[Dict]) -> List[Dict]:
+        """FASE 1 solo decide tool calls: le basta el contexto reciente.
+
+        Conserva TODOS los system prompts + los últimos FASE1_HISTORY_LIMIT
+        mensajes + la conversación de tools de este turno. FASE 2 ve el
+        historial completo.
+        """
+        system = [m for m in self.history if m.get("role") == "system"]
+        resto = [m for m in self.history if m.get("role") != "system"]
+        return system + resto[-FASE1_HISTORY_LIMIT:] + tool_convo
+
     def run(self):
         if ollama is None:
             self.error_occurred.emit("ollama no instalado. pip install ollama")
@@ -68,23 +92,27 @@ class OllamaWorker(QThread):
         client = ollama.Client()
         try:
             # FASE 1: Tools loop (hasta 3 iteraciones)
-            current_history = self.history.copy()
+            # tool_convo: mensajes assistant+tool de este turno; se suma al
+            # historial recortado de FASE 1 y al completo de FASE 2.
+            tool_convo: List[Dict] = []
             tool_iterations = 0
+            last_tool_result = ""
 
             while self.enable_tools and tool_iterations < 3 and not self._stop:
                 self.status_update.emit(f"Analizando si necesita herramientas... (iter {tool_iterations+1})")
+                fase1_messages = self._fase1_messages(tool_convo)
                 try:
                     # FASE 1 SIN reasoning: pensar no ayuda a decidir tool calls
                     # y multiplica la latencia de cada iteración (generaciones
                     # completas sin streaming). El thinking queda solo para la
                     # respuesta final streameada (FASE 2).
-                    resp = client.chat(model=self.model, messages=current_history, tools=self.tools_def, stream=False, think=False)
+                    resp = client.chat(model=self.model, messages=fase1_messages, tools=self.tools_def, stream=False, think=False, options={"num_ctx": NUM_CTX})
                 except Exception as e:
                     # Ollama devolvió 500 (ej: tool calls malformados del modelo).
                     # Reintentar SIN tools para que el usuario obtenga respuesta.
                     self.status_update.emit(f"Herramientas no disponibles, respondiendo directo: {str(e)[:60]}")
                     try:
-                        resp = client.chat(model=self.model, messages=current_history, tools=[], stream=False, think=False)
+                        resp = client.chat(model=self.model, messages=self.history + tool_convo, tools=[], stream=False, think=False, options={"num_ctx": NUM_CTX})
                         msg = resp.get('message', {})
                         final_ans = msg.get('content', '')
                         self.final_answer.emit(final_ans, msg.get('thinking', ''))
@@ -95,6 +123,9 @@ class OllamaWorker(QThread):
                 tool_calls = msg.get('tool_calls', [])
 
                 if tool_calls:
+                    # El mensaje assistant con tool_calls va UNA vez por
+                    # iteración: antes se duplicaba con cada tool call del lote.
+                    tool_convo.append(msg)
                     for tc in tool_calls:
                         if self._stop:
                             break
@@ -143,9 +174,8 @@ class OllamaWorker(QThread):
                             )
 
                         self.tool_result_ready.emit(name, result)
-
-                        current_history.append(msg)
-                        current_history.append({"role": "tool", "content": str(result)})
+                        tool_convo.append({"role": "tool", "content": str(result)})
+                        last_tool_result = str(result)
 
                     tool_iterations += 1
                     continue
@@ -174,14 +204,9 @@ class OllamaWorker(QThread):
             answer_content = ""
             has_think = False
             think_closed = False
-            last_tool_result = ""
 
-            for m in reversed(current_history):
-                if m.get("role") == "tool":
-                    last_tool_result = str(m.get("content", ""))
-                    break
-
-            stream = client.chat(model=self.model, messages=current_history, stream=True, think=self.enable_think)
+            # FASE 2 ve el historial COMPLETO + la conversación de tools
+            stream = client.chat(model=self.model, messages=self.history + tool_convo, stream=True, think=self.enable_think, options={"num_ctx": NUM_CTX})
 
             for chunk in stream:
                 if self._stop:
