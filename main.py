@@ -1074,7 +1074,7 @@ class MainWindow(QMainWindow):
         """Aproximación a texto plano para TTS: sin sintaxis markdown ruidosa
         (piper no debe leer '##' ni '**' en voz alta)."""
         t = re.sub(r"```[\s\S]*?```", " (bloque de código) ", text)
-        t = re.sub(r"`([^`]*)`", r"\1", t)
+        t = re.sub(r"`([^`]*)`", r"`1", t)
         t = re.sub(r"^#{1,6}\s*", "", t, flags=re.M)
         t = re.sub(r"^>\s?", "", t, flags=re.M)
         t = re.sub(r"(\*\*|__|\*|~~)", "", t)
@@ -1148,6 +1148,33 @@ class MainWindow(QMainWindow):
             pass
         self._speaking = False
         self.status_label.setText("🔇 Lectura detenida")
+
+    def _follow_up(self, prompt: str):
+        """Chip de seguimiento estilo Vibe: envía el prompt como nuevo turno."""
+        if self.worker and self.worker.isRunning():
+            self.status_label.setText("Espera a que termine el turno")
+            return
+        self.input_edit.setPlainText(prompt)
+        self.send_message()
+
+    def _save_answer_as_file(self, bubble):
+        """Guarda la respuesta como documento (export estilo canvas)."""
+        texto = getattr(bubble, "full_text", "") or ""
+        if not texto.strip():
+            self.status_label.setText("Nada que guardar: la respuesta está vacía")
+            return
+        ruta, _ = QFileDialog.getSaveFileName(
+            self, "Guardar respuesta como documento",
+            str(Path.home() / "Documentos" / "respuesta.md"),
+            "Markdown (*.md);;Texto (*.txt);;Todos (*)",
+        )
+        if not ruta:
+            return
+        try:
+            Path(ruta).write_text(texto, encoding="utf-8")
+            self.status_label.setText(f"💾 Guardado: {ruta}")
+        except Exception as e:
+            QMessageBox.warning(self, "Error al guardar", f"No se pudo guardar:\n{e}")
 
     def _save_memory(self):
         """Guarda la conversación activa en disco."""
@@ -1224,7 +1251,7 @@ class MainWindow(QMainWindow):
         meta = self.chats[row]
         btn = QMessageBox.question(
             self, "Eliminar conversación",
-            f"¿Eliminar «{meta['title']}»? Su historial se borrará definitivamente.",
+            f"¿Eliminar `{meta['title']}»? Su historial se borrará definitivamente.",
             QMessageBox.Yes | QMessageBox.No, QMessageBox.No,
         )
         if btn != QMessageBox.Yes:
@@ -1543,6 +1570,11 @@ class MainWindow(QMainWindow):
         # Limpieza de huérfanos del turno anterior (E1: widgets congelados)
         prev = getattr(self, "_prev_assistant_widget", None)
         if prev is not None:
+            # Los chips de seguimiento son de la ÚLTIMA respuesta: se apagan
+            # en la burbuja anterior en cuanto empieza un turno nuevo.
+            chips = getattr(prev, "chips_container", None)
+            if chips is not None:
+                chips.setVisible(False)
             for bloque in ("thinking_block", "tool_block"):
                 w = getattr(prev, bloque, None)
                 if w is not None:
