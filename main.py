@@ -82,6 +82,12 @@ except ImportError as e:
 VISION_MODELS = ["llava", "bakllava", "gemma3", "qwen2-vl", "qwen2.5-vl", "llama3.2-vision", "minicpm-v", "moondream", "vision"]
 VISION_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
 
+# Tools interactivas propiedad de la GUI: sus executors alimentan los botones
+# 🔊 (TTS) y 🎤 (STT), pero el modelo NO debe poder invocarlas — listen
+# bloquearía el worker esperando audio del micrófono y speak sintetizaría
+# minutos de audio en medio del turno. Se filtran de tools_def SIEMPRE.
+GUI_ONLY_TOOLS = {"speak", "listen"}
+
 # ================================================================
 # System prompt inyectado en cada llamada al modelo
 # ================================================================
@@ -1489,6 +1495,14 @@ class MainWindow(QMainWindow):
             except Exception as e:
                 print(f"⚠ Pre-router falló, usando todas las tools: {e}")
 
+        # Tools interactivas de la GUI (speak/listen) nunca se exponen al
+        # modelo, vengan o no del pre-router: listen bloquearía el worker
+        # esperando el micrófono y speak sintetiza audio de minutos dentro
+        # del turno. Los botones 🔊/🎤 usan self.executors directamente.
+        route_defs = [d for d in route_defs
+                      if d.get("function", {}).get("name") not in GUI_ONLY_TOOLS]
+        route_execs = {k: v for k, v in route_execs.items() if k not in GUI_ONLY_TOOLS}
+
         # Inyectar SIEMPRE el system prompt vigente: la memoria persistida
         # nunca debe congelar una versión vieja del prompt.
         history_with_system = [{"role": "system", "content": SYSTEM_PROMPT}]
@@ -1529,10 +1543,15 @@ class MainWindow(QMainWindow):
         # Ruta de tools + cronómetro del turno en el status bar
         self._turn_start = time.time()
         if enable_tools:
-            if route_defs is self.tools_def:
-                ruta_desc = f"todas las tools ({len(self.tools_def)})"
+            # Total expuesto al modelo: tools_def menos las de solo-GUI
+            total_exposed = sum(
+                1 for d in self.tools_def
+                if d.get("function", {}).get("name") not in GUI_ONLY_TOOLS
+            )
+            if len(route_defs) == total_exposed:
+                ruta_desc = f"todas las tools ({len(route_defs)})"
             else:
-                ruta_desc = f"{len(route_defs)}/{len(self.tools_def)} tools (pre-router)"
+                ruta_desc = f"{len(route_defs)}/{total_exposed} tools (pre-router)"
             self.status_label.setText(f"Consultando... · {ruta_desc}")
         self._stop_requested = False
         self._set_send_mode("stop")
