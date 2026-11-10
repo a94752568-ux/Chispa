@@ -826,6 +826,11 @@ class MessageBubble(QFrame):
                 print(f"         UI widgets should only be mutated from main thread.", file=sys.stderr)
                 # Don't crash, just continue - defensive approach
                 return
+        # Fuente de verdad canónica para copiar/TTS: la respuesta final manda
+        # sobre el acumulado del streaming. Sin esto, el botón 🔊 leía "" en
+        # respuestas reutilizadas de FASE 1 (llegan sin chunks de streaming).
+        if answer and answer.strip():
+            self.full_text = answer
         try:
             if error is not None:
                 # Error takes absolute priority but preserves existing content
