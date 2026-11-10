@@ -7,7 +7,7 @@ TOOL_DEFINITION = {
     "type": "function",
     "function": {
         "name": "notes_tool",
-        "description": "Memoria del agente: captura notas rápidas ('recuerda que...') y busca entre ellas. Reindexa automáticamente en RAG B1.",
+        "description": "USAR CUANDO el usuario pida recordar/guardar algo para el futuro ('recuerda que...', 'apunta esto:...') o pregunte por notas previas ('¿qué te pedí que recordaras?', '¿qué anotaste de...?'). action='capture' guarda una nota (requiere note); action='search' busca entre las notas (requiere query).",
         "parameters": {
             "type": "object",
             "properties": {
