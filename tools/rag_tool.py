@@ -9,7 +9,7 @@ TOOL_DEFINITION = {
     "type": "function",
     "function": {
         "name": "rag_search",
-        "description": "Búsqueda semántica en documentos locales (PDFs/MD/TXT) con embeddings. Usar solo por CLI: indexa folder primero, luego busca.",
+        "description": "USAR CUANDO la respuesta pueda estar en los documentos locales del usuario (PDFs/MD/TXT) o pida buscar en una carpeta de documentos. Ejemplos: '¿qué dice el contrato sobre la cláusula 5?', 'busca en mis documentos lo de la garantía'. Si la carpeta aún no está indexada, pasa su ruta en path; sin path usa el índice previo.",
         "parameters": {
             "type": "object",
             "properties": {
