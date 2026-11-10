@@ -152,6 +152,7 @@ class MainWindow(QMainWindow):
         self.settings_dialog = None
         self._answer_buffer: str = ""
         self._stop_requested: bool = False
+        self._speaking: bool = False
         self._think_caps: Dict[str, bool] = {}
 
         # Cargar tools
@@ -908,7 +909,7 @@ class MainWindow(QMainWindow):
             event.acceptProposedAction()
 
     def dropEvent(self, event: QDropEvent):
-        urls = event.mimeData().urls()
+        urls = event.mimeData.urls()
         for url in urls:
             path = url.toLocalFile()
             if Path(path).suffix.lower() in VISION_EXTS:
@@ -1074,8 +1075,6 @@ class MainWindow(QMainWindow):
         (piper no debe leer '##' ni '**' en voz alta)."""
         t = re.sub(r"```[\s\S]*?```", " (bloque de código) ", text)
         t = re.sub(r"`([^`]*)`", r"\1", t)
-        t = re.sub(r"!\[([^\]]*)\]\([^)]*\)", " (imagen) ", t)
-        t = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", t)
         t = re.sub(r"^#{1,6}\s*", "", t, flags=re.M)
         t = re.sub(r"^>\s?", "", t, flags=re.M)
         t = re.sub(r"(\*\*|__|\*|~~)", "", t)
@@ -1099,10 +1098,16 @@ class MainWindow(QMainWindow):
 
     def speak_response(self, text: str):
         """Lee un texto en voz alta (TTS) en segundo plano, sin congelar la GUI.
+        Es un TOGGLE: si ya hay una lectura en curso, este clic la DETIENE
+        (antes no había forma de cortar el audio: subprocess.run bloqueaba el
+        hilo hasta el final y el reproductor era intocable).
         Los fallos del TTS se muestran (aviso + status); antes se tragaban
         en silencio: el tool devuelve errores como texto y el status decía 'Listo'."""
         if not text or not text.strip():
             self.status_label.setText("Nada que leer: la respuesta está vacía")
+            return
+        if self._speaking:
+            self._stop_speech()
             return
         speak = self.executors.get("speak")
         if speak is None:
@@ -1114,7 +1119,8 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "TTS no disponible", problema)
             self.status_label.setText("🔇 TTS no disponible (revisa el aviso)")
             return
-        self.status_label.setText("🔊 Leyendo respuesta…")
+        self._speaking = True
+        self.status_label.setText("🔊 Leyendo respuesta… (🔊 otra vez para detener)")
 
         def _do_speak():
             try:
@@ -1122,12 +1128,26 @@ class MainWindow(QMainWindow):
                 result = str(speak(text=self._speakable_text(text)) or "")
                 if result.startswith("Error TTS") or result.startswith("TTS no disponible"):
                     self.status_label.setText(f"🔇 {result[:80]}")
+                elif result.startswith("Lectura detenida"):
+                    self.status_label.setText("🔇 Lectura detenida")
                 else:
                     self.status_label.setText("Listo")
             except Exception as e:
                 self.status_label.setText(f"Error TTS: {e}")
+            finally:
+                self._speaking = False
 
         threading.Thread(target=_do_speak, daemon=True).start()
+
+    def _stop_speech(self):
+        """Detiene la lectura TTS en curso (mata al reproductor desde tts_tool)."""
+        try:
+            from tools import tts_tool
+            tts_tool.stop_speech()
+        except Exception:
+            pass
+        self._speaking = False
+        self.status_label.setText("🔇 Lectura detenida")
 
     def _save_memory(self):
         """Guarda la conversación activa en disco."""
@@ -1614,7 +1634,12 @@ class MainWindow(QMainWindow):
         self.status_label.setText(f"{s} · {elapsed}s")
 
     def closeEvent(self, event):
-        """Apagado limpio: detiene el hilo del orquestador antes de salir."""
+        """Apagado limpio: detiene el hilo del orquestador y el audio TTS antes de salir."""
+        try:
+            from tools import tts_tool
+            tts_tool.stop_speech()
+        except Exception:
+            pass
         if getattr(self, "orch_thread", None) is not None:
             self.orch_thread.quit()
             if not self.orch_thread.wait(2000):
