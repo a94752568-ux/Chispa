@@ -30,7 +30,7 @@ try:
 except Exception:
     ollama = None
 
-from common import trace
+from common import trace, MD_CSS
 import memoria  # persistencia del historial del chat
 import theme  # paleta centralizada "estilo Vibe"
 from worker import OllamaWorker
@@ -167,6 +167,11 @@ class MainWindow(QMainWindow):
         self._hf_empty_retries: int = 0
         self._hf_signals = _HandsFreeSignals()
         self._hf_signals.transcript.connect(self._on_hf_transcript)
+
+        # Cronómetro vivo del turno (Fase 3): actualiza el status cada segundo
+        self._turn_timer = QTimer(self)
+        self._turn_timer.setInterval(1000)
+        self._turn_timer.timeout.connect(self._tick_turn_timer)
 
         # Cargar tools
         self.tools_def, self.executors = load_tools()
@@ -445,6 +450,24 @@ class MainWindow(QMainWindow):
         self.attach_btn.setToolTip("Adjuntar imagen para visión")
         bottom_row.addWidget(self.attach_btn)
 
+        # Panel documento (Fase 3): alterna el visor lateral estilo canvas
+        self.doc_toggle_btn = QPushButton("📄")
+        self.doc_toggle_btn.setFixedSize(32, 32)
+        self.doc_toggle_btn.setCursor(Qt.PointingHandCursor)
+        self.doc_toggle_btn.setStyleSheet(f"""
+            QPushButton {{
+                background: transparent;
+                color: {theme.TEXT_SECOND};
+                border: none;
+                border-radius: 16px;
+                font-size: 15px;
+            }}
+            QPushButton:hover {{ background: {theme.BG_HOVER}; color: {theme.TEXT}; }}
+        """)
+        self.doc_toggle_btn.clicked.connect(self._toggle_doc_panel)
+        self.doc_toggle_btn.setToolTip("Panel documento: ver respuestas como documento (estilo canvas)")
+        bottom_row.addWidget(self.doc_toggle_btn)
+
         self.mic_btn = QPushButton("🎤")
         self.mic_btn.setFixedSize(32, 32)
         self.mic_btn.setCheckable(True)
@@ -552,6 +575,72 @@ class MainWindow(QMainWindow):
         splitter.addWidget(central_panel)
         splitter.setStretchFactor(0, 0)
         splitter.setStretchFactor(1, 1)
+
+        # Panel documento estilo canvas (Fase 3): visor markdown a la derecha
+        self.doc_panel = QFrame()
+        self.doc_panel.setMinimumWidth(300)
+        self.doc_panel.setStyleSheet(f"""
+            QFrame {{
+                background: {theme.BG_SIDEBAR};
+                border-left: 1px solid {theme.BORDER_SOFT};
+            }}
+        """)
+        doc_layout = QVBoxLayout(self.doc_panel)
+        doc_layout.setContentsMargins(0, 0, 0, 0)
+        doc_layout.setSpacing(0)
+
+        doc_header = QFrame()
+        doc_header.setFixedHeight(44)
+        doc_header.setStyleSheet(f"""
+            QFrame {{
+                background: {theme.BG_SIDEBAR};
+                border-bottom: 1px solid {theme.BORDER_SOFT};
+            }}
+        """)
+        dh = QHBoxLayout(doc_header)
+        dh.setContentsMargins(16, 0, 10, 0)
+        dh.setSpacing(8)
+        doc_title = QLabel("📄 Documento")
+        doc_title.setStyleSheet(f"color: {theme.TEXT}; font-size: 13px; font-weight: bold;")
+        dh.addWidget(doc_title)
+        dh.addStretch()
+        doc_close_btn = QPushButton("✕")
+        doc_close_btn.setFixedSize(28, 28)
+        doc_close_btn.setCursor(Qt.PointingHandCursor)
+        doc_close_btn.setStyleSheet(f"""
+            QPushButton {{
+                background: transparent;
+                color: {theme.TEXT_SECOND};
+                border: none;
+                border-radius: 8px;
+                font-size: 14px;
+            }}
+            QPushButton:hover {{ background: {theme.BG_HOVER}; color: {theme.TEXT}; }}
+        """)
+        doc_close_btn.clicked.connect(lambda: self.doc_panel.hide())
+        dh.addWidget(doc_close_btn)
+        doc_layout.addWidget(doc_header)
+
+        self.doc_view = QTextBrowser()
+        self.doc_view.setOpenExternalLinks(True)
+        self.doc_view.document().setDefaultStyleSheet(MD_CSS)
+        self.doc_view.setStyleSheet(f"""
+            QTextBrowser {{
+                background: transparent;
+                border: none;
+                color: {theme.TEXT};
+                font-size: 14px;
+                line-height: 1.6;
+                padding: 18px;
+                font-family: {theme.FONT_STACK};
+            }}
+            QTextBrowser a {{ color: {theme.LINK}; text-decoration: underline; }}
+        """)
+        doc_layout.addWidget(self.doc_view, 1)
+
+        splitter.addWidget(self.doc_panel)
+        splitter.setStretchFactor(2, 0)
+        self.doc_panel.hide()
 
         # Shortcuts
         self.input_edit.textChanged.connect(self.on_input_changed)
@@ -1197,7 +1286,7 @@ class MainWindow(QMainWindow):
         """Aproximación a texto plano para TTS: sin sintaxis markdown ruidosa
         (piper no debe leer '##' ni '**' en voz alta)."""
         t = re.sub(r"```[\s\S]*?```", " (bloque de código) ", text)
-        t = re.sub(r"`([^`]*)`", r"`1", t)
+        t = re.sub(r"`([^`]*)`", r"\1", t)
         t = re.sub(r"^#{1,6}\s*", "", t, flags=re.M)
         t = re.sub(r"^>\s?", "", t, flags=re.M)
         t = re.sub(r"(\*\*|__|\*|~~)", "", t)
@@ -1311,6 +1400,31 @@ class MainWindow(QMainWindow):
         except Exception as e:
             QMessageBox.warning(self, "Error al guardar", f"No se pudo guardar:\n{e}")
 
+    def _open_document_panel(self, bubble=None):
+        """Abre el panel documento con la respuesta renderizada como markdown."""
+        if bubble is not None:
+            texto = getattr(bubble, "full_text", "") or ""
+            if texto.strip():
+                self.doc_view.document().setDefaultStyleSheet(MD_CSS)
+                self.doc_view.setMarkdown(texto)
+        self.doc_panel.show()
+        self.status_label.setText("📄 Panel documento abierto")
+
+    def _toggle_doc_panel(self):
+        """Alterna el panel documento desde el composer."""
+        if self.doc_panel.isVisible():
+            self.doc_panel.hide()
+            self.status_label.setText("📄 Panel documento cerrado")
+        else:
+            self._open_document_panel()
+
+    def _tick_turn_timer(self):
+        """Cronómetro vivo: refresca los segundos transcurridos en el status."""
+        if self.worker and self.worker.isRunning():
+            elapsed = int(time.time() - getattr(self, "_turn_start", time.time()))
+            base = re.sub(r" · \d+s$", "", self.status_label.text())
+            self.status_label.setText(f"{base} · {elapsed}s")
+
     def _save_memory(self):
         """Guarda la conversación activa en disco."""
         if self.chat_id:
@@ -1386,7 +1500,7 @@ class MainWindow(QMainWindow):
         meta = self.chats[row]
         btn = QMessageBox.question(
             self, "Eliminar conversación",
-            f"¿Eliminar `{meta['title']}»? Su historial se borrará definitivamente.",
+            f"¿Eliminar `{meta['title']}`? Su historial se borrará definitivamente.",
             QMessageBox.Yes | QMessageBox.No, QMessageBox.No,
         )
         if btn != QMessageBox.Yes:
@@ -1733,6 +1847,7 @@ class MainWindow(QMainWindow):
 
         # Ruta de tools + cronómetro del turno en el status bar
         self._turn_start = time.time()
+        self._turn_timer.start()
         if enable_tools:
             # Total expuesto al modelo: tools_def menos las de solo-GUI
             total_exposed = sum(
@@ -1869,6 +1984,7 @@ class MainWindow(QMainWindow):
 
     @Slot(str, str)
     def on_final_answer(self, answer: str, thinking: str):
+        self._turn_timer.stop()
         trace(f"on_final_answer answer_len={len(answer or '')} thinking_len={len(thinking or '')}")
         # Si el modelo devolvió un plan JSON del agente, enrutar al orquestador
         if self.orch is not None:
@@ -1904,6 +2020,7 @@ class MainWindow(QMainWindow):
 
     @Slot(str)
     def on_error(self, err: str):
+        self._turn_timer.stop()
         QMessageBox.critical(self, "Error Ollama", f"{err}\n\nVerifica que 'ollama serve' esté corriendo y el modelo exista.\nollama pull {self.current_model}")
         self._set_send_mode("send")
         self.status_label.setText(f"Error: {err[:50]}")
