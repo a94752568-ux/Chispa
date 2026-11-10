@@ -5,6 +5,11 @@
 FASE 1: tool loop con think=False. FASE 2: respuesta final streameada.
 Fuerza dry_run=True en las tools de MUTACIONES: el modelo no puede
 escribir en disco sin pasar por el orquestador y su gate de autorización.
+
+Optimización de latencia: si FASE 1 termina SIN tool calls y el modelo ya
+redactó la respuesta, se reutiliza tal cual (antes se descartaba y FASE 2
+la regeneraba desde cero: doble generación completa por turno en CPU).
+FASE 2 solo corre si hay thinking que streamear o si FASE 1 llegó vacía.
 """
 import json
 import re
@@ -23,6 +28,12 @@ try:
     from tools import MUTACIONES
 except ImportError:
     MUTACIONES = {"write_desktop", "organize_files", "db_writer", "move_file"}
+
+# Bloques legacy de thinking: el cierre puede llegar como "</thinking>>"
+# o como "</thinking>" (un solo '>'); tolerar ambos para que el stream no
+# se quede colgado esperando un cierre que nunca llega.
+_THINK_CLOSE_RE = re.compile(r"</thinking>>?")
+_THINK_BLOCK_RE = re.compile(r"<<thinking>>(.*?)</thinking>>?", re.DOTALL)
 
 # ================= WORKER =================
 class OllamaWorker(QThread):
@@ -121,7 +132,15 @@ class OllamaWorker(QThread):
                             except Exception as e:
                                 result = f"Error ejecutando {name}: {e}"
                         else:
-                            result = f"Tool {name} no encontrado"
+                            # Tool inexistente o filtrada por el pre-router: decirle
+                            # al modelo qué SÍ tiene disponible en este turno, para
+                            # que no queme iteraciones reintentando lo imposible.
+                            disponibles = ", ".join(sorted(self.executors.keys())) or "ninguna"
+                            result = (
+                                f"Tool {name} no encontrada. No existe o no está "
+                                f"disponible en este turno. Disponibles: {disponibles}. "
+                                "Responde al usuario sin esta tool."
+                            )
 
                         self.tool_result_ready.emit(name, result)
 
@@ -131,6 +150,16 @@ class OllamaWorker(QThread):
                     tool_iterations += 1
                     continue
                 else:
+                    # Sin tool calls: si FASE 1 ya redactó la respuesta, reutilizarla.
+                    # Antes se descartaba y FASE 2 la regeneraba completa: doble
+                    # generación por turno (el mayor cuello de botella en CPU).
+                    # FASE 2 solo si hay thinking que streamear (FASE 1 corre con
+                    # think=False y no lo produce) o si la respuesta llegó vacía.
+                    direct_answer = (msg.get('content') or '').strip()
+                    if direct_answer and not self.enable_think:
+                        self.status_update.emit("Respuesta lista")
+                        self.final_answer.emit(direct_answer, "")
+                        return
                     break
 
             if self._stop:
@@ -141,7 +170,6 @@ class OllamaWorker(QThread):
             # FASE 2: Streaming final con deteccion de think
             self.status_update.emit("Generando respuesta...")
             raw_accum = ""
-            self._emitted_len = 0  # origen: solo emitimos lo nuevo desde la última emisión
             thinking_content = ""
             answer_content = ""
             has_think = False
@@ -180,23 +208,25 @@ class OllamaWorker(QThread):
                     self.thinking_started.emit()
 
                 if has_think and not think_closed:
-                    if "</thinking>>" in raw_accum:
+                    # Aceptar "</thinking>>" y "</thinking>": varios modelos
+                    # cierran con un solo '>' y el stream quedaba colgado.
+                    if _THINK_CLOSE_RE.search(raw_accum):
                         think_closed = True
-                        m = re.search(r"<<thinking>>(.*?)</thinking>>", raw_accum, re.DOTALL)
+                        m = _THINK_BLOCK_RE.search(raw_accum)
                         if m:
                             thinking_content = m.group(1).strip()
-                            answer_content = re.sub(r"<<thinking>>.*?</thinking>>", "", raw_accum, flags=re.DOTALL)
+                            answer_content = _THINK_BLOCK_RE.sub("", raw_accum)
                             self.thinking_finished.emit(thinking_content)
                             if answer_content.strip():
                                 self.chunk_received.emit(answer_content)
                         else:
-                            parts = raw_accum.split("</thinking>>", 1)
+                            parts = _THINK_CLOSE_RE.split(raw_accum, 1)
                             thinking_content = parts[0].replace("<<thinking>>", "").strip()
                             self.thinking_finished.emit(thinking_content)
                             answer_content = parts[1] if len(parts) > 1 else ""
                             if answer_content.strip():
                                 self.chunk_received.emit(answer_content)
-                        
+
                         # IMPORTANTE: después de procesar thinking y emitir answer_content,
                         # saltar la emisión posterior de delta para evitar duplicación
                         continue
@@ -205,8 +235,11 @@ class OllamaWorker(QThread):
                         self.thinking_chunk.emit(think_part[:2000])
                 else:
                     if not has_think:
-                        self.chunk_received.emit(delta)
                         answer_content += delta
+                    # Emitir el delta también tras un bloque legacy ya cerrado:
+                    # antes todo lo streameado después del cierre se perdía y la
+                    # respuesta solo aparecía completa al final.
+                    self.chunk_received.emit(delta)
 
             if has_think:
                 m = re.search(r"<<thinking>>.*?</thinking>>(.*)", raw_accum, re.DOTALL)
@@ -223,4 +256,3 @@ class OllamaWorker(QThread):
 
         except Exception as e:
             self.error_occurred.emit(str(e))
-
