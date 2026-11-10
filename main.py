@@ -21,7 +21,7 @@ from PySide6.QtWidgets import (
     QListWidget, QListWidgetItem, QFrame, QSplitter, QFileDialog, QMessageBox,
     QProgressBar, QGroupBox, QTextBrowser, QLineEdit, QSizePolicy
 )
-from PySide6.QtCore import Qt, QThread, Signal, Slot, QSize, QMimeData, QTimer, QEvent, QPropertyAnimation
+from PySide6.QtCore import Qt, QThread, Signal, Slot, QSize, QMimeData, QTimer, QEvent, QPropertyAnimation, QObject
 from PySide6.QtGui import QDragEnterEvent, QDropEvent, QPixmap, QIcon, QFont, QColor
 
 # Ollama
@@ -119,6 +119,13 @@ def encode_image(path: str) -> Optional[str]:
     except Exception:
         return None
 
+
+class _HandsFreeSignals(QObject):
+    """Puente thread-safe para el modo manos libres: el hilo de escucha
+    emite la transcripción y Qt la entrega en el hilo de la GUI."""
+    transcript = Signal(str)
+
+
 # ================= MAIN WINDOW =================
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -154,6 +161,12 @@ class MainWindow(QMainWindow):
         self._stop_requested: bool = False
         self._speaking: bool = False
         self._think_caps: Dict[str, bool] = {}
+
+        # Modo manos libres (Fase 2): escucha -> responde -> lee -> escucha…
+        self._hands_free: bool = False
+        self._hf_empty_retries: int = 0
+        self._hf_signals = _HandsFreeSignals()
+        self._hf_signals.transcript.connect(self._on_hf_transcript)
 
         # Cargar tools
         self.tools_def, self.executors = load_tools()
@@ -455,6 +468,30 @@ class MainWindow(QMainWindow):
         self.mic_btn.hide()
         bottom_row.addWidget(self.mic_btn)
 
+        # Modo manos libres (Fase 2): ciclo continuo escuchar -> responder -> leer
+        self.hands_free_btn = QPushButton("🎙️")
+        self.hands_free_btn.setFixedSize(32, 32)
+        self.hands_free_btn.setCheckable(True)
+        self.hands_free_btn.setCursor(Qt.PointingHandCursor)
+        self.hands_free_btn.setStyleSheet(f"""
+            QPushButton {{
+                background: transparent;
+                color: {theme.TEXT_SECOND};
+                border: none;
+                border-radius: 16px;
+                font-size: 15px;
+            }}
+            QPushButton:hover {{ background: {theme.BG_HOVER}; color: {theme.TEXT}; }}
+            QPushButton:checked {{
+                background: {theme.ACCENT};
+                color: {theme.TEXT_ON_ACCENT};
+            }}
+        """)
+        self.hands_free_btn.clicked.connect(self._toggle_hands_free)
+        self.hands_free_btn.setToolTip("Modo manos libres: Chispa escucha, responde y lee en voz alta, en ciclo")
+        self.hands_free_btn.hide()
+        bottom_row.addWidget(self.hands_free_btn)
+
         self.clear_images_btn = QPushButton("🗑️")
         self.clear_images_btn.setFixedSize(32, 32)
         self.clear_images_btn.setCursor(Qt.PointingHandCursor)
@@ -537,6 +574,9 @@ class MainWindow(QMainWindow):
         except Exception:
             self.stt_available = False
         self.mic_btn.setVisible(self.stt_available and self.stt_check.isChecked())
+        # El modo manos libres solo depende del micrófono (el TTS se
+        # verifica al activarlo, con aviso claro si falta algo)
+        self.hands_free_btn.setVisible(self.stt_available)
 
     @staticmethod
     def _checkbox_style():
@@ -1069,6 +1109,89 @@ class MainWindow(QMainWindow):
             self.mic_btn.setText("🎤")
             self.status_label.setText("Listo")
 
+    # ---------- Modo manos libres (Fase 2) ----------
+    def _toggle_hands_free(self):
+        """Activa/desactiva el ciclo continuo: escucha -> responde -> lee -> escucha…"""
+        if self._hands_free:
+            self._hands_free_off("Modo manos libres desactivado")
+            return
+        if not self.stt_available:
+            QMessageBox.warning(self, "Manos libres no disponible",
+                "El reconocimiento de voz no está disponible.\n"
+                "Instala dependencias:\n"
+                "  sudo apt install portaudio19-dev python3-pyaudio\n"
+                "  pip install pyaudio speechrecognition")
+            self.hands_free_btn.setChecked(False)
+            return
+        # El ciclo necesita voz: verificar TTS ANTES de activar
+        problema = self._tts_problema()
+        if problema:
+            QMessageBox.warning(self, "Manos libres no disponible",
+                f"El modo manos libres necesita voz (TTS):\n{problema}")
+            self.hands_free_btn.setChecked(False)
+            return
+        if self.worker and self.worker.isRunning():
+            self.status_label.setText("Espera a que termine el turno para activar manos libres")
+            self.hands_free_btn.setChecked(False)
+            return
+        self._hands_free = True
+        self._hf_empty_retries = 0
+        self.hands_free_btn.setText("⏹️")
+        self.status_label.setText("🎙️ Modo manos libres: te escucho…")
+        self._hands_free_listen()
+
+    def _hands_free_off(self, motivo: str):
+        """Desactiva el modo manos libres y muestra el motivo en el status."""
+        self._hands_free = False
+        self._hf_empty_retries = 0
+        self.hands_free_btn.setChecked(False)
+        self.hands_free_btn.setText("🎙️")
+        self.status_label.setText(motivo)
+
+    def _hands_free_listen(self):
+        """Un ciclo de escucha del modo manos libres (en hilo daemon)."""
+        def _listen():
+            listen = self.executors.get("listen")
+            if listen is None:
+                self._hf_signals.transcript.emit("Error STT: motor de voz no cargado")
+                return
+            try:
+                # Más paciencia que el dictado normal: en conversación la
+                # gente tarda en empezar a hablar tras escuchar la respuesta
+                text = str(listen(timeout=8, phrase_timeout=8) or "")
+            except Exception as e:
+                text = f"Error STT: {e}"
+            self._hf_signals.transcript.emit(text)
+        threading.Thread(target=_listen, daemon=True).start()
+
+    @Slot(str)
+    def _on_hf_transcript(self, text: str):
+        """Recibe la transcripción (hilo GUI vía señal) y decide el siguiente paso."""
+        if not self._hands_free:
+            return
+        if text.startswith("Error STT"):
+            transitorio = ("no se detectó voz" in text or "no se pudo entender" in text)
+            if transitorio:
+                # Silencio o audio confuso: reintentar hasta 3 veces antes de pausar
+                self._hf_empty_retries += 1
+                if self._hf_empty_retries >= 3:
+                    self._hands_free_off("🎙️ Manos libres en pausa: no escuché nada en 3 intentos")
+                    return
+                self.status_label.setText("🎙️ Escuchando… (habla cuando quieras)")
+                QTimer.singleShot(800, self._hands_free_listen)
+                return
+            # Error duro (micrófono, servicio): pausar con el motivo visible
+            self._hands_free_off(f"🎙️ Manos libres detenido: {text[:70]}")
+            return
+        self._hf_empty_retries = 0
+        self.status_label.setText(f"🎙️ Tú: {text[:60]}")
+        if self.worker and self.worker.isRunning():
+            # Turno en curso (p.ej. el usuario escribió a la vez): esperar
+            QTimer.singleShot(1200, lambda: self._on_hf_transcript(text))
+            return
+        self.input_edit.setPlainText(text)
+        self.send_message()
+
     @staticmethod
     def _speakable_text(text: str) -> str:
         """Aproximación a texto plano para TTS: sin sintaxis markdown ruidosa
@@ -1102,7 +1225,9 @@ class MainWindow(QMainWindow):
         (antes no había forma de cortar el audio: subprocess.run bloqueaba el
         hilo hasta el final y el reproductor era intocable).
         Los fallos del TTS se muestran (aviso + status); antes se tragaban
-        en silencio: el tool devuelve errores como texto y el status decía 'Listo'."""
+        en silencio: el tool devuelve errores como texto y el status decía 'Listo'.
+        En modo manos libres, al terminar de leer arranca el siguiente ciclo
+        de escucha (ver _do_speak)."""
         if not text or not text.strip():
             self.status_label.setText("Nada que leer: la respuesta está vacía")
             return
@@ -1123,19 +1248,29 @@ class MainWindow(QMainWindow):
         self.status_label.setText("🔊 Leyendo respuesta… (🔊 otra vez para detener)")
 
         def _do_speak():
+            resultado_error = False
             try:
                 # tts_tool NO lanza excepciones: devuelve el error como texto.
                 result = str(speak(text=self._speakable_text(text)) or "")
                 if result.startswith("Error TTS") or result.startswith("TTS no disponible"):
+                    resultado_error = True
                     self.status_label.setText(f"🔇 {result[:80]}")
                 elif result.startswith("Lectura detenida"):
                     self.status_label.setText("🔇 Lectura detenida")
                 else:
                     self.status_label.setText("Listo")
             except Exception as e:
+                resultado_error = True
                 self.status_label.setText(f"Error TTS: {e}")
             finally:
                 self._speaking = False
+                # Manos libres: terminó la lectura -> siguiente ciclo de escucha
+                if self._hands_free:
+                    if resultado_error:
+                        self._hands_free_off("🎙️ Manos libres detenido: fallo del TTS")
+                    else:
+                        self.status_label.setText("🎙️ Escuchando… (habla cuando quieras)")
+                        self._hands_free_listen()
 
         threading.Thread(target=_do_speak, daemon=True).start()
 
@@ -1667,6 +1802,7 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         """Apagado limpio: detiene el hilo del orquestador y el audio TTS antes de salir."""
+        self._hands_free = False
         try:
             from tools import tts_tool
             tts_tool.stop_speech()
@@ -1753,7 +1889,9 @@ class MainWindow(QMainWindow):
             try:
                 self.current_assistant_widget.finishAnswer(answer, thinking)
                 self.current_assistant_widget.showTTS()
-                if self.tts_check.isChecked() and answer.strip():
+                # En manos libres la lectura es parte del ciclo (al terminar
+                # de leer, _do_speak arranca la siguiente escucha)
+                if (self.tts_check.isChecked() or self._hands_free) and answer.strip():
                     self.speak_response(answer)
             except Exception:
                 import traceback
