@@ -577,7 +577,7 @@ class MessageBubble(QFrame):
             self.text_browser.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
             layout.addWidget(self.text_browser)
 
-            # Fila de iconos (meta): ⧉ ♻ 🔊 , oculta por defecto, visible al hover
+            # Fila de iconos (meta): ⧉ ♻ 🔊 💾 , oculta por defecto, visible al hover
             icon_row = QHBoxLayout()
             icon_row.setContentsMargins(0, 4, 0, 0)
             icon_row.setSpacing(10)
@@ -627,9 +627,25 @@ class MessageBubble(QFrame):
             """)
             tts_btn.clicked.connect(lambda: self.window().speak_response(self.full_text))
 
+            save_btn = QPushButton("💾")
+            save_btn.setFixedSize(24, 24)
+            save_btn.setToolTip("Guardar respuesta como documento")
+            save_btn.setStyleSheet(f"""
+                QPushButton {{
+                    background: transparent;
+                    color: {theme.TEXT_SECOND};
+                    border: none;
+                    border-radius: 4px;
+                    font-size: 14px;
+                }}
+                QPushButton:hover {{ background: {theme.BG_HOVER}; color: {theme.TEXT}; }}
+            """)
+            save_btn.clicked.connect(lambda: self.window()._save_answer_as_file(self))
+
             icon_row.addWidget(copy_btn)
             icon_row.addWidget(retry_btn)
             icon_row.addWidget(tts_btn)
+            icon_row.addWidget(save_btn)
             icon_row.addStretch()
 
             icon_container = QFrame()
@@ -637,6 +653,41 @@ class MessageBubble(QFrame):
             icon_container.setVisible(False)
             self.icon_container = icon_container
             layout.addWidget(icon_container)
+
+            # Chips de seguimiento estilo Vibe: continúan la conversación con
+            # un clic. Ocultos hasta que la respuesta termina (showTTS).
+            chips_row = QHBoxLayout()
+            chips_row.setContentsMargins(0, 6, 0, 0)
+            chips_row.setSpacing(6)
+            self.chips_container = QFrame()
+            self.chips_container.setLayout(chips_row)
+            self.chips_container.setVisible(False)
+            for etiqueta, prompt in (
+                ("✂️ Más corto", "Resume tu respuesta anterior en 3 líneas"),
+                ("🧑‍🏫 Explícalo simple", "Explica tu respuesta anterior con palabras simples, como para alguien que no es técnico"),
+                ("💡 Dame un ejemplo", "Dame un ejemplo concreto de tu respuesta anterior"),
+            ):
+                chip = QPushButton(etiqueta)
+                chip.setCursor(Qt.PointingHandCursor)
+                chip.setStyleSheet(f"""
+                    QPushButton {{
+                        background: {theme.BG_ELEVATED};
+                        color: {theme.TEXT_SECOND};
+                        border: 1px solid {theme.BORDER};
+                        border-radius: 14px;
+                        padding: 5px 12px;
+                        font-size: 11px;
+                    }}
+                    QPushButton:hover {{
+                        border-color: {theme.ACCENT};
+                        color: {theme.TEXT};
+                        background: {theme.ACCENT_TINT};
+                    }}
+                """)
+                chip.clicked.connect(lambda _=False, p=prompt: self.window()._follow_up(p))
+                chips_row.addWidget(chip)
+            chips_row.addStretch()
+            layout.addWidget(self.chips_container)
 
         # Reflow diferido: colapsa el hueco entre respuesta e iconos
         QTimer.singleShot(0, self._reflow)
@@ -758,7 +809,7 @@ class MessageBubble(QFrame):
                 self.full_text = delta
                 self._last_emit = delta
                 self._accepted_delta_count = (
-                    getattr(self, "_accepted_delta_count", 0) + 1
+                    self._accepted_delta_count + 1
                 )
                 self.text_browser.insertPlainText(suffix)
                 self._reflow()
@@ -777,7 +828,7 @@ class MessageBubble(QFrame):
         self.full_text += delta
         self._last_emit = delta
         self._accepted_delta_count = (
-            getattr(self, "_accepted_delta_count", 0) + 1
+            self._accepted_delta_count + 1
         )
         trace(f"appendAnswer: agregando nuevo delta, total aceptado {self._accepted_delta_count}: {delta[:40]!r}")
 
@@ -793,6 +844,11 @@ class MessageBubble(QFrame):
     def showTTS(self):
         if hasattr(self, 'icon_container'):
             self.icon_container.setVisible(True)
+        # Chips de seguimiento solo en la última respuesta: se muestran aquí
+        # (se llama al finalizar cada respuesta) y la burbuja anterior los
+        # apaga vía _apagar_chips desde MainWindow al iniciar un turno nuevo.
+        if hasattr(self, 'chips_container'):
+            self.chips_container.setVisible(True)
 
     def _snapshot_dedup_metrics(self) -> dict:
         return {
@@ -898,12 +954,12 @@ class MessageBubble(QFrame):
                 import logging
                 logger = logging.getLogger(__name__)
                 logger.info(
-                    "E3 dedup metrics: raw=%s accepted=%s dup_consecutive=%s "
+                    "E3 dedup metrics: raw=%s accepted=%s dup_consecutive=%s " +
                     "dup_fulltext=%s empty=%s dedup_enabled=%s",
                     metrics.get("raw_delta_count"),
                     metrics.get("accepted_delta_count"),
-                    metrics.get("duplicate_consecutive_count"),
-                    metrics.get("duplicate_fulltext_count"),
+                    metrics.get("dup_consecutive_count") if False else metrics.get("duplicate_consecutive_count"),
+                    metrics.get("dup_fulltext_count") if False else metrics.get("duplicate_fulltext_count"),
                     metrics.get("empty_delta_count"),
                     metrics.get("dedup_enabled"),
                 )
@@ -1045,6 +1101,3 @@ class TitleBar(QFrame):
     def mouseReleaseEvent(self, event):
         self._pressing = False
         super().mouseReleaseEvent(event)
-
-
-
