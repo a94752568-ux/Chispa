@@ -7,7 +7,7 @@ TOOL_DEFINITION = {
     "type": "function",
     "function": {
         "name": "calendar_tool",
-        "description": "Agenda de los próximos 7 días desde archivos .ics locales. Usa parsing stdlib con tolerancia para eventos únicos.",
+        "description": "USAR CUANDO el usuario pregunte por su agenda o eventos próximos ('¿qué tengo esta semana?', '¿tengo algo agendado mañana?', '¿qué viene en mi calendario?'). Devuelve los eventos de los próximos 7 días leídos de archivos .ics locales. Sin argumentos.",
         "parameters": {"type": "object", "properties": {}}
     }
 }
