@@ -225,14 +225,18 @@ class MainWindow(QMainWindow):
         self.new_chat_btn.setCursor(Qt.PointingHandCursor)
         self.new_chat_btn.setStyleSheet(f"""
             QPushButton {{
-                background: {theme.ACCENT};
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                            stop:0 {theme.ACCENT_HOVER}, stop:1 {theme.ACCENT});
                 color: {theme.TEXT_ON_ACCENT};
                 border: none;
                 border-radius: 10px;
                 font-size: 13px;
                 font-weight: bold;
             }}
-            QPushButton:hover {{ background: {theme.ACCENT_HOVER}; }}
+            QPushButton:hover {{
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                            stop:0 {theme.ACCENT_BRIGHT}, stop:1 {theme.ACCENT_HOVER});
+            }}
             QPushButton:pressed {{ background: {theme.ACCENT_ACTIVE}; }}
         """)
         self.new_chat_btn.clicked.connect(self.new_chat)
@@ -259,13 +263,15 @@ class MainWindow(QMainWindow):
                 padding: 8px 10px;
                 border-radius: 8px;
                 margin: 1px 4px 1px 0px;
+                border-left: 2px solid transparent;
             }}
             QListWidget::item:hover {{
-                background: {theme.BG_ELEVATED};
+                background: {theme.BG_HOVER};
             }}
             QListWidget::item:selected {{
                 background: {theme.ACCENT_TINT};
                 color: {theme.TEXT};
+                border-left: 2px solid {theme.ACCENT};
             }}
         """)
         self.chats_list.itemClicked.connect(self._switch_chat)
@@ -292,7 +298,11 @@ class MainWindow(QMainWindow):
                 font-size: 12px;
                 font-weight: 600;
             }}
-            QPushButton:hover {{ border-color: {theme.ACCENT}; color: {theme.TEXT}; }}
+            QPushButton:hover {{
+                border-color: {theme.ACCENT};
+                color: {theme.TEXT};
+                background: {theme.ACCENT_TINT};
+            }}
         """)
         self.settings_btn.clicked.connect(self._open_settings)
         sidebar_layout.addWidget(self.settings_btn)
@@ -364,7 +374,7 @@ class MainWindow(QMainWindow):
                 border-radius: 24px;
             }}
             QFrame#composer:hover {{
-                border-color: {theme.TEXT_MUTED};
+                border-color: {theme.ACCENT};
             }}
         """)
         composer_layout = QVBoxLayout(composer)
@@ -405,7 +415,7 @@ class MainWindow(QMainWindow):
                 border-radius: 16px;
                 font-size: 15px;
             }}
-            QPushButton:hover {{ background: {theme.BG_INPUT}; color: {theme.TEXT}; }}
+            QPushButton:hover {{ background: {theme.BG_HOVER}; color: {theme.TEXT}; }}
         """)
         self.attach_btn.clicked.connect(self.attach_image)
         self.attach_btn.setToolTip("Adjuntar imagen para visión")
@@ -423,7 +433,7 @@ class MainWindow(QMainWindow):
                 border-radius: 16px;
                 font-size: 15px;
             }}
-            QPushButton:hover {{ background: {theme.BG_INPUT}; color: {theme.TEXT}; }}
+            QPushButton:hover {{ background: {theme.BG_HOVER}; color: {theme.TEXT}; }}
             QPushButton:checked {{
                 background: {theme.ERROR};
                 color: #fff;
@@ -445,7 +455,7 @@ class MainWindow(QMainWindow):
                 border-radius: 16px;
                 font-size: 15px;
             }}
-            QPushButton:hover {{ background: {theme.BG_INPUT}; color: {theme.TEXT}; }}
+            QPushButton:hover {{ background: {theme.BG_HOVER}; color: {theme.TEXT}; }}
         """)
         self.clear_images_btn.clicked.connect(lambda: self.clear_attached_images())
         self.clear_images_btn.hide()
@@ -460,14 +470,18 @@ class MainWindow(QMainWindow):
         self.send_btn.setToolTip("Enviar (Enter)")
         self.send_btn.setStyleSheet(f"""
             QPushButton {{
-                background: {theme.ACCENT};
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                            stop:0 {theme.ACCENT_HOVER}, stop:1 {theme.ACCENT});
                 color: {theme.TEXT_ON_ACCENT};
                 border: none;
                 border-radius: 18px;
                 font-size: 16px;
                 font-weight: bold;
             }}
-            QPushButton:hover {{ background: {theme.ACCENT_HOVER}; }}
+            QPushButton:hover {{
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                            stop:0 {theme.ACCENT_BRIGHT}, stop:1 {theme.ACCENT_HOVER});
+            }}
             QPushButton:pressed {{ background: {theme.ACCENT_ACTIVE}; }}
             QPushButton:disabled {{
                 background: {theme.BORDER};
@@ -1269,7 +1283,11 @@ class MainWindow(QMainWindow):
                     padding: 8px 14px;
                     font-size: 12px;
                 }}
-                QPushButton:hover {{ border-color: {theme.ACCENT}; color: {theme.TEXT}; }}
+                QPushButton:hover {{
+                    border-color: {theme.ACCENT};
+                    color: {theme.TEXT};
+                    background: {theme.ACCENT_TINT};
+                }}
             """)
             chip.clicked.connect(lambda _=False, t=sug: self._use_suggestion(t))
             row.addWidget(chip)
