@@ -97,7 +97,8 @@ QT_QPA_PLATFORM=offscreen pytest ...           # headless
 ## Notas de seguridad
 
 - `calculator`: parser `ast`, **no usa eval()**
-- `read_file`: lectura restringida al directorio del proyecto (bloquea `../`)
+- `read_file`: lectura bajo la carpeta personal con blacklist (`.ssh`, `venv`, `.cache`…); tope 20,000 caracteres y detección de binarios
+- `find_files`/`move_file`/`delete_file`: blacklist de rutas de sistema; `delete_file` mueve a `~/.Papelera` (nada se destruye)
 - Gate de mutaciones: preview en dry_run antes de autorizar; el worker fuerza dry_run en tool calls directos
 - `stt_tool` requiere `portaudio19-dev` + pyaudio
 
