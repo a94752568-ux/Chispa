@@ -48,6 +48,39 @@ NUM_CTX = 8192
 # Mensajes recientes (además de los system) que ve FASE 1 para decidir tools.
 FASE1_HISTORY_LIMIT = 12
 
+# Techo duro de resultados: num_ctx=8192 y un full_recon puede devolver
+# 10KB+. Sin techo, el prompt trunca EN SILENCIO (lo primero en caer es el
+# system prompt) y cada iteración de FASE 1 + FASE 2 paga el prefill extra
+# (tool_convo viaja también a FASE 2). Se conserva el inicio (lo relevante)
+# y un colín del final (las conclusiones suelen ir al final).
+TOOL_RESULT_MAX = 3500   # techo total por resultado de tool
+_TOOL_HEAD = 2600        # caracteres iniciales que se conservan
+_TOOL_TAIL = 600         # colín final
+
+# Política de uso de tools que viaja como system al final de FASE 1:
+# profesionaliza la conducta del modelo (menos llamadas vacías, argumentos
+# exactos, cierre claro tras obtener resultados).
+TOOL_POLICY = (
+    "Política de herramientas: invoca una herramienta SOLO si es imprescindible "
+    "para responder (datos externos, cálculos, estado del sistema o archivos); "
+    "en chateo casual no llames ninguna. Copia los nombres de los argumentos "
+    "EXACTOS de la definición de la herramienta. Cuando tengas los resultados, "
+    "responde al usuario directamente SIN más llamadas a herramientas. No "
+    "repite una llamada idéntica en el mismo turno."
+)
+
+
+def _cap_result(result: str) -> str:
+    """Recorta un resultado de tool a TOOL_RESULT_MAX conservando inicio y fin."""
+    result = str(result)
+    if len(result) <= TOOL_RESULT_MAX:
+        return result
+    aviso = (
+        f"\n\n[… resultado truncado: {len(result)} caracteres en total; "
+        f"se muestran los primeros {_TOOL_HEAD} y los últimos {_TOOL_TAIL} …]\n\n"
+    )
+    return result[:_TOOL_HEAD] + aviso + result[-_TOOL_TAIL:]
+
 # ================= WORKER =================
 class OllamaWorker(QThread):
     chunk_received = Signal(str)  # delta answer
@@ -69,6 +102,7 @@ class OllamaWorker(QThread):
         self.enable_tools = enable_tools
         self.enable_think = enable_think
         self._stop = False
+        self._call_cache: Dict = {}  # dedup de llamadas (name, args) -> resultado
 
     def stop(self):
         self._stop = True
@@ -78,11 +112,32 @@ class OllamaWorker(QThread):
 
         Conserva TODOS los system prompts + los últimos FASE1_HISTORY_LIMIT
         mensajes + la conversación de tools de este turno. FASE 2 ve el
-        historial completo.
+        historial completo. La política de tools viaja AL FINAL: recency
+        máxima justo antes de que el modelo decida la siguiente llamada.
         """
         system = [m for m in self.history if m.get("role") == "system"]
         resto = [m for m in self.history if m.get("role") != "system"]
-        return system + resto[-FASE1_HISTORY_LIMIT:] + tool_convo
+        return (
+            system + resto[-FASE1_HISTORY_LIMIT:] + tool_convo
+            + [{"role": "system", "content": TOOL_POLICY}]
+        )
+
+    def _expected_params(self, name: str) -> str:
+        """Firma esperada de una tool a partir de su definición: permite que
+        el modelo corrija argumentos mal nombrados en la siguiente iteración
+        (antes un TypeError genérico quemaba el turno sin orientación)."""
+        for d in self.tools_def:
+            fn = d.get("function", {})
+            if fn.get("name") == name:
+                params = fn.get("parameters", {})
+                props = params.get("properties", {})
+                req = set(params.get("required", []))
+                if not props:
+                    return "sin parámetros"
+                return ", ".join(
+                    f"{k} ({'requerido' if k in req else 'opcional'})" for k in props
+                )
+        return "desconocidos (tool no en las definiciones del turno)"
 
     def run(self):
         if ollama is None:
@@ -90,6 +145,7 @@ class OllamaWorker(QThread):
             return
 
         client = ollama.Client()
+        self._call_cache = {}  # dedup de llamadas fresco por turno
         try:
             # FASE 1: Tools loop (hasta 3 iteraciones)
             # tool_convo: mensajes assistant+tool de este turno; se suma al
@@ -141,7 +197,17 @@ class OllamaWorker(QThread):
                         self.tool_call_detected.emit(name, args)
 
                         executor = self.executors.get(name)
-                        if executor:
+                        # Dedup por turno: una llamada idéntica (misma tool,
+                        # mismos args) NO se ejecuta dos veces — solo hay 3
+                        # iteraciones y repetirlas las quemaba en vacío.
+                        call_key = (name, json.dumps(args, sort_keys=True, ensure_ascii=False))
+                        if call_key in self._call_cache:
+                            result = self._call_cache[call_key] + (
+                                "\n\n⚠️ Ya obtuviste este mismo resultado en este turno "
+                                "(misma herramienta y argumentos). NO repitas la llamada: "
+                                "úsalo y responde al usuario."
+                            )
+                        elif executor:
                             try:
                                 # Gate de mutación: en tool calls directos del chat,
                                 # las tools de escritura NUNCA se ejecutan de verdad.
@@ -151,6 +217,11 @@ class OllamaWorker(QThread):
                                     args = dict(args)
                                     args["dry_run"] = True
                                 result = executor(**args) if args else executor()
+                                # Techo de resultado: protege num_ctx (un resultado
+                                # de 10KB+ trunca el prompt en silencio) y el
+                                # prefill de FASE 2 (que también recibe tool_convo).
+                                result = _cap_result(result)
+                                self._call_cache[call_key] = result
                                 if name in MUTACIONES:
                                     result += (
                                         "\n\n⚠️ SIMULACIÓN (dry_run): NO se escribió nada en disco. "
@@ -160,6 +231,16 @@ class OllamaWorker(QThread):
                                         '{"pasos": [{"tool": "write_desktop", "args": {...}}]}): el '
                                         "orquestador pedirá su autorización antes de ejecutarlo."
                                     )
+                            except TypeError as e:
+                                # Args mal nombrados: devolver la firma esperada
+                                # para que el modelo se autocorrija en la
+                                # siguiente iteración en vez de adivinar.
+                                result = (
+                                    f"Error de argumentos en {name}: {e}. "
+                                    f"Parámetros esperados: {self._expected_params(name)}. "
+                                    "Corrige los nombres de los argumentos copiándolos "
+                                    "de la definición de la herramienta."
+                                )
                             except Exception as e:
                                 result = f"Error ejecutando {name}: {e}"
                         else:
