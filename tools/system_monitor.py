@@ -6,7 +6,7 @@ TOOL_DEFINITION = {
     "type": "function",
     "function": {
         "name": "system_monitor",
-        "description": "Monitorea estado del sistema: CPU, RAM, disco, temp NVMe y carga. Advierte si >85% uso.",
+        "description": "USAR CUANDO el usuario pida diagnóstico de rendimiento o salud del equipo ('¿cómo va de rendimiento mi laptop?', '¿se está calentando?', '¿por qué va lento?'). Devuelve CPU, RAM, disco, temperatura NVMe, carga 1min y advertencias si >85% uso. Para un resumen de 4 líneas usa 'system_info' en su lugar.",
         "parameters": {"type": "object", "properties": {}}
     }
 }
