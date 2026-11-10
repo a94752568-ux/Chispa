@@ -3,7 +3,7 @@ TOOL_DEFINITION = {
     "type": "function",
     "function": {
         "name": "get_weather",
-        "description": "Obtiene clima actual de una ciudad. Usa wttr.in sin API key.",
+        "description": "USAR CUANDO el usuario pregunte por el clima o la temperatura de una ciudad. Ejemplos: '¿Qué clima hace en La Paz?', 'clima de Ciudad de México', 'temperatura en Madrid'. En city incluye ciudad y país separados por coma para evitar ambigüedades (ej: 'La Paz, Mexico' — solo 'La Paz' puede ser Bolivia). Devuelve temperatura, descripción, humedad y viento.",
         "parameters": {
             "type": "object",
             "properties": {
