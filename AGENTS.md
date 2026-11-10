@@ -1,4 +1,4 @@
-# AGENTS.md - Ollama GUI Lubuntu Edition
+# AGENTS.md - Chispa (antes Ollama GUI Lubuntu Edition)
 
 ## Descripción del proyecto
 
@@ -25,7 +25,7 @@ GUI nativa (PySide6 / Qt6, ventana frameless con tema oscuro Fusion) que consume
 ├── .github/workflows/ci.yml    # CI: py_compile de todos los .py + pytest headless (no bloqueante)
 ├── requirements.txt
 ├── build.sh                    # Compilación PyInstaller (incluye tools/ como data)
-├── OllamaChat-GUI.spec
+├── Chispa.spec
 └── tools/                      # ~30 plugins + infraestructura
     ├── __init__.py             # load_tools(), MUTACIONES (fuente única de verdad)
     ├── pre_router.py           # Router por categorías con nomic-embed-text
@@ -58,7 +58,7 @@ python main.py
 
 ```bash
 chmod +x build.sh && ./build.sh
-# Resultado: ./dist/OllamaChat-GUI
+# Resultado: ./dist/Chispa
 ```
 
 ## Arquitectura de herramientas (tools)
