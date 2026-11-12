@@ -19,7 +19,6 @@ GUI nativa (PySide6 / Qt6, ventana frameless con tema oscuro Fusion) que consume
 ├── memoria.py                  # Persistencia del historial (chat_history.json, tope 40)
 ├── worker.py                   # OllamaWorker (QThread): FASE 1 tool loop, FASE 2 streaming
 ├── widgets.py                  # ThinkingBlock, ToolBlock, MessageBubble, ChatContainer, TitleBar
-├── init.py                     # Carga de tools (fallback / compatibilidad)
 ├── conftest.py                 # Hace visible la raíz del repo para pytest
 ├── tests/                      # test_e2_finish_answer, test_e3_dedup, test_router (requiere Ollama)
 ├── .github/workflows/ci.yml    # CI: py_compile de todos los .py + pytest headless (no bloqueante)
@@ -31,7 +30,8 @@ GUI nativa (PySide6 / Qt6, ventana frameless con tema oscuro Fusion) que consume
     ├── pre_router.py           # Router por categorías con nomic-embed-text
     ├── agent_orchestrator.py   # Orquestador determinista (QThread) con gate de autorización
     ├── chat_fx.py              # fade_in, animate_height, Spinner, PensandoDots
-    ├── template_new_tool.py     # Plantilla para crear nuevos tools
+    ├── template_new_tool.py    # Plantilla para crear nuevos tools
+    ├── wiki_offline.py         # Mini enciclopedia offline (Wikipedia top + Wikidata)
     └── ...                     # Tools de lectura, OSINT, escritorio, voz, etc.
 ```
 
@@ -43,6 +43,7 @@ GUI nativa (PySide6 / Qt6, ventana frameless con tema oscuro Fusion) que consume
 - **El orquestador vive en su propio QThread**: las tools del plan no congelan la GUI.
 - **MUTACIONES** se define SOLO en `tools/__init__.py»; si añades una tool de escritura, regístrala ahí o se ejecutará sin pedir permiso.
 - **Uso profesional de tools (ronda 3)**: los resultados de tools se acotan a ~3,500 chars (`TOOL_RESULT_MAX»: head 2,600 + tail 600) para no desbordar `num_ctx»; hay caché de dedup por turno (una llamada idéntica repetida no quema iteraciones); `TOOL_POLICY» se inyecta como system al final de FASE 1 (máx 3 iteraciones, elegir la tool correcta a la primera); los errores de argumentos devuelven la firma esperada en vez de un TypeError críptico; y las tools de solo-GUI (`speak»/`listen», constantes `GUI_ONLY_TOOLS») no se exponen al modelo: son exclusivas de los botones 🔊/🎤 de la app.
+- **Enciclopedia offline (wiki_offline)**: descarga una versión reducida de Wikipedia en español (los N artículos más vistos, extractos de texto plano, defecto 500) a `~/.local/share/Chispa/wiki_mini/articulos.jsonl.gz» y permite buscar/leer SIN internet (búsqueda local por tokens sin acentos, título con peso extra). Acciones: estado, descargar, agregar (amplía por tema), buscar, leer, wikidata (ficha de entidad en línea). Solo escribe en su propia carpeta de datos: no es MUTACIÓN. Las preguntas enciclopédicas del chat deben enrutarse a esta tool antes que a web_search cuando no haya internet o se pida offline.
 
 ## Cómo ejecutar (desarrollo)
 
@@ -76,6 +77,7 @@ Si el modelo invoca una tool inexistente o filtrada por el pre-router, el result
 | Categoría | Tools |
 |-----------|-------|
 | Básicas | `web_search» (DuckDuckGo), `get_weather» (wttr.in), `get_current_time», `calculator» (parser AST), `read_file» (bajo ~, blacklist y tope 20k), `find_files» (búsqueda por nombre bajo ~), `list_dir» (contenido de una carpeta, un nivel, con tamaños y fechas), `system_info» |
+| Conocimiento | `wiki_offline» (mini-Wikipedia es offline: descargar/agregar/buscar/leer/estado + ficha Wikidata en línea) |
 | Voz | `speak» (TTS piper-tts es_MX-claude-high), `listen» (STT speech_recognition) |
 | OSINT | email_breach, username, full_recon, ip_domain, tech_fingerprint, cert_transparency (todas con timeout) |
 | Escritorio (**MUTACIONES**) | `write_desktop», `organize_files» (dry_run + blacklist), `move_file» (archivo concreto), `delete_file» (papelera ~/.Papelera: nada se destruye), `db_writer» |
@@ -98,7 +100,8 @@ QT_QPA_PLATFORM=offscreen pytest ...           # headless
 
 - `calculator»: parser `ast», **no usa eval()**
 - `read_file»: lectura bajo la carpeta personal con blacklist (`.ssh», `venv», `.cache»…); tope 20,000 caracteres y detección de binarios
-- `find_files»/`list_dir»/`move_file»/`delete_file»: blacklist de rutas de sistema; `delete_file» mueve a `~/.Papelera» (nada se destruye); `list_dir» lista un nivel sin recursión, oculta los dotfiles por defecto y se recorta a 200 entradas / 6k chars
+- `find_files»/`list_dir»/`move_file»/`delete_file»: blacklist de rutas de sistema; `delete_file» mueve a `~/.Papelera» (nada se destruye); `list_dir» lista un nivel sin recursión, oculta los dotfiles por defecto y se recorta a 200 entradas / 3.4k chars (bajo el techo del worker)
+- `wiki_offline» solo escribe en `~/.local/share/Chispa/wiki_mini/» (sus propios datos): sin gate; las descargas usan la API pública de Wikimedia con User-Agent propio y timeout
 - Gate de mutaciones: preview en dry_run antes de autorizar; el worker fuerza dry_run en tool calls directos
 - `stt_tool» requiere `portaudio19-dev» + pyaudio
 
@@ -109,6 +112,7 @@ QT_QPA_PLATFORM=offscreen pytest ...           # headless
 | `OLLAMA_GUI_DEDUP=0» | Desactiva el dedup de streaming (E3) |
 | `OLLAMA_GUI_DEBUG_DEDUP=1» | Logs detallados del dedup |
 | `OLLAMA_GUI_DEDUP_LOG=/ruta» | Escribe log del dedup a archivo |
+| `WIKI_MINI_DIR=/ruta» | Carpeta de datos de la mini-wikipedia (defecto ~/.local/share/Chispa/wiki_mini) |
 
 ## Flujo de trabajo del repo
 
