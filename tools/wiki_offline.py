@@ -12,16 +12,24 @@ Acciones (parametro "accion"):
 - estado:      hay mini-wiki descargada? cuantos articulos, tamano, fecha.
 - descargar:   descarga los N articulos mas vistos de es.wikipedia (red, una vez).
 - agregar:     anade articulos sobre un tema concreto via busqueda (red).
-- buscar:      busqueda LOCAL sin internet sobre lo descargado.
+- buscar:      busqueda LOCAL sin internet sobre lo descargado (palabras clave;
+               si no encuentra nada, cae automaticamente a busqueda semantica).
+- buscar_semantico: busqueda SEMANTICA local con embeddings (nomic-embed-text
+               via Ollama): entiende el SENTIDO de la consulta, no solo palabras
+               exactas. Requiere generar el indice una vez (accion=indexar).
+- indexar:     genera/actualiza el indice de embeddings de la mini-wiki
+               (local, una vez por descarga; quedan en embeddings.jsonl.gz).
 - leer:        texto completo (capado) de un articulo por titulo exacto.
 - wikidata:    busca una entidad en Wikidata (red): QID, etiqueta y descripcion.
 
-Sin dependencias nuevas: solo requests (ya usada por otras tools).
+Sin dependencias nuevas: requests + el paquete ollama (ya usado por el
+pre-router de la app).
 """
 from __future__ import annotations
 
 import gzip
 import json
+import math
 import os
 import re
 import time
@@ -34,6 +42,7 @@ import requests
 DATA_DIR = Path(os.environ.get("WIKI_MINI_DIR", str(Path.home() / ".local/share/Chispa/wiki_mini")))
 ART = DATA_DIR / "articulos.jsonl.gz"
 META = DATA_DIR / "meta.json"
+IDX = DATA_DIR / "embeddings.jsonl.gz"   # indice semantico (titulo + vector)
 
 WIKI_API = "https://es.wikipedia.org/w/api.php"
 WD_API = "https://www.wikidata.org/w/api.php"
@@ -48,6 +57,10 @@ _EXTRACTO_MAX = 8000     # por articulo al descargar
 _BUSCAR_MAX = 3          # articulos devueltos por defecto
 _FRAGMENTO = 1100        # caracteres por articulo en buscar
 _LEER_MAX = 3000         # techo de leer (bajo TOOL_RESULT_MAX=3500 del worker)
+_EMBED_MODEL = "nomic-embed-text"  # mismo modelo que usa el pre-router
+_EMBED_CHUNK = 800       # caracteres de cada articulo que se indexan
+_EMBED_LOTE = 16         # articulos por llamada de embedding
+_SIMILAR_MIN = 0.35      # similitud coseno minima para considerar resultado
 
 _STOPWORDS = {"de", "la", "el", "los", "las", "un", "una", "unos", "unas", "que", "y", "o",
               "en", "del", "al", "por", "para", "con", "es", "son", "fue", "como", "mas",
@@ -191,7 +204,10 @@ TOOL_DEFINITION = {
             "historia de Z, datos de un pais/persona/cientifico/tecnologia) y quiera respuesta "
             "SIN internet, o pida explicitamente descargar/usar la mini-wikipedia offline. "
             "Acciones: estado, listar (titulos REALES; usala para enumerar contenidos, NUNCA inventes titulos), descargar (con internet; repetible para completar lo que fallo, no duplica), agregar (tema), buscar "
-            "(offline), leer (titulo), wikidata (ficha de entidad en linea). Si la mini-wiki no "
+            "(offline, palabras clave; si no encuentra, prueba accion=buscar_semantico), "
+            "buscar_semantico (busqueda por SIGNADO con embeddings, ideal para preguntas en "
+            "lenguaje natural o sinonimos), indexar (genera el indice semantico una vez), "
+            "leer (titulo), wikidata (ficha de entidad en linea). Si la mini-wiki no "
             "esta descargada, la accion buscar lo dira y deberas sugerir accion=descargar. NO "
             "sirve para noticias actuales (usa web_search) ni para archivos personales (usa "
             "rag_search/find_files)."
@@ -199,9 +215,9 @@ TOOL_DEFINITION = {
         "parameters": {
             "type": "object",
             "properties": {
-                "accion": {"type": "string", "enum": ["estado", "descargar", "agregar", "buscar", "leer", "listar", "wikidata"],
+                "accion": {"type": "string", "enum": ["estado", "descargar", "agregar", "buscar", "buscar_semantico", "indexar", "leer", "listar", "wikidata"],
                             "description": "Que hacer. Defecto: buscar"},
-                "consulta": {"type": "string", "description": "Texto a buscar (accion=buscar o wikidata) o tema (accion=agregar)"},
+                "consulta": {"type": "string", "description": "Texto a buscar (accion=buscar, buscar_semantico o wikidata) o tema (accion=agregar)"},
                 "titulo": {"type": "string", "description": "Titulo exacto del articulo (accion=leer)"},
                 "n": {"type": "integer", "description": "Articulos a descargar (defecto 500, max 2000) o a agregar (defecto 10)"},
                 "max_resultados": {"type": "integer", "description": "Resultados de buscar (defecto 3, max 5)"},
@@ -519,6 +535,12 @@ def _accion_buscar(consulta: str, max_resultados) -> str:
         if score > 0:
             mejores.append((score, titulo, texto[:_FRAGMENTO]))
     if not mejores:
+        # Fallback automatico: la busqueda por palabras clave no encontro nada;
+        # probamos busqueda semantica (entiende sinonimos y sentido)
+        sem = _buscar_semantico_interna(consulta, max_resultados)
+        if sem:
+            return (f"🔎 Sin coincidencias exactas para '{consulta}'; resultados SEMANTICOS "
+                    f"({escaneados} articulos en la mini-wiki):\n" + sem)
         return (f"🔎 Sin resultados offline para '{consulta}' ({escaneados} articulos en la mini-wiki). "
                 "Puedes ampliarla con accion=agregar y tema, o usar web_search si hay internet.")
     mejores.sort(key=lambda m: m[0], reverse=True)
@@ -529,6 +551,204 @@ def _accion_buscar(consulta: str, max_resultados) -> str:
         extra = ", ".join(t for _, t, _ in mejores[max_resultados:max_resultados + 3])
         partes.append(f"\n(Tambien coinciden: {extra})")
     return "\n".join(partes)
+
+
+
+# ---------------------------------------------------------------------------
+# Busqueda semantica local (embeddings via Ollama, nomic-embed-text)
+# ---------------------------------------------------------------------------
+
+def _ollama() -> object:
+    """Cliente de Ollama local (mismo patron que tools/pre_router.py).
+    Devuelve None si el paquete o el servidor no estan disponibles."""
+    try:
+        import ollama
+        return ollama.Client()
+    except Exception:
+        return None
+
+
+def _embed_lote(cliente, textos: list):
+    """Embeddings de una lista de textos; None si Ollama no esta disponible."""
+    if cliente is None:
+        return None
+    try:
+        resp = cliente.embed(model=_EMBED_MODEL, inputs=textos)
+        embs = resp.get("embeddings") or []
+        if len(embs) == len(textos):
+            return embs
+    except Exception:
+        pass
+    try:
+        embs = []
+        for t in textos:
+            r = cliente.embeddings(model=_EMBED_MODEL, prompt=t)
+            embs.append(r.get("embedding") or [])
+        return embs if len(embs) == len(textos) else None
+    except Exception:
+        return None
+
+
+def _coseno(a, b) -> float:
+    dot = 0.0
+    na = 0.0
+    nb = 0.0
+    for x, y in zip(a, b):
+        dot += x * y
+        na += x * x
+        nb += y * y
+    if na == 0.0 or nb == 0.0:
+        return 0.0
+    return dot / (math.sqrt(na) * math.sqrt(nb))
+
+
+def _index_contiene(n_titulos: int) -> bool:
+    """El indice de embeddings existe y cubre los articulos actuales?"""
+    if not IDX.exists():
+        return False
+    total = 0
+    try:
+        with gzip.open(IDX, "rt", encoding="utf-8") as f:
+            for _ in f:
+                total += 1
+    except Exception:
+        return False
+    return total >= n_titulos
+
+
+def _accion_indexar() -> str:
+    """Genera/actualiza el indice semantico: titulo + primeros _EMBED_CHUNK
+    caracteres de cada articulo, con nomic-embed-text via Ollama LOCAL.
+    Idempotente: si el indice ya cubre todo, no rehace nada."""
+    if not ART.exists():
+        return "📭 La mini-wikipedia no esta descargada (accion=descargar, con internet)."
+    cliente = _ollama()
+    if cliente is None:
+        return ("⚠️ La busqueda semantica necesita Ollama con el modelo " + _EMBED_MODEL +
+                " (ya lo usa el pre-router de Chispa). Verifica que Ollama este corriendo.")
+    articulos = list(_iterar_articulos())
+    if not articulos:
+        return "⚠️ La mini-wiki no tiene articulos legibles; vuelve a descargar (accion=descargar)."
+    if _index_contiene(len(articulos)):
+        return (f"ℹ️ El indice semantico ya cubre los {len(articulos)} articulos. "
+                "No hace falta reindexar (se regenera solo si descargas/agregas articulos).")
+    previos = {}
+    if IDX.exists():
+        try:
+            with gzip.open(IDX, "rt", encoding="utf-8") as f:
+                for linea in f:
+                    try:
+                        d = json.loads(linea)
+                        if d.get("t") and d.get("v"):
+                            previos[d["t"]] = d["v"]
+                    except Exception:
+                        continue
+        except Exception:
+            previos = {}
+    pendientes = [(t, x) for t, x in articulos if t not in previos]
+    escritos = 0
+    tmp = IDX.with_suffix(".tmp")
+    try:
+        with gzip.open(tmp, "wt", encoding="utf-8") as f:
+            for t, v in previos.items():
+                f.write(json.dumps({"t": t, "v": v}, ensure_ascii=False) + "\n")
+                escritos += 1
+            for i in range(0, len(pendientes), _EMBED_LOTE):
+                lote = pendientes[i:i + _EMBED_LOTE]
+                textos = [(t + ". " + x[:_EMBED_CHUNK]) for t, x in lote]
+                embs = _embed_lote(cliente, textos)
+                if embs is None:
+                    return ("⚠️ Ollama no respondio al generar embeddings. ¿Esta corriendo "
+                            "con el modelo " + _EMBED_MODEL + "? (ollama pull " + _EMBED_MODEL + ")")
+                for (t, _), v in zip(lote, embs):
+                    if v:
+                        f.write(json.dumps({"t": t, "v": v}, ensure_ascii=False) + "\n")
+                        escritos += 1
+        tmp.replace(IDX)  # escritura atomica
+    except Exception as e:
+        try:
+            tmp.unlink(missing_ok=True)
+        except Exception:
+            pass
+        return f"⚠️ Error generando el indice semantico: {e}"
+    _actualizar_meta()
+    try:
+        meta = json.loads(META.read_text(encoding="utf-8"))
+        meta["indice_semantico"] = escritos
+        meta["actualizado"] = datetime.now().isoformat(timespec="seconds")
+        META.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+    except Exception:
+        pass
+    return (f"🧠 Indice semantico listo: {escritos} articulos vectorizados con "
+            f"{_EMBED_MODEL} (100% local). Ya puedes usar accion=buscar_semantico.")
+
+
+def _buscar_semantico_interna(consulta: str, max_resultados: int):
+    """Devuelve el texto de resultados semanticos o None si no hay indice/Ollama
+    o ninguna similitud supera _SIMILAR_MIN."""
+    if not ART.exists() or not IDX.exists():
+        return None
+    cliente = _ollama()
+    if cliente is None:
+        return None
+    qemb = _embed_lote(cliente, [consulta])
+    if not qemb or not qemb[0]:
+        return None
+    qv = qemb[0]
+    vectores = {}
+    try:
+        with gzip.open(IDX, "rt", encoding="utf-8") as f:
+            for linea in f:
+                try:
+                    d = json.loads(linea)
+                    if d.get("t") and d.get("v"):
+                        vectores[d["t"]] = d["v"]
+                except Exception:
+                    continue
+    except Exception:
+        return None
+    if not vectores:
+        return None
+    mejores = []  # (sim, titulo, extracto)
+    for titulo, texto in _iterar_articulos():
+        v = vectores.get(titulo)
+        if not v:
+            continue
+        sim = _coseno(qv, v)
+        if sim >= _SIMILAR_MIN:
+            mejores.append((sim, titulo, texto[:_FRAGMENTO]))
+    if not mejores:
+        return None
+    mejores.sort(key=lambda m: m[0], reverse=True)
+    partes = []
+    for i, (sim, titulo, frag) in enumerate(mejores[:max_resultados], 1):
+        partes.append(f"\n{i}. **{titulo}** (relevancia {sim:.2f})\n{frag.strip()}")
+    return "\n".join(partes)
+
+
+def _accion_buscar_semantico(consulta: str, max_resultados) -> str:
+    consulta = (consulta or "").strip()
+    if not consulta:
+        return "⚠️ Indica que buscar (consulta), ej: consulta='santo que compartio su capa con un pobre'."
+    if not ART.exists():
+        return ("📭 La mini-wikipedia no esta descargada. Con internet, pide: "
+                '"descarga la mini enciclopedia offline" (accion=descargar).')
+    try:
+        max_resultados = max(1, min(int(max_resultados or _BUSCAR_MAX), 5))
+    except Exception:
+        max_resultados = _BUSCAR_MAX
+    total = sum(1 for _ in _iterar_articulos())
+    if not IDX.exists():
+        return ("🧠 La busqueda semantica necesita un indice de embeddings que aun no existe. "
+                "Ejecuta primero accion=indexar (una vez, local, tarda unos minutos).")
+    if not _index_contiene(total):
+        return ("🧠 El indice semantico esta desactualizado (articulos nuevos sin vectorizar). "
+                "Ejecuta accion=indexar para completarlo.")
+    res = _buscar_semantico_interna(consulta, max_resultados)
+    if res is None:
+        return ("⚠️ La busqueda semantica no esta disponible ahora (¿Ollama apagado?) o ninguna "
+                "similitud supero el umbral. Prueba accion=buscar con palabras clave.")
+    return f"🧠 Resultados semanticos para '{consulta}':{res}"
 
 
 def _accion_leer(titulo: str) -> str:
@@ -612,9 +832,14 @@ def execute(accion: str = "buscar", consulta: str = "", titulo: str = "",
             return _accion_wikidata(consulta)
         if accion == "listar":
             return _accion_listar(str(kwargs.get("filtro", "") or ""), kwargs.get("max_titulos"))
+        if accion in ("buscar_semantico", "semantico", "embedding"):
+            return _accion_buscar_semantico(consulta, max_resultados)
+        if accion == "indexar":
+            return _accion_indexar()
         if accion == "buscar":
             return _accion_buscar(consulta, max_resultados)
-        return ("⚠️ Accion desconocida: " + accion + ". Usa: estado, descargar, agregar, buscar, leer, wikidata.")
+        return ("⚠️ Accion desconocida: " + accion + ". Usa: estado, descargar, agregar, buscar, "
+                "buscar_semantico, indexar, leer, listar, wikidata.")
     except Exception as e:
         return f"Error en wiki_offline: {e}"
 
@@ -624,6 +849,8 @@ if __name__ == "__main__":
     args = sys.argv[1:]
     if args and args[0] == "descargar":
         print(execute(accion="descargar", n=int(args[1]) if len(args) > 1 else 500))
+    elif args and args[0] == "indexar":
+        print(execute(accion="indexar"))
     elif args:
         print(execute(accion=args[0], consulta=" ".join(args[1:])))
     else:
