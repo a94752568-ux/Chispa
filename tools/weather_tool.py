@@ -1,5 +1,6 @@
 import re
-import requests
+
+from tools.http_session import http_get  # cabeceras de Chrome + cookies del usuario
 
 # País por defecto del usuario: si el modelo manda la ciudad SIN país, se
 # prueba primero con este (evita el clásico "La Paz" -> La Paz, Bolivia
@@ -58,7 +59,7 @@ def execute(city: str = "La Paz") -> str:
         data = None
         for q in queries:
             try:
-                resp = requests.get(f"https://wttr.in/{q}?format=j1", timeout=10)
+                resp = http_get(f"https://wttr.in/{q}?format=j1", timeout=10)
                 if resp.status_code == 200:
                     d = resp.json()
                     if d.get("current_condition"):
