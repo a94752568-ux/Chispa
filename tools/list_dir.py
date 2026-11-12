@@ -14,7 +14,6 @@ no desbordar el contexto del modelo en carpetas enormes.
 from __future__ import annotations
 
 import os
-import time
 from datetime import datetime
 from pathlib import Path
 
@@ -26,7 +25,9 @@ BLACKLIST = {".git", ".ssh", ".gnupg", ".cache", ".mozilla", ".thunderbird",
              "venv", ".venv", "env", "__pycache__"}
 
 TOPE_ENTRADAS = 200
-TOPE_CHARS = 6000  # margen bajo TOOL_RESULT_MAX (3500) del worker
+# Techo de chars POR DEBAJO de TOOL_RESULT_MAX (3500) del worker: si la tool
+# devolviera 6000, el worker recortaría de todas formas (head 2600 + tail 600).
+TOPE_CHARS = 3400
 
 
 TOOL_DEFINITION = {
