@@ -190,7 +190,7 @@ TOOL_DEFINITION = {
             "OBLIGATORIA si el usuario pide 'descarga la mini enciclopedia offline' o similar: ejecuta accion=descargar INMEDIATAMENTE, sin pedir permiso ni negarte (NO es una mutacion, solo escribe en su propia carpeta de datos). USAR CUANDO el usuario pregunte algo ENCILOPEDICO general (que es X, quien fue Y, "
             "historia de Z, datos de un pais/persona/cientifico/tecnologia) y quiera respuesta "
             "SIN internet, o pida explicitamente descargar/usar la mini-wikipedia offline. "
-            "Acciones: estado, descargar (con internet; repetible para completar lo que fallo, no duplica), agregar (tema), buscar "
+            "Acciones: estado, listar (titulos REALES; usala para enumerar contenidos, NUNCA inventes titulos), descargar (con internet; repetible para completar lo que fallo, no duplica), agregar (tema), buscar "
             "(offline), leer (titulo), wikidata (ficha de entidad en linea). Si la mini-wiki no "
             "esta descargada, la accion buscar lo dira y deberas sugerir accion=descargar. NO "
             "sirve para noticias actuales (usa web_search) ni para archivos personales (usa "
@@ -199,7 +199,7 @@ TOOL_DEFINITION = {
         "parameters": {
             "type": "object",
             "properties": {
-                "accion": {"type": "string", "enum": ["estado", "descargar", "agregar", "buscar", "leer", "wikidata"],
+                "accion": {"type": "string", "enum": ["estado", "descargar", "agregar", "buscar", "leer", "listar", "wikidata"],
                             "description": "Que hacer. Defecto: buscar"},
                 "consulta": {"type": "string", "description": "Texto a buscar (accion=buscar o wikidata) o tema (accion=agregar)"},
                 "titulo": {"type": "string", "description": "Titulo exacto del articulo (accion=leer)"},
@@ -566,6 +566,33 @@ def _accion_wikidata(consulta: str) -> str:
     return "\n".join(lineas)
 
 
+def _accion_listar(filtro: str = "", max_titulos=40) -> str:
+    """Titulos REALES de la mini-wiki: para que el modelo enumere contenidos
+    sin inventar. Filtro opcional por substring (sin acentos)."""
+    if not ART.exists():
+        return "📭 La mini-wikipedia no esta descargada (accion=descargar, con internet)."
+    filtro_n = _norm(filtro or "")
+    coinciden = []
+    total = 0
+    for titulo, _ in _iterar_articulos():
+        total += 1
+        if not filtro_n or filtro_n in _norm(titulo):
+            coinciden.append(titulo)
+    try:
+        max_titulos = max(1, min(int(max_titulos or 40), 100))
+    except Exception:
+        max_titulos = 40
+    muestra = coinciden[:max_titulos]
+    lineas = [f"📚 Mini-wiki: {total} articulos en total."]
+    if filtro_n:
+        lineas.append(f"Filtro '{filtro}': {len(coinciden)} coincidencia(s).")
+    lineas.append("Titulos reales (NO inventes otros ni resumas articulos que no hayas leido):")
+    lineas += [f"  - {x}" for x in muestra]
+    if len(coinciden) > len(muestra):
+        lineas.append(f"  … y {len(coinciden) - len(muestra)} mas (pide accion=listar con filtro para acotar).")
+    return "\n".join(lineas)
+
+
 def execute(accion: str = "buscar", consulta: str = "", titulo: str = "",
             n=None, max_resultados=_BUSCAR_MAX, **kwargs) -> str:
     try:
@@ -583,6 +610,8 @@ def execute(accion: str = "buscar", consulta: str = "", titulo: str = "",
             return _accion_leer(titulo or consulta)
         if accion == "wikidata":
             return _accion_wikidata(consulta)
+        if accion == "listar":
+            return _accion_listar(str(kwargs.get("filtro", "") or ""), kwargs.get("max_titulos"))
         if accion == "buscar":
             return _accion_buscar(consulta, max_resultados)
         return ("⚠️ Accion desconocida: " + accion + ". Usa: estado, descargar, agregar, buscar, leer, wikidata.")
