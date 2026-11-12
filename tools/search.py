@@ -1,6 +1,7 @@
 import re
-import requests
 import urllib.parse
+
+from tools.http_session import http_get  # cabeceras de Chrome + cookies del usuario
 
 TOOL_DEFINITION = {
     "type": "function",
@@ -17,14 +18,6 @@ TOOL_DEFINITION = {
         }
     }
 }
-
-_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    "Accept-Language": "es-ES,es;q=0.9,en;q=0.8",
-    "Referer": "https://duckduckgo.com/",
-}
-
 
 def _clean_html(text: str) -> str:
     text = re.sub(r'<script.*?</script>', '', text, flags=re.DOTALL | re.IGNORECASE)
@@ -96,7 +89,7 @@ def _fetch_duckduckgo(query: str, num_results: int) -> str:
 
     for url in urls:
         try:
-            resp = requests.get(url, headers=_HEADERS, timeout=12)
+            resp = http_get(url, timeout=12)
             if resp.status_code != 200:
                 continue
             results = _parse_duckduckgo_html(resp.text, num_results)
