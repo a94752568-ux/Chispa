@@ -297,17 +297,34 @@ def _extraer_titulos_busqueda(tema: str, n: int) -> list:
 
 
 def _extraer_textos(titulos: list) -> list:
-    """Extractos en texto plano por lotes de 20 titulos (API prop=extracts).
-    Cada lote se reintenta una vez; los fallos quedan en _LAST_DIAG."""
+    """Extractos en texto plano. Dos pasadas:
+    1) Lotes de 20 con exlimit=max + exintro (rapido, intro de cada articulo).
+    2) Texto COMPLETO individual (exlimit=1) para los primeros 50 titulos,
+       reemplazando el intro si el articulo resulto mas rico.
+    Cada peticion se reintenta una vez; los fallos quedan en _LAST_DIAG.
+    NOTA: el exlimit por defecto es 1 — sin 'exlimit=max' cada lote de 20
+    devolvia UN solo extracto (causa del bug de '13 articulos')."""
     global _LAST_DIAG
-    resultados = []
+    resultados = {}
+    orden = []
+
+    def _guardar(titulo, texto):
+        texto = (texto or "").strip()
+        if titulo and len(texto) >= 200:
+            if titulo not in resultados:
+                orden.append(titulo)
+            if len(texto) >= len(resultados.get(titulo, "")):
+                resultados[titulo] = texto[:_EXTRACTO_MAX]
+
+    # Pasada 1: intros por lotes de 20
     for i in range(0, len(titulos), 20):
         lote = titulos[i:i + 20]
         data = None
         for intento in range(2):
             try:
                 data = _get(WIKI_API, {"action": "query", "prop": "extracts", "explaintext": 1,
-                                       "redirects": 1, "format": "json", "formatversion": 2,
+                                       "exintro": 1, "exlimit": "max", "redirects": 1,
+                                       "format": "json", "formatversion": 2,
                                        "titles": "|".join(lote)}, timeout=30)
                 break
             except Exception as e:
@@ -317,12 +334,24 @@ def _extraer_textos(titulos: list) -> list:
         if data is None:
             continue
         for p in data.get("query", {}).get("pages", []):
-            titulo = p.get("title", "")
-            texto = (p.get("extract") or "").strip()
-            if titulo and len(texto) >= 200:
-                resultados.append({"t": titulo, "x": texto[:_EXTRACTO_MAX]})
+            _guardar(p.get("title", ""), p.get("extract") or "")
         time.sleep(0.3)  # cortesia con los servidores de Wikimedia
-    return resultados
+
+    # Pasada 2: texto completo individual para los 50 primeros
+    for titulo in titulos[:50]:
+        if titulo in resultados and len(resultados[titulo]) >= 4000:
+            continue  # el intro ya es rico; no gastamos peticion
+        try:
+            data = _get(WIKI_API, {"action": "query", "prop": "extracts", "explaintext": 1,
+                                   "exlimit": 1, "redirects": 1, "titles": titulo,
+                                   "format": "json", "formatversion": 2}, timeout=30)
+            for p in data.get("query", {}).get("pages", []):
+                _guardar(p.get("title", "") or titulo, p.get("extract") or "")
+        except Exception as e:
+            _LAST_DIAG = f"extracts completo '{titulo}': {e}"
+        time.sleep(0.2)
+
+    return [{"t": titulo, "x": resultados[titulo]} for titulo in orden]
 
 
 def _actualizar_meta(extra: int = 0, fuente: str = ""):
