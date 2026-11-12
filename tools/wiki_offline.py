@@ -26,7 +26,7 @@ import os
 import re
 import time
 import unicodedata
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import requests
@@ -52,6 +52,134 @@ _LEER_MAX = 3000         # techo de leer (bajo TOOL_RESULT_MAX=3500 del worker)
 _STOPWORDS = {"de", "la", "el", "los", "las", "un", "una", "unos", "unas", "que", "y", "o",
               "en", "del", "al", "por", "para", "con", "es", "son", "fue", "como", "mas",
               "sobre", "quien", "cual", "cuando", "donde", "the", "of", "su", "sus"}
+
+# Diagnostico del ultimo error de red (para mensajes utiles al usuario)
+_LAST_DIAG = ""
+
+# Lista semilla de temas esenciales: fallback si las APIs de listas fallan
+_SEMILLAS = [
+    "España",
+    "México",
+    "Ciudad de México",
+    "Guadalajara",
+    "Monterrey",
+    "Historia de México",
+    "Revolución mexicana",
+    "Independencia de México",
+    "Civilización maya",
+    "Imperio romano",
+    "Antiguo Egipto",
+    "Grecia antigua",
+    "Segunda Guerra Mundial",
+    "Primera Guerra Mundial",
+    "Guerra Fría",
+    "Revolución francesa",
+    "Edad Media",
+    "Renacimiento",
+    "Albert Einstein",
+    "Isaac Newton",
+    "Charles Darwin",
+    "Marie Curie",
+    "Nikola Tesla",
+    "Galileo Galilei",
+    "Leonardo da Vinci",
+    "Miguel de Cervantes",
+    "William Shakespeare",
+    "Gabriel García Márquez",
+    "Octavio Paz",
+    "Frida Kahlo",
+    "Diego Rivera",
+    "Sor Juana Inés de la Cruz",
+    "Benito Juárez",
+    "Porfirio Díaz",
+    "Hernán Cortés",
+    "Moctezuma II",
+    "Física",
+    "Química",
+    "Biología",
+    "Matemática",
+    "Astronomía",
+    "Filosofía",
+    "Psicología",
+    "Economía",
+    "Sociología",
+    "Historia",
+    "Geografía",
+    "Literatura",
+    "Música",
+    "Arte",
+    "Cine",
+    "Fotografía",
+    "Internet",
+    "Computadora",
+    "Inteligencia artificial",
+    "Software",
+    "Linux",
+    "Python",
+    "Energía solar",
+    "Energía nuclear",
+    "Cambio climático",
+    "Agua",
+    "Atmósfera",
+    "Sistema solar",
+    "Sol",
+    "Tierra",
+    "Luna",
+    "Marte",
+    "Júpiter",
+    "Vía Láctea",
+    "Universo",
+    "Big Bang",
+    "Evolución biológica",
+    "ADN",
+    "Célula",
+    "Fotosíntesis",
+    "Cerebro",
+    "Corazón",
+    "Medicina",
+    "Vacuna",
+    "Antibiótico",
+    "Cáncer",
+    "Diabetes mellitus",
+    "Nutrición",
+    "Fútbol",
+    "Baloncesto",
+    "Béisbol",
+    "Juegos Olímpicos",
+    "Copa Mundial de Fútbol",
+    "Ajedrez",
+    "Boxeo",
+    "Religión",
+    "Cristianismo",
+    "Islam",
+    "Budismo",
+    "Mitología griega",
+    "Idioma español",
+    "Náhuatl",
+    "Lenguas mayenses",
+    "América",
+    "Europa",
+    "Asia",
+    "África",
+    "Océano Pacífico",
+    "Golfo de México",
+    "Sierra Madre Occidental",
+    "Volcán",
+    "Terremoto",
+    "Huracán",
+    "Biodiversidad",
+    "Genética",
+    "Teoría de la relatividad",
+    "Mecánica cuántica",
+    "Tabla periódica de los elementos",
+    "Matemáticas",
+    "Estadística",
+    "Demografía de México",
+    "Economía de México",
+    "Gastronomía de México",
+    "Música regional mexicana",
+    "Día de Muertos",
+]
 
 
 TOOL_DEFINITION = {
@@ -111,17 +239,52 @@ def _get(url: str, params: dict, timeout: int = 30):
 
 
 def _extraer_titulos_top(n: int) -> list:
-    """Articulos mas vistos de es.wikipedia (API mostviewed, hasta 500 por llamada)."""
+    """Articulos mas vistos de es.wikipedia, con 3 fuentes en cascada:
+    1) API list=mostviewed; 2) REST pageviews top (ultimos 5 dias);
+    3) lista semilla local de temas esenciales. Guarda diagnostico en _LAST_DIAG."""
+    global _LAST_DIAG
     titulos = []
     seen = set()
-    params = {"action": "query", "list": "mostviewed", "pvimlimit": 500,
-              "format": "json", "formatversion": "2"}
-    data = _get(WIKI_API, params, timeout=30)
-    for item in data.get("query", {}).get("mostviewed", []):
-        t = item.get("title", "")
-        if t and t not in seen and _es_articulo_valido(t):
-            seen.add(t)
-            titulos.append(t)
+
+    def _agregar(titulo):
+        titulo = (titulo or "").replace("_", " ").strip()
+        if titulo and titulo not in seen and _es_articulo_valido(titulo):
+            seen.add(titulo)
+            titulos.append(titulo)
+
+    # Fuente 1: list=mostviewed (hasta 500 por llamada)
+    try:
+        data = _get(WIKI_API, {"action": "query", "list": "mostviewed", "pvimlimit": 500,
+                               "format": "json", "formatversion": "2"}, timeout=30)
+        for item in data.get("query", {}).get("mostviewed", []):
+            _agregar(item.get("title", ""))
+            if len(titulos) >= n:
+                return titulos
+        _LAST_DIAG = "mostviewed devolvio 0 articulos"
+    except Exception as e:
+        _LAST_DIAG = f"mostviewed: {e}"
+
+    # Fuente 2: REST pageviews top de los ultimos 5 dias completos
+    hoy = datetime.utcnow().date()
+    for delta in range(1, 6):
+        d = hoy - timedelta(days=delta)
+        try:
+            url = (f"https://wikimedia.org/api/rest_v1/metrics/pageviews/top/"
+                   f"es.wikipedia/all-access/{d.year}/{d.month:02d}/{d.day:02d}")
+            r = requests.get(url, headers=HDRS, timeout=20)
+            r.raise_for_status()
+            items = r.json().get("items", [])
+            for art in (items[0].get("articles", []) if items else []):
+                _agregar(art.get("article", ""))
+                if len(titulos) >= n:
+                    return titulos
+        except Exception as e:
+            _LAST_DIAG = f"pageviews {d}: {e}"
+            continue
+
+    # Fuente 3: lista semilla local (siempre disponible)
+    for titulo in _SEMILLAS:
+        _agregar(titulo)
         if len(titulos) >= n:
             break
     return titulos
@@ -200,7 +363,7 @@ def _accion_descargar(n) -> str:
         n = 500
     titulos = _extraer_titulos_top(n)
     if not titulos:
-        return "⚠️ No se pudo obtener la lista de articulos mas vistos (sin internet o bloqueo). Intenta de nuevo."
+        return ("⚠️ No se pudo obtener la lista de articulos mas vistos. Diagnostico: " + (_LAST_DIAG or "desconocido") + ". Revisa tu conexion e intenta de nuevo.")
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     tmp = ART.with_suffix(".tmp")
     escritos = 0
