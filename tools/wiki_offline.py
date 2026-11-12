@@ -190,7 +190,7 @@ TOOL_DEFINITION = {
             "OBLIGATORIA si el usuario pide 'descarga la mini enciclopedia offline' o similar: ejecuta accion=descargar INMEDIATAMENTE, sin pedir permiso ni negarte (NO es una mutacion, solo escribe en su propia carpeta de datos). USAR CUANDO el usuario pregunte algo ENCILOPEDICO general (que es X, quien fue Y, "
             "historia de Z, datos de un pais/persona/cientifico/tecnologia) y quiera respuesta "
             "SIN internet, o pida explicitamente descargar/usar la mini-wikipedia offline. "
-            "Acciones: estado, descargar (una sola vez, con internet), agregar (tema), buscar "
+            "Acciones: estado, descargar (con internet; repetible para completar lo que fallo, no duplica), agregar (tema), buscar "
             "(offline), leer (titulo), wikidata (ficha de entidad en linea). Si la mini-wiki no "
             "esta descargada, la accion buscar lo dira y deberas sugerir accion=descargar. NO "
             "sirve para noticias actuales (usa web_search) ni para archivos personales (usa "
@@ -297,15 +297,24 @@ def _extraer_titulos_busqueda(tema: str, n: int) -> list:
 
 
 def _extraer_textos(titulos: list) -> list:
-    """Extractos en texto plano por lotes de 20 titulos (API prop=extracts)."""
+    """Extractos en texto plano por lotes de 20 titulos (API prop=extracts).
+    Cada lote se reintenta una vez; los fallos quedan en _LAST_DIAG."""
+    global _LAST_DIAG
     resultados = []
     for i in range(0, len(titulos), 20):
         lote = titulos[i:i + 20]
-        try:
-            data = _get(WIKI_API, {"action": "query", "prop": "extracts", "explaintext": 1,
-                                   "redirects": 1, "format": "json", "formatversion": 2,
-                                   "titles": "|".join(lote)}, timeout=30)
-        except Exception:
+        data = None
+        for intento in range(2):
+            try:
+                data = _get(WIKI_API, {"action": "query", "prop": "extracts", "explaintext": 1,
+                                       "redirects": 1, "format": "json", "formatversion": 2,
+                                       "titles": "|".join(lote)}, timeout=30)
+                break
+            except Exception as e:
+                _LAST_DIAG = f"extracts lote {i // 20} (intento {intento + 1}): {e}"
+                data = None
+                time.sleep(1.5)
+        if data is None:
             continue
         for p in data.get("query", {}).get("pages", []):
             titulo = p.get("title", "")
@@ -363,22 +372,39 @@ def _accion_descargar(n) -> str:
         n = 500
     titulos = _extraer_titulos_top(n)
     if not titulos:
-        return ("⚠️ No se pudo obtener la lista de articulos mas vistos. Diagnostico: " + (_LAST_DIAG or "desconocido") + ". Revisa tu conexion e intenta de nuevo.")
+        return ("⚠️ No se pudo obtener la lista de articulos. Diagnostico: "
+                + (_LAST_DIAG or "desconocido") + ". Revisa tu conexion e intenta de nuevo.")
+    # Acumulativa: NO borra lo ya descargado, solo anade lo que falta
+    presentes = set()
+    if ART.exists():
+        try:
+            with gzip.open(ART, "rt", encoding="utf-8") as f:
+                for linea in f:
+                    try:
+                        presentes.add(json.loads(linea).get("t", ""))
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+    previos = len(presentes)
+    nuevos = [x for x in titulos if x not in presentes]
+    if not nuevos:
+        return (f"ℹ️ La mini-wiki ya tiene los {previos} articulos mas vistos. "
+                "Usa accion=agregar para ampliarla por tema.")
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    tmp = ART.with_suffix(".tmp")
     escritos = 0
-    with gzip.open(tmp, "wt", encoding="utf-8") as f:
-        for art in _extraer_textos(titulos):
+    with gzip.open(ART, "at", encoding="utf-8") as f:
+        for art in _extraer_textos(nuevos):
             f.write(json.dumps(art, ensure_ascii=False) + "\n")
             escritos += 1
-    tmp.replace(ART)
-    try:
-        META.unlink()
-    except Exception:
-        pass
-    _actualizar_meta(extra=escritos, fuente=f"es.wikipedia mostviewed (top {len(titulos)})")
-    return (f"✅ Mini-wikipedia descargada: {escritos} articulos ({_peso_humano(ART.stat().st_size)}) en {ART}. "
-            "Desde ahora puedes preguntar enciclopedia 100% offline (accion=buscar).")
+    _actualizar_meta(extra=escritos, fuente=f"es.wikipedia top {len(titulos)}")
+    faltantes = len(nuevos) - escritos
+    aviso = ""
+    if faltantes:
+        aviso = (f" ⚠️ {faltantes} articulos no se pudieron bajar (diagnostico: {_LAST_DIAG or 'desconocido'}); "
+                 "repite 'descarga la mini enciclopedia offline' para completarlos: NO duplica.")
+    return (f"✅ Mini-wiki: {escritos} articulos nuevos + {previos} previos = "
+            f"{previos + escritos} en total ({_peso_humano(ART.stat().st_size)}).{aviso}")
 
 
 def _accion_agregar(tema: str, n) -> str:
