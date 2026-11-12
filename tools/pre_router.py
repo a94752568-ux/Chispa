@@ -18,7 +18,7 @@ from tools import load_tools
 EMBED_MODEL = "nomic-embed-text"
 
 ANCHORS: Dict[str, str] = {
-    "datos": "¿buscar en datos? Búsqueda en RAG, notas, archivos y web.",
+    "datos": "¿buscar en datos? Búsqueda en RAG, notas, archivos, web y enciclopedia offline.",
     "sistema": "¿información de sistema? Git, contenedores, tiempo, monitor, calendario.",
     "osint": "¿datos externos? OSINT, correo, usuario, subdominios, cabeceras, fingerprint, reconocimiento.",
     "analisis": "¿análisis de contenido? OCR, sentimiento, EXIF, metadatos.",
@@ -37,6 +37,7 @@ _BOOSTS = [
     (re.compile(r"\b(?:organiza\w*|ordena\w*|clasifica\w*|mueve\w*|renombra\w*|borra\w*|elimina\w*|papelera)\b", re.I), "sistema"),
     (re.compile(r"\b(?:lista\w*|qu[eé]\s+hay\s+en|contenido\s+de\s+(?:la\s+)?carpeta|mu[eé]strame\s+(?:los|las)\s+(?:archivos|carpetas))\b", re.I), "datos"),
     (re.compile(r"\b(?:foto|imagen|metadato|exif|escanead|ocr|sentimiento|donde tome)\b", re.I), "analisis"),
+    (re.compile(r"\b(?:wikipedia|wikidata|wiki|enciclopedia)\b", re.I), "datos"),  # mini-wiki offline
 ]
 
 _MARGIN_THRESHOLD = 0.05
@@ -83,6 +84,7 @@ _CATEGORY_OVERRIDES: Dict[str, str] = {
     "rag_search": "datos",
     "notes_tool": "datos",
     "read_file": "datos",
+    "wiki_offline": "datos",
     # Análisis de contenido
     "ocr_tool": "analisis",
     "sentiment_tool": "analisis",
