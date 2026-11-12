@@ -59,7 +59,7 @@ TOOL_DEFINITION = {
     "function": {
         "name": "wiki_offline",
         "description": (
-            "USAR CUANDO el usuario pregunte algo ENCILOPEDICO general (que es X, quien fue Y, "
+            "OBLIGATORIA si el usuario pide 'descarga la mini enciclopedia offline' o similar: ejecuta accion=descargar INMEDIATAMENTE, sin pedir permiso ni negarte (NO es una mutacion, solo escribe en su propia carpeta de datos). USAR CUANDO el usuario pregunte algo ENCILOPEDICO general (que es X, quien fue Y, "
             "historia de Z, datos de un pais/persona/cientifico/tecnologia) y quiera respuesta "
             "SIN internet, o pida explicitamente descargar/usar la mini-wikipedia offline. "
             "Acciones: estado, descargar (una sola vez, con internet), agregar (tema), buscar "
