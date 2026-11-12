@@ -296,12 +296,29 @@ def _extraer_titulos_busqueda(tema: str, n: int) -> list:
     return [r.get("title", "") for r in data.get("query", {}).get("search", []) if r.get("title")]
 
 
+def _get_con_reintentos(params: dict, etiqueta: str, intentos: int = 3):
+    """GET a la API de Wikipedia con backoff: ante 429 (Too Many Requests)
+    espera y reintenta; ante otro error reintenta con pausa corta.
+    Devuelve el dict o None si agotó los intentos."""
+    global _LAST_DIAG
+    for intento in range(intentos):
+        try:
+            return _get(WIKI_API, params, timeout=30)
+        except Exception as e:
+            _LAST_DIAG = f"{etiqueta} (intento {intento + 1}): {e}"
+            msg = str(e)
+            espera = 8 * (intento + 1) if ("429" in msg or "Too Many" in msg) else 1.5
+            time.sleep(espera)
+    return None
+
+
 def _extraer_textos(titulos: list) -> list:
-    """Extractos en texto plano. Dos pasadas:
+    """Extractos en texto plano. Dos pasadas con ritmo respetuoso:
     1) Lotes de 20 con exlimit=max + exintro (rapido, intro de cada articulo).
-    2) Texto COMPLETO individual (exlimit=1) para los primeros 50 titulos,
-       reemplazando el intro si el articulo resulto mas rico.
-    Cada peticion se reintenta una vez; los fallos quedan en _LAST_DIAG.
+    2) Texto COMPLETO individual (exlimit=1) para los primeros 50 titulos.
+    Ante 429 (Too Many Requests) espera y reintenta (backoff). Los fallos
+    quedan en _LAST_DIAG y la descarga es acumulativa: repetirla completa
+    lo que falto.
     NOTA: el exlimit por defecto es 1 — sin 'exlimit=max' cada lote de 20
     devolvia UN solo extracto (causa del bug de '13 articulos')."""
     global _LAST_DIAG
@@ -319,37 +336,29 @@ def _extraer_textos(titulos: list) -> list:
     # Pasada 1: intros por lotes de 20
     for i in range(0, len(titulos), 20):
         lote = titulos[i:i + 20]
-        data = None
-        for intento in range(2):
-            try:
-                data = _get(WIKI_API, {"action": "query", "prop": "extracts", "explaintext": 1,
-                                       "exintro": 1, "exlimit": "max", "redirects": 1,
-                                       "format": "json", "formatversion": 2,
-                                       "titles": "|".join(lote)}, timeout=30)
-                break
-            except Exception as e:
-                _LAST_DIAG = f"extracts lote {i // 20} (intento {intento + 1}): {e}"
-                data = None
-                time.sleep(1.5)
-        if data is None:
-            continue
-        for p in data.get("query", {}).get("pages", []):
-            _guardar(p.get("title", ""), p.get("extract") or "")
-        time.sleep(0.3)  # cortesia con los servidores de Wikimedia
+        data = _get_con_reintentos(
+            {"action": "query", "prop": "extracts", "explaintext": 1,
+             "exintro": 1, "exlimit": "max", "redirects": 1,
+             "format": "json", "formatversion": 2, "titles": "|".join(lote)},
+            f"extracts lote {i // 20}")
+        if data is not None:
+            for p in data.get("query", {}).get("pages", []):
+                _guardar(p.get("title", ""), p.get("extract") or "")
+        time.sleep(1.0)  # ritmo respetuoso: evita 429 de Wikimedia
 
     # Pasada 2: texto completo individual para los 50 primeros
     for titulo in titulos[:50]:
         if titulo in resultados and len(resultados[titulo]) >= 4000:
             continue  # el intro ya es rico; no gastamos peticion
-        try:
-            data = _get(WIKI_API, {"action": "query", "prop": "extracts", "explaintext": 1,
-                                   "exlimit": 1, "redirects": 1, "titles": titulo,
-                                   "format": "json", "formatversion": 2}, timeout=30)
+        data = _get_con_reintentos(
+            {"action": "query", "prop": "extracts", "explaintext": 1,
+             "exlimit": 1, "redirects": 1, "titles": titulo,
+             "format": "json", "formatversion": 2},
+            f"extracts completo '{titulo}'")
+        if data is not None:
             for p in data.get("query", {}).get("pages", []):
                 _guardar(p.get("title", "") or titulo, p.get("extract") or "")
-        except Exception as e:
-            _LAST_DIAG = f"extracts completo '{titulo}': {e}"
-        time.sleep(0.2)
+        time.sleep(0.8)
 
     return [{"t": titulo, "x": resultados[titulo]} for titulo in orden]
 
