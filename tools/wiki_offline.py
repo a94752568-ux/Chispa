@@ -14,8 +14,8 @@ Acciones (parametro "accion"):
 - agregar:     anade articulos sobre un tema concreto via busqueda (red).
 - buscar:      busqueda LOCAL sin internet sobre lo descargado (palabras clave;
                si no encuentra nada, cae automaticamente a busqueda semantica).
-- buscar_semantico: busqueda SEMANTICA local con embeddings (nomic-embed-text
-               via Ollama): entiende el SENTIDO de la consulta, no solo palabras
+- buscar_semantico: busqueda SEMANTICA local con embeddings (bge-m3 via
+               Ollama): entiende el SENTIDO de la consulta, no solo palabras
                exactas. Requiere generar el indice una vez (accion=indexar).
 - indexar:     genera/actualiza el indice de embeddings de la mini-wiki
                (local, una vez por descarga; quedan en embeddings.jsonl.gz).
@@ -59,7 +59,7 @@ _EXTRACTO_MAX = 8000     # por articulo al descargar
 _BUSCAR_MAX = 3          # articulos devueltos por defecto
 _FRAGMENTO = 1100        # caracteres por articulo en buscar
 _LEER_MAX = 3000         # techo de leer (bajo TOOL_RESULT_MAX=3500 del worker)
-_EMBED_MODEL = "nomic-embed-text"  # mismo modelo que usa el pre-router
+_EMBED_MODEL = "bge-m3"  # embeddings multilingues (1024 dim); requiere: ollama pull bge-m3
 _EMBED_CHUNK = 800       # caracteres de cada articulo que se indexan
 _EMBED_LOTE = 16         # articulos por llamada de embedding
 _SIMILAR_MIN = 0.35      # similitud coseno minima para considerar resultado
@@ -641,7 +641,8 @@ def _accion_indexar() -> str:
                 for linea in f:
                     try:
                         d = json.loads(linea)
-                        if d.get("t") and d.get("v"):
+                        # Solo se reutilizan vectores del MISMO modelo de embeddings
+                        if d.get("t") and d.get("v") and d.get("m") == _EMBED_MODEL:
                             previos[d["t"]] = d["v"]
                     except Exception:
                         continue
@@ -653,7 +654,7 @@ def _accion_indexar() -> str:
     try:
         with gzip.open(tmp, "wt", encoding="utf-8") as f:
             for t, v in previos.items():
-                f.write(json.dumps({"t": t, "v": v}, ensure_ascii=False) + "\n")
+                f.write(json.dumps({"t": t, "v": v, "m": _EMBED_MODEL}, ensure_ascii=False) + "\n")
                 escritos += 1
             for i in range(0, len(pendientes), _EMBED_LOTE):
                 lote = pendientes[i:i + _EMBED_LOTE]
@@ -664,7 +665,7 @@ def _accion_indexar() -> str:
                             "con el modelo " + _EMBED_MODEL + "? (ollama pull " + _EMBED_MODEL + ")")
                 for (t, _), v in zip(lote, embs):
                     if v:
-                        f.write(json.dumps({"t": t, "v": v}, ensure_ascii=False) + "\n")
+                        f.write(json.dumps({"t": t, "v": v, "m": _EMBED_MODEL}, ensure_ascii=False) + "\n")
                         escritos += 1
         tmp.replace(IDX)  # escritura atomica
     except Exception as e:
@@ -703,7 +704,7 @@ def _buscar_semantico_interna(consulta: str, max_resultados: int):
             for linea in f:
                 try:
                     d = json.loads(linea)
-                    if d.get("t") and d.get("v"):
+                    if d.get("t") and d.get("v") and d.get("m", _EMBED_MODEL) == _EMBED_MODEL:
                         vectores[d["t"]] = d["v"]
                 except Exception:
                     continue
