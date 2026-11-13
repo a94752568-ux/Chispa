@@ -75,7 +75,10 @@ TOOL_DEFINITION = {
             "indexados localmente. USAR CUANDO el usuario pregunte un tema academico o de "
             "programacion que pueda estar en sus libros, pida explicar un concepto 'segun mis "
             "libros', o use el modo maestro (/maestro). Acciones: estado, agregar (ruta de un "
-            "PDF, requiere pypdf), indexar (vectoriza con bge-m3), listar (titulos REALES; "
+            "PDF, requiere pypdf), descargar_pagina o guardar_web (guarda UNA pagina web "
+            "suelta, ej: un articulo de Wikipedia, con TEXTO e IMAGENES locales; usar cuando el "
+            "usuario pegue una url de articulo/pagina y pida descargarla o guardarla), indexar "
+            "(vectoriza con bge-m3), listar (titulos REALES; "
             "NUNCA inventes libros), buscar (busqueda semantica: devuelve libro, pagina y "
             "fragmento; cita SIEMPRE el libro y la pagina), leer (pagina concreta). Todo "
             "OFFLINE. NO sirve para archivos sueltos (usa rag_search/read_file) ni enciclopedia "
@@ -84,7 +87,7 @@ TOOL_DEFINITION = {
         "parameters": {
             "type": "object",
             "properties": {
-                "accion": {"type": "string", "enum": ["estado", "descargar", "descargar_pagina", "agregar", "agregar_web", "indexar", "listar", "buscar", "leer"],
+                "accion": {"type": "string", "enum": ["estado", "descargar", "descargar_pagina", "guardar_web", "agregar", "agregar_web", "indexar", "listar", "buscar", "leer"],
                             "description": "Que hacer. Defecto: buscar"},
                 "url": {"type": "string", "description": "URL directa del PDF legal/gratis (accion=descargar)"},
                 "consulta": {"type": "string", "description": "Concepto o tema a buscar (accion=buscar)"},
