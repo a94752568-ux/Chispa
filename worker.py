@@ -17,6 +17,7 @@ hace falta contexto antiguo para decidir tool calls. FASE 2 sí ve todo.
 """
 import json
 import re
+import time
 from typing import Dict, List
 
 from PySide6.QtCore import QThread, Signal
@@ -90,6 +91,7 @@ class OllamaWorker(QThread):
     thinking_started = Signal()
     thinking_finished = Signal(str)
     final_answer = Signal(str, str)  # answer, thinking
+    stats_ready = Signal(dict)  # telemetria del turno: tok/s, TTFT, tokens in/out
     error_occurred = Signal(str)
     status_update = Signal(str)
 
@@ -106,6 +108,28 @@ class OllamaWorker(QThread):
 
     def stop(self):
         self._stop = True
+
+    def _emitir_stats(self, data: Dict, tools: int = 0, ttft_wall=None):
+        """Extrae las metricas REALES de Ollama (eval_count / durations, viajan
+        en la respuesta final y en el ultimo chunk del stream) y las emite
+        como dict para el panel de telemetria de la GUI."""
+        try:
+            ev = data.get('eval_count') or 0
+            ev_d = (data.get('eval_duration') or 0) / 1e9
+            pe = data.get('prompt_eval_count') or 0
+            pe_d = (data.get('prompt_eval_duration') or 0) / 1e9
+            stats = {
+                "tok_out": int(ev),
+                "tok_in": int(pe),
+                "tps": round(ev / ev_d, 2) if ev_d > 0 else None,
+                # TTFT medido en pared (incluye cola del server); fallback: prefill
+                "ttft": round(ttft_wall, 2) if ttft_wall else (round(pe_d, 2) if pe_d > 0 else None),
+                "total_s": round((data.get('total_duration') or 0) / 1e9, 2),
+                "tools": int(tools),
+            }
+            self.stats_ready.emit(stats)
+        except Exception:
+            pass
 
     def _fase1_messages(self, tool_convo: List[Dict]) -> List[Dict]:
         """FASE 1 solo decide tool calls: le basta el contexto reciente.
@@ -152,6 +176,7 @@ class OllamaWorker(QThread):
             # historial recortado de FASE 1 y al completo de FASE 2.
             tool_convo: List[Dict] = []
             tool_iterations = 0
+            tools_usadas = 0
             last_tool_result = ""
 
             while self.enable_tools and tool_iterations < 3 and not self._stop:
@@ -194,6 +219,7 @@ class OllamaWorker(QThread):
                             except Exception:
                                 args = {"query": args}
 
+                        tools_usadas += 1
                         self.tool_call_detected.emit(name, args)
 
                         executor = self.executors.get(name)
@@ -269,6 +295,7 @@ class OllamaWorker(QThread):
                     direct_answer = (msg.get('content') or '').strip()
                     if direct_answer and not self.enable_think:
                         self.status_update.emit("Respuesta lista")
+                        self._emitir_stats(resp, tools=tools_usadas)
                         self.final_answer.emit(direct_answer, "")
                         return
                     break
@@ -289,10 +316,15 @@ class OllamaWorker(QThread):
             # FASE 2 ve el historial COMPLETO + la conversación de tools
             stream = client.chat(model=self.model, messages=self.history + tool_convo, stream=True, think=self.enable_think, options={"num_ctx": NUM_CTX})
 
+            t_stream = time.monotonic()
+            primer_token = None   # TTFT en pared
+            datos_finales = None  # ultimo chunk (done=True): metricas de Ollama
+
             for chunk in stream:
                 if self._stop:
                     break
                 if chunk.get('done'):
+                    datos_finales = chunk
                     break
 
                 thinking_delta = chunk.get('message', {}).get('thinking', '')
@@ -306,6 +338,8 @@ class OllamaWorker(QThread):
                 delta = chunk.get('message', {}).get('content', '')
                 if not delta:
                     continue
+                if primer_token is None:
+                    primer_token = time.monotonic() - t_stream
 
                 raw_accum += delta
 
@@ -346,6 +380,9 @@ class OllamaWorker(QThread):
                     # antes todo lo streameado después del cierre se perdía y la
                     # respuesta solo aparecía completa al final.
                     self.chunk_received.emit(delta)
+
+            if datos_finales is not None or primer_token is not None:
+                self._emitir_stats(datos_finales or {}, tools=tools_usadas, ttft_wall=primer_token)
 
             if has_think:
                 # Mismo cierre tolerante del streaming: con "</thinking>" (un solo
