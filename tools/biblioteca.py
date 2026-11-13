@@ -726,7 +726,7 @@ def _accion_descargar(url: str) -> str:
 
 
 def execute(accion: str = "buscar", consulta: str = "", ruta: str = "", titulo: str = "",
-            url: str = "", pagina=None, max_resultados=_BUSCAR_MAX, **kwargs) -> str:
+            url: str = "", pagina=None, max_resultados=_BUSCAR_MAX, n=None, **kwargs) -> str:
     try:
         accion = str(accion or kwargs.get("action", "") or "buscar").strip().lower()
         consulta = str(consulta or kwargs.get("query", "") or kwargs.get("tema", "") or "")
