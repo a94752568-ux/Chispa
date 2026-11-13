@@ -11,6 +11,10 @@ Acciones (parametro "accion"):
 - estado:   cuantos libros, paginas, fragmentos indexados, tamano.
 - agregar:  extrae el texto de un PDF (ruta local) por paginas y lo guarda
             en fragmentos. Requiere pypdf (pip install pypdf).
+- agregar_web: descarga un libro leible ONLINE por capitulos HTML (ej:
+            https://inventwithpython.com/automate3workbook/): baja el indice,
+            sigue sus enlaces de capitulo, convierte a texto y lo guarda como
+            libro (ademas deja un .md en ~/Libros).
 - descargar: baja un PDF de una URL (SOLO libros legales/gratis) con la
             sesion compartida (Chrome + cookies) y lo agrega automaticamente.
 - indexar:  vectoriza los fragmentos aun sin indice con bge-m3 (Ollama local).
@@ -29,11 +33,14 @@ exacto si falta) y ollama (ya usado por la app) para embeddings.
 from __future__ import annotations
 
 import gzip
+import html as _htmlmod
 import json
 import math
 import os
 import re
+import time
 import unicodedata
+from urllib.parse import urljoin, urlsplit
 from datetime import datetime
 from pathlib import Path
 
@@ -71,7 +78,7 @@ TOOL_DEFINITION = {
         "parameters": {
             "type": "object",
             "properties": {
-                "accion": {"type": "string", "enum": ["estado", "descargar", "agregar", "indexar", "listar", "buscar", "leer"],
+                "accion": {"type": "string", "enum": ["estado", "descargar", "agregar", "agregar_web", "indexar", "listar", "buscar", "leer"],
                             "description": "Que hacer. Defecto: buscar"},
                 "url": {"type": "string", "description": "URL directa del PDF legal/gratis (accion=descargar)"},
                 "consulta": {"type": "string", "description": "Concepto o tema a buscar (accion=buscar)"},
@@ -390,6 +397,133 @@ def _accion_leer(titulo: str, pagina) -> str:
     return f"📖 **{libro['titulo']}** — pagina {pagina}\n\n{cuerpo}{cola}"
 
 
+def _html_a_texto(html: str) -> str:
+    """HTML plano a texto legible (sin dependencias externas)."""
+    html = re.sub(r"<(script|style)[^>]*>.*?</\1>", " ", html, flags=re.DOTALL | re.IGNORECASE)
+    html = re.sub(r"<(br|/p|/div|/h[1-6]|/li|/tr)[^>]*>", "\n", html, flags=re.IGNORECASE)
+    html = re.sub(r"<li[^>]*>", "- ", html, flags=re.IGNORECASE)
+    html = re.sub(r"<[^>]+>", " ", html)
+    texto = _htmlmod.unescape(html)
+    texto = re.sub(r"[ \t]+", " ", texto)
+    texto = re.sub(r"\n\s*\n\s*\n+", "\n\n", texto)
+    return texto.strip()
+
+
+def _extraer_enlaces_capitulos(html_idx: str, url_idx: str) -> list:
+    """Enlaces absolutos a paginas .html/.htm del MISMO directorio que el
+    indice, en orden de aparicion (sin duplicados)."""
+    base = urljoin(url_idx, ".")
+    ruta_base = urlsplit(url_idx).path.rsplit("/", 1)[0]
+    vistos = set()
+    enlaces = []
+    for m in re.finditer(r'<a[^>]+href="([^"#]+)"', html_idx, re.IGNORECASE):
+        href = m.group(1).strip()
+        if href.lower().startswith(("mailto:", "javascript:", "http")) and not href.startswith(("http://", "https://")):
+            continue
+        absoluto = urljoin(url_idx, href)
+        parts = urlsplit(absoluto)
+        if parts.netloc != urlsplit(url_idx).netloc:
+            continue
+        if not parts.path.lower().endswith((".html", ".htm")):
+            continue
+        if not parts.path.startswith(ruta_base):
+            continue
+        limpio = urljoin(base, parts.path)
+        if limpio not in vistos and limpio != url_idx.rstrip("/"):
+            vistos.add(limpio)
+            enlaces.append(limpio)
+    return enlaces
+
+
+def _accion_agregar_web(url: str, titulo: str = "", n=None) -> str:
+    """Descarga un libro online por capitulos HTML (SOLO contenido legal/gratis,
+    como los libros de Al Sweigart). Baja el indice, sigue los enlaces de
+    capitulo del mismo directorio, convierte a texto y lo guarda como libro
+    fragmentado por 'pagina' (= capitulo). Ademas deja un .md en ~/Libros."""
+    url = (url or "").strip()
+    if not url:
+        return ("⚠️ Indica la url del INDICE del libro online "
+                "(ej: url=https://inventwithpython.com/automate3workbook/). "
+                "SOLO contenido legal o gratuito.")
+    if not url.lower().startswith(("http://", "https://")):
+        return "⚠️ La url debe empezar por http:// o https://"
+    try:
+        n = max(1, min(int(n or 40), 120))
+    except Exception:
+        n = 40
+    try:
+        resp_idx = http_get(url, timeout=30)
+        resp_idx.raise_for_status()
+        html_idx = resp_idx.text
+    except Exception as e:
+        return f"⚠️ No pude abrir el indice ({e}). Verifica la url y tu conexion."
+    titulo = (titulo or "").strip()
+    if not titulo:
+        m_t = re.search(r"<title>(.*?)</title>", html_idx, re.IGNORECASE | re.DOTALL)
+        titulo = (_htmlmod.unescape(m_t.group(1)).strip() if m_t else urlsplit(url).netloc)
+        titulo = re.sub(r"\s*[:|–-]\s*Aut.*$", "", titulo).strip() or "Libro web"
+    enlaces = _extraer_enlaces_capitulos(html_idx, url)[:n]
+    if not enlaces:
+        return ("⚠️ No encontre capitulos HTML en el indice. Verifica que la url apunte "
+                "a la portada del libro online (con enlaces a capitulos .html).")
+    slug = _slug(titulo)
+    libros = _cargar_libros()
+    libros = [l for l in libros if l.get("slug") != slug]
+    BIB_DIR.mkdir(parents=True, exist_ok=True)
+    paginas = []  # (num, texto)
+    for i, enlace in enumerate(enlaces, start=1):
+        try:
+            rp = http_get(enlace, timeout=30)
+            rp.raise_for_status()
+            texto = _html_a_texto(rp.text)
+        except Exception as e:
+            global _LAST_DIAG
+            _LAST_DIAG = f"capitulo {i} ({enlace}): {e}"
+            continue
+        if len(texto) >= 200:
+            paginas.append((i, texto))
+        time.sleep(0.5)  # ritmo respetuoso con el sitio
+    if not paginas:
+        return ("⚠️ Los capitulos no tenian texto extraible. Diagnostico: "
+                + (_LAST_DIAG or "desconocido"))
+    chunks = 0
+    tmp = _archivo_libro(slug).with_suffix(".tmp")
+    try:
+        with gzip.open(tmp, "wt", encoding="utf-8") as out:
+            for num, texto in paginas:
+                paso = _CHUNK - _SOLAPE
+                for ini in range(0, len(texto), paso):
+                    frag = texto[ini:ini + _CHUNK]
+                    if len(frag) < 100:
+                        break
+                    out.write(json.dumps({"p": num, "x": frag}, ensure_ascii=False) + "\n")
+                    chunks += 1
+        tmp.replace(_archivo_libro(slug))
+    except Exception as e:
+        try:
+            tmp.unlink(missing_ok=True)
+        except Exception:
+            pass
+        return f"⚠️ Error guardando el libro: {e}"
+    # Bonus: dejar el libro completo en Markdown en ~/Libros
+    try:
+        md_path = Path.home() / "Libros" / (slug + ".md")
+        md_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(md_path, "w", encoding="utf-8") as fmd:
+            fmd.write("# " + titulo + "\n\nFuente: " + url + "\n")
+            for num, texto in paginas:
+                fmd.write(f"\n\n## Pagina {num}\n\n" + texto)
+    except Exception:
+        md_path = None
+    libros.append({"slug": slug, "titulo": titulo, "ruta": url, "web": True,
+                   "paginas": len(enlaces), "paginas_texto": len(paginas),
+                   "chunks": chunks, "agregado": datetime.now().isoformat(timespec="seconds")})
+    _guardar_libros(libros)
+    extra = f" Tambien quedo como Markdown en {md_path}." if md_path else ""
+    return (f"✅ Agregado '{titulo}' desde la web: {len(paginas)} capitulos, {chunks} fragmentos. "
+            "Ahora ejecuta accion=indexar para poder buscar semanticamente." + extra)
+
+
 def _accion_descargar(url: str) -> str:
     """Descarga un PDF de una URL (SOLO contenido legal/gratis) usando la
     sesion compartida (cabeceras de Chrome + cookies del usuario) y lo
@@ -453,6 +587,8 @@ def execute(accion: str = "buscar", consulta: str = "", ruta: str = "", titulo: 
             return _accion_estado()
         if accion == "descargar":
             return _accion_descargar(url or ruta or consulta)
+        if accion in ("agregar_web", "web", "online"):
+            return _accion_agregar_web(url or ruta or consulta, titulo, n)
         if accion == "agregar":
             return _accion_agregar(ruta)
         if accion == "indexar":
