@@ -1643,6 +1643,12 @@ class MainWindow(QMainWindow):
             w = item.widget()
             if w:
                 w.deleteLater()
+        # Los wrappers Python de las burbujas destruidas quedan como zombis
+        # (su objeto C++ ya no existe): soltar las referencias aqui evita el
+        # "RuntimeError: Internal C++ object already deleted" en _start_turn.
+        self._prev_assistant_widget = None
+        self.current_assistant_widget = None
+        self._last_user_widget = None
 
     def _render_chat(self):
         """Redibuja la conversación activa desde el historial persistido."""
@@ -1968,15 +1974,18 @@ class MainWindow(QMainWindow):
 
         # Limpieza de huérfanos del turno anterior (E1: widgets congelados)
         prev = getattr(self, "_prev_assistant_widget", None)
-        if prev is not None:
+        if prev is not None and qt_is_valid(prev):
             # Los chips de seguimiento son de la ÚLTIMA respuesta: se apagan
             # en la burbuja anterior en cuanto empieza un turno nuevo.
             chips = getattr(prev, "chips_container", None)
-            if chips is not None:
-                chips.setVisible(False)
+            if chips is not None and qt_is_valid(chips):
+                try:
+                    chips.setVisible(False)
+                except RuntimeError:
+                    pass
             for bloque in ("thinking_block", "tool_block"):
                 w = getattr(prev, bloque, None)
-                if w is not None:
+                if w is not None and qt_is_valid(w):
                     try:
                         w.hide()
                     except Exception:
