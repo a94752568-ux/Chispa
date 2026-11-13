@@ -14,7 +14,12 @@ Acciones (parametro "accion"):
 - agregar_web: descarga un libro leible ONLINE por capitulos HTML (ej:
             https://inventwithpython.com/automate3workbook/): baja el indice,
             sigue sus enlaces de capitulo, convierte a texto y lo guarda como
-            libro (ademas deja un .md en ~/Libros).
+            libro (ademas deja un .md en ~/Libros). Si el indice no tiene
+            capitulos, guarda la pagina como articulo unico.
+- guardar_web: guarda UNA pagina web suelta (ej: un articulo de Wikipedia)
+            como articulo de la biblioteca, CON SUS IMAGENES: baja las
+            imagenes a ~/Libros/<slug>_media/ y deja un .md en ~/Libros con
+            las imagenes ligadas localmente. El texto queda indexable.
 - descargar_pagina: descarga UNA pagina suelta (articulo de Wikipedia, blog,
             documentacion) con TEXTO e IMAGENES: guarda el .md en ~/Libros con
             las imagenes enlazadas localmente (~/Libros/imagenes/) y lo
@@ -468,8 +473,8 @@ def _accion_agregar_web(url: str, titulo: str = "", n=None) -> str:
         titulo = re.sub(r"\s*[:|–-]\s*Aut.*$", "", titulo).strip() or "Libro web"
     enlaces = _extraer_enlaces_capitulos(html_idx, url)[:n]
     if not enlaces:
-        return ("⚠️ No encontre capitulos HTML en el indice. Verifica que la url apunte "
-                "a la portada del libro online (con enlaces a capitulos .html).")
+        # No es un libro por capitulos: guardar la pagina como articulo unico
+        return _guardar_como_articulo(url, titulo)
     slug = _slug(titulo)
     libros = _cargar_libros()
     libros = [l for l in libros if l.get("slug") != slug]
@@ -669,6 +674,127 @@ def _accion_descargar_pagina(url: str, titulo: str = "") -> str:
             f"📝 {len(texto)} caracteres de texto." + aviso_idx)
 
 
+_IMG_EXT = (".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".bmp")
+
+
+def _bajar_imagenes(html: str, url_base: str, media_dir: Path, max_imgs: int = 20) -> dict:
+    """Descarga las imagenes de la pagina a media_dir. Devuelve {src_original:
+    ruta_local_relativa} para reescribir en el markdown. Silencioso: si una
+    imagen falla, se omite (el texto es lo importante)."""
+    mapa = {}
+    try:
+        media_dir.mkdir(parents=True, exist_ok=True)
+    except Exception:
+        return mapa
+    bajadas = 0
+    vistos = set()
+    for m in re.finditer(r'<img[^>]+src="([^"#]+)"', html, re.IGNORECASE):
+        if bajadas >= max_imgs:
+            break
+        src = m.group(1).strip()
+        if src in vistos or src.startswith("data:"):
+            continue
+        vistos.add(src)
+        absoluto = urljoin(url_base, src)
+        parts = urlsplit(absoluto)
+        if parts.scheme not in ("http", "https"):
+            continue
+        ext = os.path.splitext(parts.path)[1].lower()
+        if ext not in _IMG_EXT:
+            ext = ".png"  # algunos sirven sin extension; se intenta igual
+        nombre = "img_" + str(abs(bajadas + 1)).zfill(2) + ext
+        try:
+            ri = http_get(absoluto, timeout=20)
+            ri.raise_for_status()
+            datos = ri.content
+            if len(datos) < 500:
+                continue  # icono/spacer
+            (media_dir / nombre).write_bytes(datos)
+            mapa[src] = media_dir.name + "/" + nombre
+            bajadas += 1
+            time.sleep(0.3)
+        except Exception:
+            continue
+    return mapa
+
+
+def _guardar_como_articulo(url: str, titulo: str) -> str:
+    """Guarda UNA pagina web como articulo de la biblioteca: texto indexable
+    (fragmentos por 'pagina' unica) + imagenes locales + .md en ~/Libros."""
+    try:
+        resp = http_get(url, timeout=30)
+        resp.raise_for_status()
+        html_pag = resp.text
+    except Exception as e:
+        return f"⚠️ No pude abrir la pagina ({e}). Verifica la url y tu conexion."
+    titulo = (titulo or "").strip()
+    if not titulo:
+        m_t = re.search(r"<title>(.*?)</title>", html_pag, re.IGNORECASE | re.DOTALL)
+        titulo = (_htmlmod.unescape(m_t.group(1)).strip() if m_t else urlsplit(url).netloc)
+        titulo = titulo.split("|")[0].split(" - ")[0].strip() or "Articulo web"
+    slug = _slug(titulo)
+    texto = _html_a_texto(html_pag)
+    if len(texto) < 200:
+        return "⚠️ La pagina no tenia texto extraible (¿es solo JS o imagenes?)."
+    # Imagenes: bajarlas y anotar su ruta local para el .md
+    mapa_imgs = _bajar_imagenes(html_pag, url, Path.home() / "Libros" / (slug + "_media"))
+    # Registrar como libro de 1 'pagina' (capitulo unico)
+    libros = _cargar_libros()
+    libros = [l for l in libros if l.get("slug") != slug]
+    BIB_DIR.mkdir(parents=True, exist_ok=True)
+    chunks = 0
+    tmp = _archivo_libro(slug).with_suffix(".tmp")
+    try:
+        with gzip.open(tmp, "wt", encoding="utf-8") as out:
+            paso = _CHUNK - _SOLAPE
+            for ini in range(0, len(texto), paso):
+                frag = texto[ini:ini + _CHUNK]
+                if len(frag) < 100:
+                    break
+                out.write(json.dumps({"p": 1, "x": frag}, ensure_ascii=False) + "\n")
+                chunks += 1
+        tmp.replace(_archivo_libro(slug))
+    except Exception as e:
+        try:
+            tmp.unlink(missing_ok=True)
+        except Exception:
+            pass
+        return f"⚠️ Error guardando el articulo: {e}"
+    # .md con imagenes ligadas localmente (rutas relativas al .md)
+    md_path = Path.home() / "Libros" / (slug + ".md")
+    try:
+        md_path.parent.mkdir(parents=True, exist_ok=True)
+        md = "# " + titulo + "\n\nFuente: " + url + "\n"
+        for src_orig, ruta_local in mapa_imgs.items():
+            alt = os.path.basename(ruta_local)
+            md += f"\n\n![{alt}]({ruta_local})"
+        md += "\n\n" + texto
+        md_path.write_text(md, encoding="utf-8")
+    except Exception:
+        md_path = None
+    libros.append({"slug": slug, "titulo": titulo, "ruta": url, "web": True,
+                   "paginas": 1, "paginas_texto": 1, "chunks": chunks,
+                   "imagenes": len(mapa_imgs),
+                   "agregado": datetime.now().isoformat(timespec="seconds")})
+    _guardar_libros(libros)
+    extra_md = f" Markdown en {md_path}" if md_path else ""
+    return (f"✅ Articulo '{titulo}' guardado: {chunks} fragmentos indexables, "
+            f"{len(mapa_imgs)} imagenes en ~/Libros/{slug}_media/.{extra_md} "
+            "Ejecuta accion=indexar para buscarlo semanticamente.")
+
+
+def _accion_guardar_web(url: str, titulo: str = "") -> str:
+    """Guarda UNA pagina web suelta (articulo de Wikipedia, blog, etc.) con
+    texto e imagenes. SOLO contenido legal/publico."""
+    url = (url or "").strip()
+    if not url:
+        return ("⚠️ Indica la url de la pagina (ej: url=https://es.wikipedia.org/wiki/Fotosintesis). "
+                "SOLO contenido legal o publico.")
+    if not url.lower().startswith(("http://", "https://")):
+        return "⚠️ La url debe empezar por http:// o https://"
+    return _guardar_como_articulo(url, titulo)
+
+
 def _accion_descargar(url: str) -> str:
     """Descarga un PDF de una URL (SOLO contenido legal/gratis) usando la
     sesion compartida (cabeceras de Chrome + cookies del usuario) y lo
@@ -730,6 +856,8 @@ def execute(accion: str = "buscar", consulta: str = "", ruta: str = "", titulo: 
         titulo = str(titulo or kwargs.get("libro", "") or "")
         if accion == "estado":
             return _accion_estado()
+        if accion in ("guardar_web", "guardar", "articulo", "pagina"):
+            return _accion_guardar_web(url or ruta or consulta, titulo)
         if accion == "descargar":
             return _accion_descargar(url or ruta or consulta)
         if accion in ("descargar_pagina", "pagina", "articulo"):
