@@ -9,7 +9,7 @@ import requests
 from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Optional
-
+from shiboken6 import isValid as qt_is_valid
 # Asegurar que el directorio del script esté en sys.path para encontrar tools/
 SCRIPT_DIR = Path(__file__).parent.resolve()
 sys.path.insert(0, str(SCRIPT_DIR))
