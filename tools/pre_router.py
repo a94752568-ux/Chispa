@@ -39,6 +39,8 @@ _BOOSTS = [
     (re.compile(r"\b(?:foto|imagen|metadato|exif|escanead|ocr|sentimiento|donde tome)\b", re.I), "analisis"),
     (re.compile(r"\b(?:wikipedia|wikidata|wiki|enciclopedia)\b|\bmini[-\s]?(?:wiki\w*|enciclopedia)\b|\bdescarga\w*\b[^.]{0,40}\b(?:wiki\w*|enciclopedia|offline)\b", re.I), "datos"),  # mini-wiki offline
     (re.compile(r"\b(?:biblioteca|libro|libros|pdf|cap[íi]tulo|manual|seg[úu]n mi[s]?)\b", re.I), "datos"),  # biblioteca de PDFs
+    (re.compile(r"\b(?:descarga\w*|baja\w*|bájame\w*|descárgame\w*)\b[^.]{0,60}\b(?:libro|pdf|manual|biblioteca|cap[íi]tulo)\b", re.I), "datos"),  # descargar libros -> biblioteca, NO write_desktop
+    (re.compile(r"\b(?:libro|libros|pdf)\b[^.]{0,40}\b(?:online|web|url|enlace|indice|índice)\b", re.I), "datos"),  # libros online -> agregar_web
 ]
 
 _MARGIN_THRESHOLD = 0.05
