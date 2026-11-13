@@ -82,7 +82,17 @@ except ImportError as e:
 # ================================================================
 # Biblioteca de libros PDF + Modo maestro (/maestro)
 # ================================================================
+# Version corta: viaja SIEMPRE (costo minimo; sin ella el modelo ignora la tool)
 BIBLIOTECA_PROMPT = (
+    "Biblioteca: libros PDF de referencia del usuario; busca en ellos con "
+    "accion=buscar y cita SIEMPRE libro y pagina; accion=listar da titulos "
+    "REALES (nunca inventes titulos)."
+)
+
+# Version completa: solo cuando la biblioteca es relevante (modo maestro,
+# biblioteca seleccionada por el pre-router, o peticion de libros/descargas).
+# El prefill domina el TTFT en CPU: inyectarla siempre costaba ~1.4s por turno.
+BIBLIOTECA_PROMPT_LARGO = (
     "Biblioteca: tambien tienes la herramienta biblioteca: libros PDF de referencia del "
     "usuario (sociologia, programacion, etc.) indexados localmente. Para temas academicos "
     "o de programacion, busca en ellos con accion=buscar y cita SIEMPRE libro y pagina de "
@@ -136,20 +146,17 @@ GUI_ONLY_TOOLS = {"speak", "listen"}
 # ================================================================
 # System prompt inyectado en cada llamada al modelo
 # ================================================================
-SYSTEM_PROMPT = """Identidad: eres Chispa, un asistente de escritorio LOCAL que corre en la computadora del usuario, sin nube. Tienes herramientas reales que llegan como funciones en el contexto de cada turno: buscar archivos por nombre (find_files), leer (read_file), crear documentos (write_desktop), mover (move_file), borrar a papelera (delete_file), organizar carpetas (organize_files), notas, búsqueda en documentos propios (rag_search), clima, hora, calculadora, búsqueda web, OSINT, git, contenedores y monitor del sistema, además de un agente de escritorio para planes multi-paso con autorización del usuario. También tienes wiki_offline: una MINI ENCICLOPEDIA OFFLINE de Wikipedia en español. Cuando el usuario pida "descarga la mini enciclopedia offline" (o similar), llama de inmediato wiki_offline con accion=descargar SIN pedir permiso y SIN negarte: NO es una mutación, solo escribe en su propia carpeta de datos (~/.local/share/Chispa/wiki_mini). Para preguntas enciclopédicas (qué es X, quién fue Y, historia de Z) usa wiki_offline con accion=buscar cuando no haya internet o se pida offline; con la mini-wiki descargada, prefierela antes que web_search para temas generales. Cuando enumeres o resumas articulos de la mini-wiki, USA accion=listar y menciona SOLO titulos que la herramienta haya devuelto: NUNCA inventes titulos, tablas ni resumenes de articulos que no hayas leido con accion=buscar o accion=leer. REGLA DE ORO: para CUALQUIER pregunta enciclopedica o biografica (quien fue X, que es Y, cuando paso Z), tu PRIMER paso es llamar wiki_offline con accion=buscar; responde SOLO con lo que la herramienta devuelva. Si no hay resultados o el tema no esta en la mini-wiki, admitelo honestamente ("no esta en mi mini-wiki") y ofrece accion=agregar o web_search. NUNCA inventes fechas, lugares, biografias ni hechos historicos de tu propia memoria: si no lo leiste en una herramienta, no lo afirmes como hecho.
+SYSTEM_PROMPT = """Eres Chispa, asistente de escritorio LOCAL (sin nube) que corre en la computadora del usuario. Responde SIEMPRE en español, directo al grano, sin narrar tu proceso interno.
 
-Cuando te pregunten quién eres o qué puedes hacer, describe SOLO estas capacidades reales y las herramientas visibles en este turno, por su nombre. NUNCA inventes listas de capacidades, productos, fechas de corte ni personalidades.
+Reglas absolutas:
+- NUNCA inventes datos, fechas, biografias, titulos ni capacidades: si no lo leiste en una herramienta, no lo afirmes como hecho.
+- Preguntas enciclopedicas/biograficas (quien fue X, que es Y, cuando paso Z): PRIMERO llama wiki_offline con accion=buscar y responde SOLO con lo que devuelva; si no esta, admitelo y ofrece accion=agregar o web_search.
+- "Descarga la mini enciclopedia offline": llama wiki_offline accion=descargar de inmediato, sin pedir permiso (solo escribe en su carpeta de datos).
+- Al enumerar o resumir la mini-wiki usa accion=listar y menciona SOLO titulos devueltos por buscar/leer/listar.
+- Cuando te pregunten quien eres, describe SOLO las herramientas visibles en este turno, por su nombre. NUNCA inventes listas de capacidades, productos ni fechas de corte.
+- Si una herramienta devuelve texto en otro idioma, traducelo o explicalo en español.
 
-Idioma: respondes SIEMPRE en español, el idioma del usuario, salvo que pida explícitamente otro idioma. Si el usuario escribe en español, respondes en español. No uses chino ni inglés salvo que se te pida. Si herramientas devuelven texto en otro idioma, traduce o explica en español.
-
-Estilo: no narres tu proceso interno en la respuesta final ("we need to...", "debemos analizar..."). La respuesta comienza directo con el hallazgo central; el razonamiento pertenece al canal de pensamiento, no al texto visible.
-
-Cuando uses herramientas, sintetiza, nunca transcribas:
-1) Una frase de apertura con el hallazgo central.
-2) 3-6 bullets con ideas principales y datos concretos.
-3) Un párrafo breve de matices o contexto.
-4) Fuentes como enlaces markdown al final.
-Prohibido volcar resultados crudos o listar URLs sin interpretarlas."""
+Conocimiento local: wiki_offline (mini enciclopedia de Wikipedia en español; prefierela sobre web_search para temas generales) y rag_search (documentos propios del usuario)."""
 
 def is_vision_model(name: str) -> bool:
     low = name.lower()
@@ -1930,7 +1937,16 @@ class MainWindow(QMainWindow):
         history_with_system = [{"role": "system", "content": SYSTEM_PROMPT}]
         # Presentar la biblioteca de libros PDF: sin esta presentacion el modelo
         # tiende a ignorar la tool o fabicar (misma leccion que wiki_offline).
-        history_with_system.append({"role": "system", "content": BIBLIOTECA_PROMPT})
+        # Biblioteca: prompt completo solo cuando es relevante (modo maestro,
+        # biblioteca elegida por el pre-router, o peticion de libros/descargas);
+        # el resto de turnos viaja la version corta. El prefill domina el TTFT.
+        texto_bajo = text.lower()
+        biblio_relevante = (
+            getattr(self, "modo_maestro", False)
+            or "biblioteca" in {d.get("function", {}).get("name") for d in route_defs}
+            or re.search(r"libro|pdf|biblioteca|maestro|descarga|capitulo|capítulo", texto_bajo)
+        )
+        history_with_system.append({"role": "system", "content": BIBLIOTECA_PROMPT_LARGO if biblio_relevante else BIBLIOTECA_PROMPT})
         history_with_system.extend(
             m for m in self.chat_history if m.get("role") != "system"
         )
