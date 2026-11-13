@@ -67,7 +67,13 @@ TOOL_POLICY = (
     "en chateo casual no llames ninguna. Copia los nombres de los argumentos "
     "EXACTOS de la definición de la herramienta. Cuando tengas los resultados, "
     "responde al usuario directamente SIN más llamadas a herramientas. No "
-    "repite una llamada idéntica en el mismo turno."
+    "repite una llamada idéntica en el mismo turno. "
+    "SI UNA HERRAMIENTA FALLA o devuelve 'sin resultados': reintenta UNA vez "
+    "con una consulta MÁS CORTA y simple (2-4 palabras clave, sin 'fecha "
+    "actual' ni relleno); si vuelve a fallar, díselo claro al usuario y ofrece "
+    "alternativas reales (ej. la mini-wiki offline). NUNCA inventes datos para "
+    "tapar el fallo y NUNCA cambies de tema ni te presentes de nuevo: responde "
+    "SIEMPRE a lo que el usuario pidió."
 )
 
 
