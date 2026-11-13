@@ -293,6 +293,24 @@ class OllamaWorker(QThread):
                         tool_convo.append({"role": "tool", "content": str(result)})
                         last_tool_result = str(result)
 
+                    # Re-anclaje anti-divagación: los modelos chicos tienden a
+                    # responder al RESULTADO de la tool (o a nadie) en vez de a
+                    # la petición original (ej: "Entendido, ¿qué necesitas?"
+                    # tras una búsqueda exitosa). Un mensaje user que cita la
+                    # petición original los vuelve a encarrilar; también viaja
+                    # a FASE 2 (tool_convo se incluye en sus mensajes).
+                    ultimo_user = next(
+                        (m.get("content", "") for m in reversed(self.history)
+                         if m.get("role") == "user" and m.get("content")),
+                        "",
+                    )
+                    if ultimo_user:
+                        tool_convo.append({"role": "user", "content": (
+                            "(Herramientas terminadas. Responde AHORA en español "
+                            "a la petición original del usuario: «" + ultimo_user
+                            + "». Basate en los resultados de las herramientas de "
+                              "arriba; no te presentes ni cambies de tema.)"
+                        )})
                     tool_iterations += 1
                     continue
                 else:
