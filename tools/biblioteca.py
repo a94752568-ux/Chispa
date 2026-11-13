@@ -11,6 +11,8 @@ Acciones (parametro "accion"):
 - estado:   cuantos libros, paginas, fragmentos indexados, tamano.
 - agregar:  extrae el texto de un PDF (ruta local) por paginas y lo guarda
             en fragmentos. Requiere pypdf (pip install pypdf).
+- descargar: baja un PDF de una URL (SOLO libros legales/gratis) con la
+            sesion compartida (Chrome + cookies) y lo agrega automaticamente.
 - indexar:  vectoriza los fragmentos aun sin indice con bge-m3 (Ollama local).
 - listar:   libros REALES de la biblioteca (NO inventar titulos).
 - buscar:   busqueda SEMANTICA en los libros: devuelve libro, pagina y fragmento.
@@ -69,8 +71,9 @@ TOOL_DEFINITION = {
         "parameters": {
             "type": "object",
             "properties": {
-                "accion": {"type": "string", "enum": ["estado", "agregar", "indexar", "listar", "buscar", "leer"],
+                "accion": {"type": "string", "enum": ["estado", "descargar", "agregar", "indexar", "listar", "buscar", "leer"],
                             "description": "Que hacer. Defecto: buscar"},
+                "url": {"type": "string", "description": "URL directa del PDF legal/gratis (accion=descargar)"},
                 "consulta": {"type": "string", "description": "Concepto o tema a buscar (accion=buscar)"},
                 "ruta": {"type": "string", "description": "Ruta local del PDF (accion=agregar), ej: ~/Libros/libro.pdf"},
                 "titulo": {"type": "string", "description": "Titulo del libro (accion=leer); usa listar para verlos"},
@@ -387,15 +390,69 @@ def _accion_leer(titulo: str, pagina) -> str:
     return f"📖 **{libro['titulo']}** — pagina {pagina}\n\n{cuerpo}{cola}"
 
 
+def _accion_descargar(url: str) -> str:
+    """Descarga un PDF de una URL (SOLO contenido legal/gratis) usando la
+    sesion compartida (cabeceras de Chrome + cookies del usuario) y lo
+    agrega a la biblioteca automaticamente. Tope de tamano razonable."""
+    url = (url or "").strip()
+    if not url:
+        return ("⚠️ Indica la url directa del PDF (ej: url=https://sitio.com/libro.pdf). "
+                "SOLO descarga contenido legal o gratuito.")
+    if not url.lower().startswith(("http://", "https://")):
+        return "⚠️ La url debe empezar por http:// o https://"
+    if not ".pdf" in url.split("?")[0].lower():
+        # no es excluyente (algunos servidores sirven PDFs sin extension), solo aviso
+        pass
+    destino_dir = Path.home() / "Libros"
+    destino_dir.mkdir(parents=True, exist_ok=True)
+    nombre = url.split("?")[0].rstrip("/").split("/")[-1] or "libro.pdf"
+    if not nombre.lower().endswith(".pdf"):
+        nombre += ".pdf"
+    destino = destino_dir / nombre
+    try:
+        resp = http_get(url, timeout=60, stream=True)
+        resp.raise_for_status()
+        tipo = (resp.headers.get("Content-Type") or "").lower()
+        if "pdf" not in tipo and "octet-stream" not in tipo:
+            return (f"⚠️ La url no sirve un PDF (Content-Type: {tipo or '?'}). "
+                    "Necesito el enlace DIRECTO al archivo.")
+        total = 0
+        tope = 150 * 1024 * 1024  # 150 MB
+        tmp = destino.with_suffix(".part")
+        with open(tmp, "wb") as f:
+            for bloque in resp.iter_content(chunk_size=65536):
+                total += len(bloque)
+                if total > tope:
+                    f.close()
+                    tmp.unlink(missing_ok=True)
+                    return "⚠️ El archivo supera 150 MB; no parece un libro, aborto."
+                f.write(bloque)
+        tmp.replace(destino)
+    except Exception as e:
+        try:
+            destino.with_suffix(".part").unlink(missing_ok=True)
+        except Exception:
+            pass
+        return f"⚠️ No pude descargar el PDF ({e}). Verifica la url y tu conexion."
+    if total < 10240:
+        destino.unlink(missing_ok=True)
+        return "⚠️ El archivo descargado es demasiado chico para ser un libro; lo descarto."
+    res_agregar = _accion_agregar(str(destino))
+    return (f"📥 Descargado: {destino} ({total // 1024} KB)\n" + res_agregar)
+
+
 def execute(accion: str = "buscar", consulta: str = "", ruta: str = "", titulo: str = "",
-            pagina=None, max_resultados=_BUSCAR_MAX, **kwargs) -> str:
+            url: str = "", pagina=None, max_resultados=_BUSCAR_MAX, **kwargs) -> str:
     try:
         accion = str(accion or kwargs.get("action", "") or "buscar").strip().lower()
         consulta = str(consulta or kwargs.get("query", "") or kwargs.get("tema", "") or "")
         ruta = str(ruta or kwargs.get("path", "") or kwargs.get("archivo", "") or kwargs.get("pdf", "") or "")
+        url = str(url or kwargs.get("enlace", "") or kwargs.get("link", "") or "")
         titulo = str(titulo or kwargs.get("libro", "") or "")
         if accion == "estado":
             return _accion_estado()
+        if accion == "descargar":
+            return _accion_descargar(url or ruta or consulta)
         if accion == "agregar":
             return _accion_agregar(ruta)
         if accion == "indexar":
@@ -406,7 +463,7 @@ def execute(accion: str = "buscar", consulta: str = "", ruta: str = "", titulo: 
             return _accion_leer(titulo, pagina)
         if accion == "buscar":
             return _accion_buscar(consulta, max_resultados)
-        return ("⚠️ Accion desconocida: " + accion + ". Usa: estado, agregar, indexar, listar, buscar, leer.")
+        return ("⚠️ Accion desconocida: " + accion + ". Usa: estado, descargar, agregar, indexar, listar, buscar, leer.")
     except Exception as e:
         return f"Error en biblioteca: {e}"
 
