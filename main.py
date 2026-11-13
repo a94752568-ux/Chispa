@@ -33,7 +33,7 @@ except Exception:
 from common import trace, MD_CSS
 import memoria  # persistencia del historial del chat
 import theme  # paleta centralizada "estilo Vibe"
-from worker import OllamaWorker
+from worker import OllamaWorker, NUM_CTX
 from widgets import ThinkingBlockWidget, ToolBlockWidget, MessageBubble, ChatContainer, TitleBar
 
 
@@ -1514,7 +1514,10 @@ class MainWindow(QMainWindow):
         if self.worker and self.worker.isRunning():
             elapsed = int(time.time() - getattr(self, "_turn_start", time.time()))
             base = re.sub(r" · \d+s$", "", self.status_label.text())
-            self.status_label.setText(f"{base} · {elapsed}s")
+            tps = ""
+            if getattr(self, "_tok_count", 0) and elapsed >= 2:
+                tps = f" ⚡{self._tok_count / elapsed:.1f} tok/s"
+            self.status_label.setText(f"{base}{tps} · {elapsed}s")
 
     def _save_memory(self):
         """Guarda la conversación activa en disco."""
@@ -1974,6 +1977,7 @@ class MainWindow(QMainWindow):
         self.worker.final_answer.connect(self.on_final_answer)
         self.worker.error_occurred.connect(self.on_error)
         self.worker.status_update.connect(self._on_worker_status)
+        self.worker.stats_ready.connect(self.on_stats)
         self.worker.finished.connect(lambda: self._set_send_mode("send"))
 
         # Ruta de tools + cronómetro del turno en el status bar
@@ -1991,6 +1995,8 @@ class MainWindow(QMainWindow):
                 ruta_desc = f"{len(route_defs)}/{total_exposed} tools (pre-router)"
             self.status_label.setText(f"Consultando... · {ruta_desc}")
         self._stop_requested = False
+        self._tok_count = 0      # chunks recibidos ≈ tokens, para tok/s en vivo
+        self._last_stats = None  # telemetria del turno (llega via stats_ready)
         self._set_send_mode("stop")
         self.worker.start()
 
@@ -2083,6 +2089,7 @@ class MainWindow(QMainWindow):
         trace(f"WORKER_CHUNK len={len(delta)} preview={delta[:40]!r}")
         if hasattr(self, 'current_assistant_widget'):
             self._answer_buffer += delta
+            self._tok_count = getattr(self, "_tok_count", 0) + 1
             self.current_assistant_widget.appendAnswer(delta)
             self.scroll_to_bottom()
 
@@ -2151,6 +2158,16 @@ class MainWindow(QMainWindow):
                 else:
                     w.finishAnswer(answer, thinking)
                     w.showTTS()
+                    # Panel de telemetria con las metricas reales del turno
+                    st = getattr(self, "_last_stats", None)
+                    if st:
+                        prev = getattr(self, "_prev_tps", None)
+                        try:
+                            w.set_stats(st, delta_tps=prev)
+                            if st.get("tps"):
+                                self._prev_tps = st["tps"]
+                        except Exception:
+                            pass
                     # En manos libres la lectura es parte del ciclo (al terminar
                     # de leer, _do_speak arranca la siguiente escucha)
                     if (self.tts_check.isChecked() or self._hands_free) and answer.strip():
@@ -2167,8 +2184,17 @@ class MainWindow(QMainWindow):
     def _cerrar_turno_visual(self):
         """Cierre visual diferido tras la animacion de tokens (modo 🌈)."""
         w = getattr(self, "current_assistant_widget", None)
+        st = getattr(self, "_last_stats", None)
         try:
             if w is not None:
+                if st:
+                    prev = getattr(self, "_prev_tps", None)
+                    try:
+                        w.set_stats(st, delta_tps=prev)
+                        if st.get("tps"):
+                            self._prev_tps = st["tps"]
+                    except Exception:
+                        pass
                 w.showTTS()
                 if (self.tts_check.isChecked() or self._hands_free) and (w.full_text or "").strip():
                     self.speak_response(w.full_text)
@@ -2176,6 +2202,24 @@ class MainWindow(QMainWindow):
             import traceback
             traceback.print_exc()
         self.scroll_to_bottom()
+
+    @Slot(dict)
+    def on_stats(self, stats: dict):
+        """Telemetria del turno (llega ANTES de final_answer): guarda las
+        metricas, anade la RAM real del modelo via /api/ps y el num_ctx."""
+        self._last_stats = dict(stats or {})
+        self._last_stats.setdefault("num_ctx", NUM_CTX)
+        self._last_stats.setdefault("modelo", self.current_model)
+        try:
+            r = requests.get("http://localhost:11434/api/ps", timeout=2)
+            for m in r.json().get("models", []):
+                if m.get("name", "").split(":")[0] == self.current_model.split(":")[0]:
+                    ram = (m.get("size_vram") or m.get("size") or 0) / 1e9
+                    if ram:
+                        self._last_stats["ram_gb"] = ram
+                    break
+        except Exception:
+            pass
 
     @Slot(str)
     def on_error(self, err: str):
