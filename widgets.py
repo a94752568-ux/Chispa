@@ -865,10 +865,11 @@ class MessageBubble(QFrame):
                 flecha = "▲" if pct >= 0 else "▼"
                 extra = f' <span style="color:{color};font-size:10px">{flecha}{abs(pct):.0f}%</span>'
             pills.append(f'<b style="color:{theme.ACCENT}">⚡ {tps:.1f}</b> tok/s{extra}')
+        ti, to = stats.get("tok_in") or 0, stats.get("tok_out") or 0
         ttft = stats.get("ttft")
         if ttft:
-            pills.append(f'⏱ <b style="color:{theme.TEXT}">{ttft:.1f}s</b> TTFT')
-        ti, to = stats.get("tok_in") or 0, stats.get("tok_out") or 0
+            pre = f' · <span style="font-size:10px">{ti / ttft:.0f} tok/s prefill</span>' if (ti and ttft >= 0.5) else ""
+            pills.append(f'⏱ <b style="color:{theme.TEXT}">{ttft:.1f}s</b> TTFT{pre}')
         if ti or to:
             pills.append(f'🪙 <b style="color:{theme.TEXT}">{ti}</b>▸<b style="color:{theme.TEXT}">{to}</b>')
         ram = stats.get("ram_gb")
