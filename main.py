@@ -88,7 +88,12 @@ BIBLIOTECA_PROMPT = (
     "o de programacion, busca en ellos con accion=buscar y cita SIEMPRE libro y pagina de "
     "lo que devuelva. Usa accion=listar para enumerar los libros REALES (nunca inventes "
     "titulos) y accion=leer para una pagina concreta. Si el tema no esta en los libros, "
-    "admitelo y ofrece wiki_offline o web_search."
+    "admitelo y ofrece wiki_offline o web_search. "
+    "Si el usuario pide DESCARGAR o AGREGAR un libro, usa biblioteca: accion=descargar con "
+    "la url directa del PDF, o accion=agregar_web con la url del indice de capitulos HTML. "
+    "NUNCA uses write_desktop ni planes JSON del agente para descargar contenido: "
+    "write_desktop solo escribe archivos de TEXTO locales y NO descarga nada. Los planes "
+    "JSON del agente son SOLO para operaciones de escritorio multi-paso autorizadas."
 )
 
 MAESTRO_PROMPT = (
