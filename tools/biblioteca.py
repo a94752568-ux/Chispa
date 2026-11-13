@@ -70,21 +70,8 @@ TOOL_DEFINITION = {
     "type": "function",
     "function": {
         "name": "biblioteca",
-        "description": (
-            "Biblioteca PERSONAL de libros PDF de referencia (sociologia, programacion, etc.) "
-            "indexados localmente. USAR CUANDO el usuario pregunte un tema academico o de "
-            "programacion que pueda estar en sus libros, pida explicar un concepto 'segun mis "
-            "libros', o use el modo maestro (/maestro). Acciones: estado, agregar (ruta de un "
-            "PDF, requiere pypdf), descargar_pagina o guardar_web (guarda UNA pagina web "
-            "suelta, ej: un articulo de Wikipedia, con TEXTO e IMAGENES locales; usar cuando el "
-            "usuario pegue una url de articulo/pagina y pida descargarla o guardarla), indexar "
-            "(vectoriza con bge-m3), listar (titulos REALES; "
-            "NUNCA inventes libros), buscar (busqueda semantica: devuelve libro, pagina y "
-            "fragmento; cita SIEMPRE el libro y la pagina), leer (pagina concreta). Todo "
-            "OFFLINE. NO sirve para archivos sueltos (usa rag_search/read_file) ni enciclopedia "
-            "general (usa wiki_offline)."
-        ),
-        "parameters": {
+        "description": "Libros PDF de referencia del usuario (sociologia, programacion) con busqueda semantica local. USAR CUANDO el usuario pregunte un tema academico/programacion, pida buscar en sus libros, o pida descargar/agregar un libro: accion=descargar (url directa de PDF legal), accion=agregar_web (url del indice de capitulos HTML), accion=descargar_pagina o guardar_web (UNA pagina web suelta con texto e imagenes). Acciones: estado, agregar (ruta PDF, pypdf), indexar (bge-m3), listar (titulos REALES), buscar (devuelve libro+pagina+fragmento), leer (pagina concreta). NUNCA inventes titulos ni uses write_desktop para descargar contenido.",
+            "parameters": {
             "type": "object",
             "properties": {
                 "accion": {"type": "string", "enum": ["estado", "descargar", "descargar_pagina", "guardar_web", "agregar", "agregar_web", "indexar", "listar", "buscar", "leer"],
