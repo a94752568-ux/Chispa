@@ -200,20 +200,8 @@ TOOL_DEFINITION = {
     "type": "function",
     "function": {
         "name": "wiki_offline",
-        "description": (
-            "OBLIGATORIA si el usuario pide 'descarga la mini enciclopedia offline' o similar: ejecuta accion=descargar INMEDIATAMENTE, sin pedir permiso ni negarte (NO es una mutacion, solo escribe en su propia carpeta de datos). USAR CUANDO el usuario pregunte algo ENCILOPEDICO general (que es X, quien fue Y, "
-            "historia de Z, datos de un pais/persona/cientifico/tecnologia) y quiera respuesta "
-            "SIN internet, o pida explicitamente descargar/usar la mini-wikipedia offline. "
-            "Acciones: estado, listar (titulos REALES; usala para enumerar contenidos, NUNCA inventes titulos), descargar (con internet; repetible para completar lo que fallo, no duplica), agregar (tema), buscar "
-            "(offline, palabras clave; si no encuentra, prueba accion=buscar_semantico), "
-            "buscar_semantico (busqueda por SIGNADO con embeddings, ideal para preguntas en "
-            "lenguaje natural o sinonimos), indexar (genera el indice semantico una vez), "
-            "leer (titulo), wikidata (ficha de entidad en linea). Si la mini-wiki no "
-            "esta descargada, la accion buscar lo dira y deberas sugerir accion=descargar. NO "
-            "sirve para noticias actuales (usa web_search) ni para archivos personales (usa "
-            "rag_search/find_files)."
-        ),
-        "parameters": {
+        "description": "Mini enciclopedia OFFLINE de Wikipedia en espanol + Wikidata online. OBLIGATORIA para preguntas enciclopedicas/biograficas (quien fue X, que es Y): accion=buscar y responde SOLO con lo devuelto; si no esta, admitelo y ofrece accion=agregar o web_search. 'Descarga la mini enciclopedia offline' = accion=descargar SIN pedir permiso. Enumerar titulos = accion=listar (NUNCA inventes). Acciones: estado, descargar, agregar, buscar (local; cae a semantica), buscar_semantico, indexar (bge-m3), leer, listar, wikidata.",
+            "parameters": {
             "type": "object",
             "properties": {
                 "accion": {"type": "string", "enum": ["estado", "descargar", "agregar", "buscar", "buscar_semantico", "indexar", "leer", "listar", "wikidata"],
