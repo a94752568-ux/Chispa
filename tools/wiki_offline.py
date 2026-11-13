@@ -48,7 +48,6 @@ IDX = DATA_DIR / "embeddings.jsonl.gz"   # indice semantico (titulo + vector)
 
 WIKI_API = "https://es.wikipedia.org/w/api.php"
 WD_API = "https://www.wikidata.org/w/api.php"
-HDRS = {"User-Agent": "Chispa-AsistenteLocal/1.0 (asistente personal offline)"}
 
 # Prefijos de espacio de nombres que NO son articulos enciclopedicos
 _EXCLUIR = ("Wikipedia:", "Ayuda:", "Categoria:", "Categor\u00eda:", "Portal:", "Archivo:",
@@ -557,7 +556,7 @@ def _accion_buscar(consulta: str, max_resultados) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Busqueda semantica local (embeddings via Ollama, nomic-embed-text)
+# Busqueda semantica local (embeddings via Ollama, bge-m3)
 # ---------------------------------------------------------------------------
 
 def _ollama() -> object:
@@ -605,14 +604,21 @@ def _coseno(a, b) -> float:
 
 
 def _index_contiene(n_titulos: int) -> bool:
-    """El indice de embeddings existe y cubre los articulos actuales?"""
+    """El indice existe y cubre los articulos actuales CON EL MODELO ACTUAL?
+    Los vectores de otro modelo (p.ej. indice viejo de nomic-embed-text) no
+    cuentan: compararlos con consultas de otro modelo seria basura."""
     if not IDX.exists():
         return False
     total = 0
     try:
         with gzip.open(IDX, "rt", encoding="utf-8") as f:
-            for _ in f:
-                total += 1
+            for linea in f:
+                try:
+                    d = json.loads(linea)
+                    if d.get("v") and d.get("m", "nomic-embed-text") == _EMBED_MODEL:
+                        total += 1
+                except Exception:
+                    continue
     except Exception:
         return False
     return total >= n_titulos
@@ -620,7 +626,7 @@ def _index_contiene(n_titulos: int) -> bool:
 
 def _accion_indexar() -> str:
     """Genera/actualiza el indice semantico: titulo + primeros _EMBED_CHUNK
-    caracteres de cada articulo, con nomic-embed-text via Ollama LOCAL.
+    caracteres de cada articulo, con bge-m3 via Ollama LOCAL.
     Idempotente: si el indice ya cubre todo, no rehace nada."""
     if not ART.exists():
         return "📭 La mini-wikipedia no esta descargada (accion=descargar, con internet)."
