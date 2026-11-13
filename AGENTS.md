@@ -32,6 +32,8 @@ GUI nativa (PySide6 / Qt6, ventana frameless con tema oscuro Fusion) que consume
     ├── chat_fx.py              # fade_in, animate_height, Spinner, PensandoDots
     ├── template_new_tool.py    # Plantilla para crear nuevos tools
     ├── wiki_offline.py         # Mini enciclopedia offline (Wikipedia top + Wikidata)
+    ├── biblioteca.py           # Libros PDF de referencia: agregar/indexar/buscar semantica (bge-m3)
+    ├── http_session.py         # Sesion HTTP compartida (cabeceras Chrome + cookies del usuario)
     └── ...                     # Tools de lectura, OSINT, escritorio, voz, etc.
 ```
 
@@ -44,6 +46,8 @@ GUI nativa (PySide6 / Qt6, ventana frameless con tema oscuro Fusion) que consume
 - **MUTACIONES** se define SOLO en `tools/__init__.py»; si añades una tool de escritura, regístrala ahí o se ejecutará sin pedir permiso.
 - **Uso profesional de tools (ronda 3)**: los resultados de tools se acotan a ~3,500 chars (`TOOL_RESULT_MAX»: head 2,600 + tail 600) para no desbordar `num_ctx»; hay caché de dedup por turno (una llamada idéntica repetida no quema iteraciones); `TOOL_POLICY» se inyecta como system al final de FASE 1 (máx 3 iteraciones, elegir la tool correcta a la primera); los errores de argumentos devuelven la firma esperada en vez de un TypeError críptico; y las tools de solo-GUI (`speak»/`listen», constantes `GUI_ONLY_TOOLS») no se exponen al modelo: son exclusivas de los botones 🔊/🎤 de la app.
 - **Enciclopedia offline (wiki_offline)**: descarga una versión reducida de Wikipedia en español (los N artículos más vistos, extractos de texto plano, defecto 500) a `~/.local/share/Chispa/wiki_mini/articulos.jsonl.gz» y permite buscar/leer SIN internet (búsqueda local por tokens sin acentos, título con peso extra). Acciones: estado, descargar, agregar (amplía por tema), buscar, leer, wikidata (ficha de entidad en línea). Solo escribe en su propia carpeta de datos: no es MUTACIÓN. Las preguntas enciclopédicas del chat deben enrutarse a esta tool antes que a web_search cuando no haya internet o se pida offline.
+- **Biblioteca de libros PDF (biblioteca)**: agrega PDFs locales (requiere pypdf), extrae texto por páginas en fragmentos de ~1,200 chars y los vectoriza con bge-m3 (compartido con wiki_offline) en `~/.local/share/Chispa/biblioteca/`. Busca semánticamente y devuelve libro + página + fragmento: la respuesta del modelo SIEMPRE debe citar libro y página. No es MUTACIÓN.
+- **Modo maestro (/maestro)**: comando GUI en main.py (no viaja al modelo). Activa un mensaje system extra (MAESTRO_PROMPT): clases de programación paso a paso con analogía, ejemplo ejecutable, ejercicio y verificación, fundamentadas en la biblioteca. /maestro off lo desactiva. Con el modo activo, la tool biblioteca se fuerza en route_defs aunque el pre-router no la elija.
 
 ## Cómo ejecutar (desarrollo)
 
