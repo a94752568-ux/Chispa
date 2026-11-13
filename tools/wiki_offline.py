@@ -23,7 +23,9 @@ Acciones (parametro "accion"):
 - wikidata:    busca una entidad en Wikidata (red): QID, etiqueta y descripcion.
 
 Sin dependencias nuevas: requests + el paquete ollama (ya usado por el
-pre-router de la app).
+pre-router de la app). Las peticiones web salen por la sesion compartida
+de Chispa (tools/http_session.py): cabeceras de Chrome + cookies del
+usuario, para minimizar rechazos anti-bot y 429 de Wikimedia.
 """
 from __future__ import annotations
 
@@ -37,7 +39,7 @@ import unicodedata
 from datetime import datetime, timedelta
 from pathlib import Path
 
-import requests
+from tools.http_session import http_get  # sesion compartida: cabeceras de Chrome + cookies del usuario
 
 DATA_DIR = Path(os.environ.get("WIKI_MINI_DIR", str(Path.home() / ".local/share/Chispa/wiki_mini")))
 ART = DATA_DIR / "articulos.jsonl.gz"
@@ -249,7 +251,7 @@ def _es_articulo_valido(titulo: str) -> bool:
 
 
 def _get(url: str, params: dict, timeout: int = 30):
-    r = requests.get(url, params=params, headers=HDRS, timeout=timeout)
+    r = http_get(url, params=params, timeout=timeout)
     r.raise_for_status()
     return r.json()
 
@@ -287,7 +289,7 @@ def _extraer_titulos_top(n: int) -> list:
         try:
             url = (f"https://wikimedia.org/api/rest_v1/metrics/pageviews/top/"
                    f"es.wikipedia/all-access/{d.year}/{d.month:02d}/{d.day:02d}")
-            r = requests.get(url, headers=HDRS, timeout=20)
+            r = http_get(url, timeout=20)
             r.raise_for_status()
             items = r.json().get("items", [])
             for art in (items[0].get("articles", []) if items else []):
