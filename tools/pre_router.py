@@ -38,6 +38,7 @@ _BOOSTS = [
     (re.compile(r"\b(?:lista\w*|qu[eé]\s+hay\s+en|contenido\s+de\s+(?:la\s+)?carpeta|mu[eé]strame\s+(?:los|las)\s+(?:archivos|carpetas))\b", re.I), "datos"),
     (re.compile(r"\b(?:foto|imagen|metadato|exif|escanead|ocr|sentimiento|donde tome)\b", re.I), "analisis"),
     (re.compile(r"\b(?:wikipedia|wikidata|wiki|enciclopedia)\b|\bmini[-\s]?(?:wiki\w*|enciclopedia)\b|\bdescarga\w*\b[^.]{0,40}\b(?:wiki\w*|enciclopedia|offline)\b", re.I), "datos"),  # mini-wiki offline
+    (re.compile(r"\b(?:biblioteca|libro|libros|pdf|cap[íi]tulo|manual|seg[úu]n mi[s]?)\b", re.I), "datos"),  # biblioteca de PDFs
 ]
 
 _MARGIN_THRESHOLD = 0.05
@@ -85,6 +86,7 @@ _CATEGORY_OVERRIDES: Dict[str, str] = {
     "notes_tool": "datos",
     "read_file": "datos",
     "wiki_offline": "datos",
+    "biblioteca": "datos",
     # Análisis de contenido
     "ocr_tool": "analisis",
     "sentiment_tool": "analisis",
