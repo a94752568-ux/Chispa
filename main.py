@@ -968,8 +968,40 @@ class MainWindow(QMainWindow):
         tools_layout.addLayout(btn_row)
         settings_layout.addWidget(tools_group)
 
+        # Persistencia de ajustes: restaurar lo guardado en ajustes.json y
+        # guardar en cada cambio (la app recuerda la configuracion entre sesiones)
+        aj = memoria.cargar_ajustes()
+        for clave, chk in (
+            ("web_search", self.web_search_check),
+            ("tools", self.tools_check),
+            ("think", self.think_check),
+            ("vision", self.vision_check),
+            ("stt", self.stt_check),
+            ("tts", self.tts_check),
+            ("tokens_vivo", self.tk_check),
+        ):
+            if clave in aj:
+                chk.setChecked(bool(aj[clave]))
+            chk.toggled.connect(self._guardar_ajustes)
+
         settings_layout.addStretch()
         self.settings_dialog = dlg
+
+    def _guardar_ajustes(self, *_):
+        """Persiste los checkboxes de Ajustes y el modelo elegido (ajustes.json)."""
+        try:
+            memoria.guardar_ajustes({
+                "modelo": self.current_model,
+                "web_search": self.web_search_check.isChecked(),
+                "tools": self.tools_check.isChecked(),
+                "think": self.think_check.isChecked(),
+                "vision": self.vision_check.isChecked(),
+                "stt": self.stt_check.isChecked(),
+                "tts": self.tts_check.isChecked(),
+                "tokens_vivo": self.tk_check.isChecked(),
+            })
+        except Exception as e:
+            print(f"⚠ No se pudieron guardar los ajustes: {e}")
 
     def _open_settings(self):
         """Abre el diálogo de Ajustes (no modal: se puede chatear con él abierto)."""
@@ -1014,12 +1046,18 @@ class MainWindow(QMainWindow):
             data = client.list()
             models = [m['name'] if isinstance(m, dict) else getattr(m, 'model', str(m)) for m in data.get('models',[])]
             self.models = models
+            # Leer el ultimo modelo usado ANTES de tocar el combo: clear/addItems
+            # disparan on_model_changed -> _guardar_ajustes y lo sobreescribirian.
+            guardado = memoria.cargar_ajustes().get("modelo")
             self.model_combo.clear()
             self.model_combo.addItems(models)
             if models:
                 # Preferir un modelo de chat: los embeddings no conversan
                 chat_models = [m for m in models if "embed" not in m.lower()]
-                self.current_model = (chat_models or models)[0]
+                if guardado in models:
+                    self.current_model = guardado
+                else:
+                    self.current_model = (chat_models or models)[0]
                 # Sincronizar el combo con el modelo elegido por defecto
                 idx = self.model_combo.findText(self.current_model)
                 if idx >= 0:
@@ -1034,6 +1072,7 @@ class MainWindow(QMainWindow):
             self.current_model = name
             v = "👁 Vision" if is_vision_model(name) else "💬 Texto"
             self.status_label.setText(f"Modelo: {name} | {v}")
+            self._guardar_ajustes()
 
     def pull_model(self):
         if not self.current_model:
@@ -2008,8 +2047,14 @@ class MainWindow(QMainWindow):
         self.status_label.setText(f"{s} · {elapsed}s")
 
     def closeEvent(self, event):
-        """Apagado limpio: detiene el hilo del orquestador y el audio TTS antes de salir."""
+        """Apagado limpio: detiene worker, orquestador y audio TTS antes de salir."""
         self._hands_free = False
+        # Turno en curso: un QThread destruido mientras corre aborta la app
+        # con "QThread: Destroyed while thread is still running".
+        if self.worker is not None and self.worker.isRunning():
+            self.worker.stop()
+            self.worker.wait(2000)
+        self._turn_timer.stop()
         try:
             from tools import tts_tool
             tts_tool.stop_speech()
@@ -2095,12 +2140,21 @@ class MainWindow(QMainWindow):
                 self.chat_history.append({"role": "assistant", "content": answer})
                 self._save_memory()
             try:
-                self.current_assistant_widget.finishAnswer(answer, thinking)
-                self.current_assistant_widget.showTTS()
-                # En manos libres la lectura es parte del ciclo (al terminar
-                # de leer, _do_speak arranca la siguiente escucha)
-                if (self.tts_check.isChecked() or self._hands_free) and answer.strip():
-                    self.speak_response(answer)
+                w = self.current_assistant_widget
+                # Modo 🌈 con respuesta de UNA pieza (thinking OFF: el worker
+                # reutiliza la de FASE 1 y no hay streaming): animar la
+                # revelacion token por token; el cierre (chips, TTS auto)
+                # corre al terminar la animacion.
+                if (getattr(w, "_token_mode", False) and answer.strip()
+                        and not getattr(w, "_answer_started", False)):
+                    w.animate_tokens(answer, thinking, on_done=self._cerrar_turno_visual)
+                else:
+                    w.finishAnswer(answer, thinking)
+                    w.showTTS()
+                    # En manos libres la lectura es parte del ciclo (al terminar
+                    # de leer, _do_speak arranca la siguiente escucha)
+                    if (self.tts_check.isChecked() or self._hands_free) and answer.strip():
+                        self.speak_response(answer)
             except Exception:
                 import traceback
                 traceback.print_exc()
@@ -2108,6 +2162,19 @@ class MainWindow(QMainWindow):
         # Vista nunca bloquea el turno: el botón siempre se habilita
         self._set_send_mode("send")
         self.status_label.setText("Listo")
+        self.scroll_to_bottom()
+
+    def _cerrar_turno_visual(self):
+        """Cierre visual diferido tras la animacion de tokens (modo 🌈)."""
+        w = getattr(self, "current_assistant_widget", None)
+        try:
+            if w is not None:
+                w.showTTS()
+                if (self.tts_check.isChecked() or self._hands_free) and (w.full_text or "").strip():
+                    self.speak_response(w.full_text)
+        except Exception:
+            import traceback
+            traceback.print_exc()
         self.scroll_to_bottom()
 
     @Slot(str)
