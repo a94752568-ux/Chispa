@@ -79,6 +79,46 @@ except ImportError as e:
 
 
 
+# ================================================================
+# Biblioteca de libros PDF + Modo maestro (/maestro)
+# ================================================================
+BIBLIOTECA_PROMPT = (
+    "Biblioteca: tambien tienes la herramienta biblioteca: libros PDF de referencia del "
+    "usuario (sociologia, programacion, etc.) indexados localmente. Para temas academicos "
+    "o de programacion, busca en ellos con accion=buscar y cita SIEMPRE libro y pagina de "
+    "lo que devuelva. Usa accion=listar para enumerar los libros REALES (nunca inventes "
+    "titulos) y accion=leer para una pagina concreta. Si el tema no esta en los libros, "
+    "admitelo y ofrece wiki_offline o web_search."
+)
+
+MAESTRO_PROMPT = (
+    "MODO MAESTRO ACTIVO (enseñanza de programacion). Comportamiento: "
+    "1) Estructura cada respuesta como una CLASE: idea clave, explicacion paso a paso con "
+    "lenguaje sencillo, una analogia cotidiana, y un ejemplo de codigo corto, comentado y "
+    "ejecutable. "
+    "2) Fundamenta en la biblioteca del usuario: llama biblioteca con accion=buscar sobre el "
+    "tema y cita libro y pagina cuando uses sus libros; si no esta, dilo y apoyate en "
+    "wiki_offline o web_search en vez de inventar. "
+    "3) Cierra SIEMPRE con un EJERCICIO practico pequeno para que el usuario lo resuelva, y "
+    "pidele que lo comparta para revisarlo. "
+    "4) Verifica entendimiento: una pregunta corta de comprobacion antes de avanzar. "
+    "5) Progresion: lleva registro implicito del nivel del tema en la conversacion y sube la "
+    "dificultad gradualmente; si el usuario falla, reexplica con otra analogia, no repitas "
+    "lo mismo. "
+    "6) Tono: paciente, motivador, sin ser condescendiente; en espanol."
+)
+
+MAESTRO_ON_MSG = (
+    "🎓 **Modo maestro ACTIVADO** (programacion).\n\n"
+    "Desde ahora cada respuesta sera una mini-clase: explicacion paso a paso, analogia, "
+    "ejemplo de codigo ejecutable, un ejercicio para ti y verificacion de entendimiento. "
+    "Usare tus libros de la biblioteca como referencia cuando el tema este en ellos.\n\n"
+    "Dime sobre que tema quieres empezar (ej: 'explícame las listas de Python') o pide el "
+    "temario sugerido. Para salir: /maestro off"
+)
+
+MAESTRO_OFF_MSG = "🎓 Modo maestro desactivado. Vuelvo a responder con normalidad."
+
 VISION_MODELS = ["llava", "bakllava", "gemma3", "qwen2-vl", "qwen2.5-vl", "llama3.2-vision", "minicpm-v", "moondream", "vision"]
 VISION_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
 
@@ -153,6 +193,7 @@ class MainWindow(QMainWindow):
         self._chat_title: str = "Nuevo chat"
         self.chats: List[Dict] = []
         self.current_model = "llama3.1"
+        self.modo_maestro = False  # modo maestro de enseñanza (/maestro)
         self.models: List[str] = []
         self.attached_images: List[str] = []
         self.worker: Optional[OllamaWorker] = None
@@ -1732,6 +1773,22 @@ class MainWindow(QMainWindow):
             self.status_label.setText("Generando… usa el botón ⏹ para detener")
             return
 
+        # Comando /maestro: activa/desactiva el modo maestro de enseñanza
+        # (se maneja en la GUI, no viaja al modelo como mensaje)
+        bajo = text.strip().lower()
+        if bajo in ("/maestro", "/maestro on", "/maestro activar"):
+            self.modo_maestro = True
+            self._agregar_burbuja_asistente(MAESTRO_ON_MSG)
+            self.input_edit.clear()
+            self.status_label.setText("🎓 Modo maestro activo")
+            return
+        if bajo in ("/maestro off", "/maestro fuera", "/maestro desactivar"):
+            self.modo_maestro = False
+            self._agregar_burbuja_asistente(MAESTRO_OFF_MSG)
+            self.input_edit.clear()
+            self.status_label.setText("Listo")
+            return
+
         user_widget = MessageBubble("user", text or "(solo imagen)", self.attached_images.copy())
         self._wire_user_actions(user_widget)
         # Solo el último mensaje del usuario conserva el botón de editar
@@ -1803,12 +1860,31 @@ class MainWindow(QMainWindow):
                       if d.get("function", {}).get("name") not in GUI_ONLY_TOOLS]
         route_execs = {k: v for k, v in route_execs.items() if k not in GUI_ONLY_TOOLS}
 
+        # Modo maestro: la biblioteca SIEMPRE disponible aunque el pre-router
+        # no la haya elegido (es la fuente de verdad de las clases)
+        if getattr(self, "modo_maestro", False):
+            nombres = {d.get("function", {}).get("name") for d in route_defs}
+            if "biblioteca" not in nombres:
+                for d in self.tools_def:
+                    if d.get("function", {}).get("name") == "biblioteca":
+                        route_defs.append(d)
+                        if "biblioteca" in self.executors:
+                            route_execs["biblioteca"] = self.executors["biblioteca"]
+                        break
+
         # Inyectar SIEMPRE el system prompt vigente: la memoria persistida
         # nunca debe congelar una versión vieja del prompt.
         history_with_system = [{"role": "system", "content": SYSTEM_PROMPT}]
+        # Presentar la biblioteca de libros PDF: sin esta presentacion el modelo
+        # tiende a ignorar la tool o fabicar (misma leccion que wiki_offline).
+        history_with_system.append({"role": "system", "content": BIBLIOTECA_PROMPT})
         history_with_system.extend(
             m for m in self.chat_history if m.get("role") != "system"
         )
+        # Modo maestro: instrucciones de enseñanza con la maxima prioridad
+        # (mensaje system al final = recencia maxima antes de decidir)
+        if getattr(self, "modo_maestro", False):
+            history_with_system.append({"role": "system", "content": MAESTRO_PROMPT})
 
         assistant_widget = MessageBubble("assistant", "", [], enable_think=enable_think)
         self.chat_container_widget.add_message_widget(assistant_widget)
