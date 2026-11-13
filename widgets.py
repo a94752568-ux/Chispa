@@ -765,6 +765,45 @@ class MessageBubble(QFrame):
         )
         self._reflow()
 
+    def animate_tokens(self, answer: str, thinking: str, on_done=None):
+        """Revela una respuesta que llego SIN streaming (FASE 1 reutilizada
+        cuando thinking esta OFF) como si fuera token por token: mismo estilo
+        Matrix del modo 🌈, que de otro modo nunca se activaria (sin chunks
+        no hay bloques de color). Al terminar llama finishAnswer (re-render
+        markdown limpio) y on_done para que MainWindow cierre el turno
+        (chips, TTS automatico, scroll)."""
+        self.full_text = answer
+        self.text_browser.show()
+        self._answer_started = True
+        self._anim_text = answer
+        self._anim_thinking = thinking
+        self._anim_on_done = on_done
+        # "Tokens" de 4 caracteres: simula subpalabras reales
+        self._anim_chunks = [answer[i:i + 4] for i in range(0, len(answer), 4)]
+        self._anim_timer = QTimer(self)
+        self._anim_timer.timeout.connect(self._anim_paso)
+        self._anim_timer.start(16)
+
+    def _anim_paso(self):
+        for _ in range(3):
+            if not self._anim_chunks:
+                break
+            self._append_token(self._anim_chunks.pop(0))
+        self._reflow()
+        try:
+            w = self.window()
+            if w is not None and hasattr(w, "scroll_to_bottom"):
+                w.scroll_to_bottom()
+        except Exception:
+            pass
+        if not self._anim_chunks:
+            self._anim_timer.stop()
+            self.finishAnswer(self._anim_text, self._anim_thinking)
+            cb = self._anim_on_done
+            self._anim_on_done = None
+            if cb:
+                cb()
+
     def setAnswer(self, text: str):
         self.full_text = text
         self.text_browser.setMarkdown(text)
