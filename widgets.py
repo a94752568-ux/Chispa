@@ -17,7 +17,7 @@ from typing import List
 import markdown as _md
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QPushButton, QLabel, QFrame, QTextBrowser, QSizePolicy, QApplication,
+    QPushButton, QLabel, QFrame, QTextBrowser, QProgressBar, QSizePolicy, QApplication,
 )
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QPixmap, QTextCursor
@@ -580,6 +580,51 @@ class MessageBubble(QFrame):
             self.text_browser.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
             layout.addWidget(self.text_browser)
 
+            # Telemetria del turno (panel premium): pills de metricas REALES de
+            # Ollama (tok/s, TTFT, tokens in/out, RAM del modelo) + barra de
+            # uso de contexto. Oculto hasta que MainWindow llama set_stats().
+            stats_row = QHBoxLayout()
+            stats_row.setContentsMargins(0, 0, 0, 2)
+            stats_row.setSpacing(6)
+            self.stats_labels = QLabel()
+            self.stats_labels.setTextFormat(Qt.RichText)
+            self.stats_labels.setStyleSheet(f"""
+                QLabel {{
+                    background: {theme.BG_ELEVATED};
+                    border: 1px solid {theme.BORDER_SOFT};
+                    border-radius: 10px;
+                    padding: 4px 10px;
+                    font-size: 11px;
+                    color: {theme.TEXT_SECOND};
+                }}
+            """)
+            stats_row.addWidget(self.stats_labels)
+            stats_row.addStretch()
+            self.stats_ctx = QProgressBar()
+            self.stats_ctx.setFixedHeight(14)
+            self.stats_ctx.setRange(0, 100)
+            self.stats_ctx.setValue(0)
+            self.stats_ctx.setMaximumWidth(190)
+            self.stats_ctx.setStyleSheet(f"""
+                QProgressBar {{
+                    background: {theme.BG_INPUT};
+                    border: 1px solid {theme.BORDER_SOFT};
+                    border-radius: 7px;
+                    color: {theme.TEXT_SECOND};
+                    font-size: 9px;
+                    text-align: center;
+                }}
+                QProgressBar::chunk {{
+                    background: {theme.ACCENT};
+                    border-radius: 6px;
+                }}
+            """)
+            stats_row.addWidget(self.stats_ctx)
+            self.stats_container = QFrame()
+            self.stats_container.setLayout(stats_row)
+            self.stats_container.setVisible(False)
+            layout.addWidget(self.stats_container)
+
             # Fila de iconos (meta): ⧉ ♻ 🔊 💾 📄, oculta por defecto, visible al hover
             icon_row = QHBoxLayout()
             icon_row.setContentsMargins(0, 4, 0, 0)
@@ -803,6 +848,61 @@ class MessageBubble(QFrame):
             self._anim_on_done = None
             if cb:
                 cb()
+
+    # --- Telemetria del turno ---
+    def set_stats(self, stats: dict, delta_tps=None):
+        """Pinta el panel de telemetria con metricas reales del turno.
+        delta_tps: tok/s del turno anterior, para mostrar la tendencia."""
+        if not stats or self.role != "assistant" or not hasattr(self, "stats_container"):
+            return
+        pills = []
+        tps = stats.get("tps")
+        if tps:
+            extra = ""
+            if delta_tps:
+                pct = (tps - delta_tps) / delta_tps * 100.0
+                color = "#3fbf6f" if pct >= 0 else theme.ERROR
+                flecha = "▲" if pct >= 0 else "▼"
+                extra = f' <span style="color:{color};font-size:10px">{flecha}{abs(pct):.0f}%</span>'
+            pills.append(f'<b style="color:{theme.ACCENT}">⚡ {tps:.1f}</b> tok/s{extra}')
+        ttft = stats.get("ttft")
+        if ttft:
+            pills.append(f'⏱ <b style="color:{theme.TEXT}">{ttft:.1f}s</b> TTFT')
+        ti, to = stats.get("tok_in") or 0, stats.get("tok_out") or 0
+        if ti or to:
+            pills.append(f'🪙 <b style="color:{theme.TEXT}">{ti}</b>▸<b style="color:{theme.TEXT}">{to}</b>')
+        ram = stats.get("ram_gb")
+        if ram:
+            pills.append(f'🧠 <b style="color:{theme.TEXT}">{ram:.2f} GB</b>')
+        if stats.get("tools"):
+            pills.append(f'🔧 <b style="color:{theme.TEXT}">{stats["tools"]}</b>')
+        self.stats_labels.setText("&nbsp;&nbsp;".join(pills) if pills else "⚡ —")
+        # Barra de uso de contexto (prompt real / num_ctx); roja al saturarse
+        num_ctx = stats.get("num_ctx") or 8192
+        if ti:
+            pct = min(100, int(ti / float(num_ctx) * 100))
+            self.stats_ctx.setValue(pct)
+            self.stats_ctx.setFormat(f"ctx {ti}/{num_ctx} · {pct}%")
+            chunk_color = theme.ERROR if pct >= 90 else theme.ACCENT
+            self.stats_ctx.setStyleSheet(f"""
+                QProgressBar {{
+                    background: {theme.BG_INPUT};
+                    border: 1px solid {theme.BORDER_SOFT};
+                    border-radius: 7px;
+                    color: {theme.TEXT_SECOND};
+                    font-size: 9px;
+                    text-align: center;
+                }}
+                QProgressBar::chunk {{
+                    background: {chunk_color};
+                    border-radius: 6px;
+                }}
+            """)
+        detalle = (f"Total: {stats.get('total_s', 0)}s · herramientas usadas: {stats.get('tools', 0)} · "
+                   f"modelo: {stats.get('modelo', '?')}")
+        self.stats_container.setToolTip(detalle)
+        self.stats_container.setVisible(True)
+        self._reflow()
 
     def setAnswer(self, text: str):
         self.full_text = text
