@@ -152,3 +152,36 @@ def cargar() -> list:
     if chats:
         return cargar_chat(chats[0]["id"])
     return []
+
+
+# ================= AJUSTES DE LA GUI (persistencia) =================
+# Los checkboxes de Ajustes (think, tools, vision, tts, tokens, etc.) y el
+# último modelo usado se guardan en ajustes.json: la app recuerda la
+# configuración entre sesiones en vez de renacer con defaults cada arranque.
+
+AJUSTES_FILE = MEMORY_DIR / "ajustes.json"
+
+
+def cargar_ajustes() -> dict:
+    """Ajustes persistidos de la GUI. Dict vacío si no hay archivo válido."""
+    try:
+        if AJUSTES_FILE.exists():
+            with open(AJUSTES_FILE, "r", encoding="utf-8") as f:
+                d = json.load(f)
+            if isinstance(d, dict):
+                return d
+    except Exception as e:
+        print(f"⚠ No se pudo cargar ajustes.json: {e}")
+    return {}
+
+
+def guardar_ajustes(ajustes: dict) -> None:
+    """Guarda los ajustes de la GUI (escritura atómica tmp -> replace)."""
+    try:
+        _ensure_memory_dir()
+        tmp = AJUSTES_FILE.with_suffix(".tmp")
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(ajustes, f, ensure_ascii=False, indent=2)
+        tmp.replace(AJUSTES_FILE)
+    except Exception as e:
+        print(f"⚠ No se pudo guardar ajustes.json: {e}")
