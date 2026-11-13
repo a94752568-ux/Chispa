@@ -15,6 +15,10 @@ Acciones (parametro "accion"):
             https://inventwithpython.com/automate3workbook/): baja el indice,
             sigue sus enlaces de capitulo, convierte a texto y lo guarda como
             libro (ademas deja un .md en ~/Libros).
+- descargar_pagina: descarga UNA pagina suelta (articulo de Wikipedia, blog,
+            documentacion) con TEXTO e IMAGENES: guarda el .md en ~/Libros con
+            las imagenes enlazadas localmente (~/Libros/imagenes/) y lo
+            registra en la biblioteca para busqueda semantica.
 - descargar: baja un PDF de una URL (SOLO libros legales/gratis) con la
             sesion compartida (Chrome + cookies) y lo agrega automaticamente.
 - indexar:  vectoriza los fragmentos aun sin indice con bge-m3 (Ollama local).
@@ -78,7 +82,7 @@ TOOL_DEFINITION = {
         "parameters": {
             "type": "object",
             "properties": {
-                "accion": {"type": "string", "enum": ["estado", "descargar", "agregar", "agregar_web", "indexar", "listar", "buscar", "leer"],
+                "accion": {"type": "string", "enum": ["estado", "descargar", "descargar_pagina", "agregar", "agregar_web", "indexar", "listar", "buscar", "leer"],
                             "description": "Que hacer. Defecto: buscar"},
                 "url": {"type": "string", "description": "URL directa del PDF legal/gratis (accion=descargar)"},
                 "consulta": {"type": "string", "description": "Concepto o tema a buscar (accion=buscar)"},
@@ -524,6 +528,147 @@ def _accion_agregar_web(url: str, titulo: str = "", n=None) -> str:
             "Ahora ejecuta accion=indexar para poder buscar semanticamente." + extra)
 
 
+_IMG_EXT = (".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp")
+_IMG_MAX = 24          # maximo de imagenes por pagina
+_IMG_TOPE = 8 * 1024 * 1024  # 8 MB por imagen
+
+
+def _descargar_pagina_texto(html: str) -> str:
+    """Extrae el CONTENIDO principal de una pagina (main/article; si no hay,
+    body) ya convertido a texto."""
+    m = re.search(r"<main[^>]*>(.*?)</main>", html, re.DOTALL | re.IGNORECASE) \
+        or re.search(r"<article[^>]*>(.*?)</article>", html, re.DOTALL | re.IGNORECASE) \
+        or re.search(r"<body[^>]*>(.*)</body>", html, re.DOTALL | re.IGNORECASE)
+    return _html_a_texto(m.group(1) if m else html)
+
+
+def _accion_descargar_pagina(url: str, titulo: str = "") -> str:
+    """Descarga UNA pagina (articulo de Wikipedia, blog, documentacion):
+    texto principal + imagenes locales. Deja un .md en ~/Libros con las
+    imagenes enlazadas por ruta absoluta y registra el contenido en la
+    biblioteca (busqueda semantica). SOLO contenido legal/publico."""
+    global _LAST_DIAG
+    url = (url or "").strip()
+    if not url:
+        return ("⚠️ Indica la url de la pagina (ej: url=https://es.wikipedia.org/wiki/Fotosintesis).")
+    if not url.lower().startswith(("http://", "https://")):
+        return "⚠️ La url debe empezar por http:// o https://"
+    try:
+        resp = http_get(url, timeout=30)
+        resp.raise_for_status()
+        html_pag = resp.text
+    except Exception as e:
+        return f"⚠️ No pude abrir la pagina ({e}). Verifica la url y tu conexion."
+    titulo = (titulo or "").strip()
+    if not titulo:
+        m_t = re.search(r"<title>(.*?)</title>", html_pag, re.IGNORECASE | re.DOTALL)
+        titulo = (_htmlmod.unescape(m_t.group(1)).strip() if m_t else urlsplit(url).path.strip("/").split("/")[-1] or "pagina")
+        titulo = re.sub(r"\s*[-–|]\s*(Wikipedia|Wikipedia, la enciclopedia libre).*$", "", titulo, flags=re.IGNORECASE).strip() or "Pagina web"
+    slug = _slug(titulo)
+
+    # --- imagenes: extraer src del contenido principal, bajarlas a ~/Libros/imagenes/<slug>/
+    cuerpo = re.search(r"<main[^>]*>(.*?)</main>", html_pag, re.DOTALL | re.IGNORECASE) \
+        or re.search(r"<article[^>]*>(.*?)</article>", html_pag, re.DOTALL | re.IGNORECASE) \
+        or re.search(r"<body[^>]*>(.*)</body>", html_pag, re.DOTALL | re.IGNORECASE)
+    cuerpo = cuerpo.group(1) if cuerpo else html_pag
+    img_dir = Path.home() / "Libros" / "imagenes" / slug
+    referencias = []  # (marcador, ruta_local_o_None, alt)
+    for i, m_img in enumerate(re.finditer(r'<img[^>]+src="([^"]+)"[^>]*>', cuerpo)):
+        if len(referencias) >= _IMG_MAX:
+            break
+        src_img = _htmlmod.unescape(m_img.group(1).strip())
+        if src_img.startswith("data:"):
+            continue
+        absoluto = urljoin(url, src_img)
+        ruta_img = urlsplit(absoluto).path.lower()
+        if not ruta_img.endswith(_IMG_EXT):
+            continue
+        alt_m = re.search(r'alt="([^"]*)"', m_img.group(0))
+        alt = _htmlmod.unescape(alt_m.group(1)).strip() if alt_m else ""
+        marcador = f"[[IMG-{i}]]"
+        referencias.append((marcador, absoluto, alt, img_dir / (f"img_{i:02d}" + ruta_img)))
+    # reemplazar <img> por marcadores ANTES de limpiar el HTML
+    for i, m_img in enumerate(re.finditer(r'<img[^>]+src="([^"]+)"[^>]*>', cuerpo)):
+        if i < len(referencias) and referencias[i][1]:
+            cuerpo = cuerpo.replace(m_img.group(0), " " + referencias[i][0] + " ", 1)
+        else:
+            cuerpo = cuerpo.replace(m_img.group(0), " ", 1)
+    texto = _descargar_pagina_texto(cuerpo)
+    if len(texto) < 200:
+        return "⚠️ La pagina no tenia texto extraible (¿es solo video/imagenes o requiere JS?)."
+
+    # bajar imagenes (con la sesion compartida)
+    ok_imgs = 0
+    img_dir.mkdir(parents=True, exist_ok=True)
+    for marcador, absoluto, alt, destino in referencias:
+        try:
+            ri = http_get(absoluto, timeout=20, stream=True)
+            ri.raise_for_status()
+            total = 0
+            tmp = destino.with_suffix(destino.suffix + ".part")
+            with open(tmp, "wb") as fi:
+                for bloque in ri.iter_content(chunk_size=32768):
+                    total += len(bloque)
+                    if total > _IMG_TOPE:
+                        break
+                    fi.write(bloque)
+            tmp.replace(destino)
+            if total > 1024:
+                ok_imgs += 1
+            else:
+                destino.unlink(missing_ok=True)
+        except Exception as e:
+            _LAST_DIAG = f"imagen {absoluto}: {e}"
+        time.sleep(0.3)
+
+    # sustituir marcadores por ![](ruta local absoluta) en el texto
+    for marcador, _, alt, destino in referencias:
+        if destino.exists():
+            texto = texto.replace(marcador, f"![{alt}]({destino})")
+        else:
+            texto = texto.replace(marcador, "")
+
+    # guardar .md en ~/Libros
+    md_path = Path.home() / "Libros" / (slug + ".md")
+    md_path.parent.mkdir(parents=True, exist_ok=True)
+    md_path.write_text(f"# {titulo}\n\nFuente: {url}\n\n{texto}", encoding="utf-8")
+
+    # registrar en la biblioteca (una sola 'pagina') para busqueda semantica
+    libros = _cargar_libros()
+    libros = [l for l in libros if l.get("slug") != slug]
+    chunks = 0
+    tmp = _archivo_libro(slug).with_suffix(".tmp")
+    try:
+        with gzip.open(tmp, "wt", encoding="utf-8") as out:
+            plano = re.sub(r"!\[[^\]]*\]\([^)]*\)", "[imagen]", texto)  # chunks sin rutas de imagen
+            paso = _CHUNK - _SOLAPE
+            for ini in range(0, len(plano), paso):
+                frag = plano[ini:ini + _CHUNK]
+                if len(frag) < 100:
+                    break
+                out.write(json.dumps({"p": 1, "x": frag}, ensure_ascii=False) + "\n")
+                chunks += 1
+        tmp.replace(_archivo_libro(slug))
+    except Exception as e:
+        try:
+            tmp.unlink(missing_ok=True)
+        except Exception:
+            pass
+        chunks = 0
+    if chunks:
+        libros.append({"slug": slug, "titulo": titulo, "ruta": url, "web": True,
+                       "paginas": 1, "paginas_texto": 1, "chunks": chunks,
+                       "agregado": datetime.now().isoformat(timespec="seconds")})
+        _guardar_libros(libros)
+
+    aviso_idx = (" Ya esta en la biblioteca: ejecuta accion=indexar para buscarla semanticamente."
+                 if chunks else " (No se registro en la biblioteca; el .md si quedo guardado.)")
+    return (f"✅ Pagina descargada: '{titulo}'\n"
+            f"📄 Markdown: {md_path}\n"
+            f"🖼️ Imagenes locales: {ok_imgs}/{len(referencias)}\n"
+            f"📝 {len(texto)} caracteres de texto." + aviso_idx)
+
+
 def _accion_descargar(url: str) -> str:
     """Descarga un PDF de una URL (SOLO contenido legal/gratis) usando la
     sesion compartida (cabeceras de Chrome + cookies del usuario) y lo
@@ -587,6 +732,8 @@ def execute(accion: str = "buscar", consulta: str = "", ruta: str = "", titulo: 
             return _accion_estado()
         if accion == "descargar":
             return _accion_descargar(url or ruta or consulta)
+        if accion in ("descargar_pagina", "pagina", "articulo"):
+            return _accion_descargar_pagina(url or ruta or consulta, titulo)
         if accion in ("agregar_web", "web", "online"):
             return _accion_agregar_web(url or ruta or consulta, titulo, n)
         if accion == "agregar":
