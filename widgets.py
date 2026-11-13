@@ -7,6 +7,8 @@ ThinkingBlockWidget (pensamiento colapsable con cronómetro), ToolBlockWidget
 streaming, proyecto E3), ChatContainer (columna centrada máx 760 px) y
 TitleBar (barra de título frameless).
 """
+import colorsys
+import html as _html
 import json
 import time
 from pathlib import Path
@@ -18,7 +20,7 @@ from PySide6.QtWidgets import (
     QPushButton, QLabel, QFrame, QTextBrowser, QSizePolicy, QApplication,
 )
 from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QPixmap
+from PySide6.QtGui import QPixmap, QTextCursor
 
 from common import trace, MD_CSS, DEDUP_ENABLED, DEBUG_DEDUP, DEDUP_LOG_PATH
 from tools.chat_fx import fade_in, animate_height, Spinner, PensandoDots
@@ -402,6 +404,7 @@ class MessageBubble(QFrame):
         self._raw_delta_count = 0
         self._empty_delta_count = 0
         self._dedup_enabled = DEDUP_ENABLED  # E3 dedup control
+        self._token_mode = False  # visualizacion de tokens en vivo (estilo Matrix)
         trace(f"MessageBubble.__init__ role={role} enable_think={enable_think} images={len(self.images or [])}")
 
         self.setObjectName("messageBubble")
@@ -734,6 +737,34 @@ class MessageBubble(QFrame):
             self.edit_container.setVisible(False)
         super().leaveEvent(event)
 
+    # --- visualizacion de tokens en vivo (estilo Matrix) ---
+    def set_token_mode(self, on: bool):
+        """Activa/desactiva la visualizacion por tokens. En modo token el
+        streaming se pinta como bloques de color (uno por delta/token) y al
+        terminar finishAnswer re-renderiza el markdown limpio."""
+        self._token_mode = bool(on)
+
+    @staticmethod
+    def _colores_token(delta: str):
+        """Color determinista por contenido del token: hue = suma de bytes.
+        Devuelve (fondo_hex, texto_hex) legibles sobre tema oscuro."""
+        h = (sum(delta.encode("utf-8", "ignore")) * 7) % 360
+        r1, g1, b1 = colorsys.hls_to_rgb(h / 360.0, 0.24, 0.55)   # fondo oscuro del hue
+        r2, g2, b2 = colorsys.hls_to_rgb(h / 360.0, 0.76, 0.85)   # texto claro del hue
+        f = lambda x: int(max(0, min(1, x)) * 255)
+        return (f"#{f(r1):02x}{f(g1):02x}{f(b1):02x}", f"#{f(r2):02x}{f(g2):02x}{f(b2):02x}")
+
+    def _append_token(self, delta: str):
+        """Agrega el delta como bloque de color inline (sin re-render markdown:
+        tambien es mas barato que setMarkdown en cada chunk)."""
+        bg, fg = self._colores_token(delta)
+        esc = _html.escape(delta).replace("\n", "<br>")
+        self.text_browser.moveCursor(QTextCursor.End)
+        self.text_browser.insertHtml(
+            f'<span style="background-color:{bg};color:{fg};">&nbsp;{esc}&nbsp;</span>'
+        )
+        self._reflow()
+
     def setAnswer(self, text: str):
         self.full_text = text
         self.text_browser.setMarkdown(text)
@@ -827,7 +858,10 @@ class MessageBubble(QFrame):
                 self._accepted_delta_count = (
                     self._accepted_delta_count + 1
                 )
-                self.text_browser.insertPlainText(suffix)
+                if self._token_mode and self.role == "assistant":
+                    self._append_token(suffix)
+                else:
+                    self.text_browser.insertPlainText(suffix)
                 self._reflow()
                 return
 
@@ -854,7 +888,12 @@ class MessageBubble(QFrame):
         if self.role == "assistant" and not getattr(self, "_answer_started", False):
             self.text_browser.show()
             self._answer_started = True
-        self.text_browser.setMarkdown(self.full_text + " ▍")
+        if self._token_mode and self.role == "assistant":
+            # Estilo Matrix: cada token llega como su propio bloque de color.
+            # Se ve como el modelo "piensa" en subpalabras, no en palabras.
+            self._append_token(delta)
+        else:
+            self.text_browser.setMarkdown(self.full_text + " ▍")
         self._reflow()
 
     def showTTS(self):
