@@ -47,7 +47,10 @@ _THINK_BLOCK_RE = re.compile(r"<<thinking>>(.*?)</thinking>>?", re.DOTALL)
 NUM_CTX = 8192
 
 # Mensajes recientes (además de los system) que ve FASE 1 para decidir tools.
-FASE1_HISTORY_LIMIT = 12
+# 9 (antes 12): el prefill domina el TTFT en CPU (~190 tok/s en el i3) y FASE 1
+# solo decide tool calls / redacta la respuesta; el contexto antiguo rara vez
+# cambia esa decision. FASE 2 sigue viendo el historial completo.
+FASE1_HISTORY_LIMIT = 9
 
 # Techo duro de resultados: num_ctx=8192 y un full_recon puede devolver
 # 10KB+. Sin techo, el prompt trunca EN SILENCIO (lo primero en caer es el
