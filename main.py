@@ -873,6 +873,12 @@ class MainWindow(QMainWindow):
         self.tts_check.setStyleSheet(self._checkbox_style())
         func_layout.addWidget(self.tts_check)
 
+        self.tk_check = QCheckBox("🌈 Visualizar tokens en vivo")
+        self.tk_check.setChecked(False)
+        self.tk_check.setToolTip("Muestra cada token del streaming como un bloque de color (estilo Matrix): ves como el modelo piensa en subpalabras. Al terminar, la respuesta se re-renderiza limpia.")
+        self.tk_check.setStyleSheet(self._checkbox_style())
+        func_layout.addWidget(self.tk_check)
+
         settings_layout.addWidget(func_group)
 
         # Plugins / Tools
@@ -1887,6 +1893,11 @@ class MainWindow(QMainWindow):
             history_with_system.append({"role": "system", "content": MAESTRO_PROMPT})
 
         assistant_widget = MessageBubble("assistant", "", [], enable_think=enable_think)
+        # Visualizacion de tokens en vivo (toggle en Ajustes): cada chunk del
+        # streaming llega como bloque de color; finishAnswer re-renderiza limpio.
+        assistant_widget.set_token_mode(
+            bool(getattr(self, "tk_check", None) and self.tk_check.isChecked())
+        )
         self.chat_container_widget.add_message_widget(assistant_widget)
         self.current_assistant_widget = assistant_widget
         self._wire_assistant_actions(assistant_widget)
